@@ -67,5 +67,11 @@ The documented direct ARM alternative is
 `deploy.ps1 --repair-network-only --network-method arm`; it has the same
 ownership, context, dry-run and exact read-back checks.
 
+An explicitly approved exception can be applied with
+`python infra/exempt_storage_policy.py --dry-run`, then without `--dry-run`.
+It snapshots only the existing storage accounts in the verified subscription
+and creates a separate, resource-scoped exemption for the public-network rule.
+Other security rules, storage settings and future accounts are not exempted.
+
 Do not start Step 2 until Unity Catalog, external-access grants and storage
 checks pass. An ARM deployment marked `Succeeded` alone is not a completed step.

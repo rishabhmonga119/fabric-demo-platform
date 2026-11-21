@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import patch
 
 from infra import deploy
+from infra import exempt_storage_policy
 from tools.common import ContextError
 
 
@@ -61,6 +62,34 @@ class NetworkGuardTests(unittest.TestCase):
                     deploy.ensure_storage_network(CONFIG, dry_run=True, method="arm")
                     temporary.assert_not_called()
                     self.assertTrue(mutate.call_args.kwargs["dry_run"])
+
+
+class ExemptionGuardTests(unittest.TestCase):
+    def test_unowned_or_broader_exemption_is_rejected(self):
+        account = "/subscriptions/demo/resourceGroups/demo/providers/Microsoft.Storage/storageAccounts/demo"
+        rule = {"name": "demo-exemption", "assignment_id": "/policyAssignments/demo",
+                "definition_reference_id": "public-network"}
+        valid = {
+            "id": f"{account}/providers/Microsoft.Authorization/policyExemptions/demo-exemption",
+            "policyAssignmentId": "/policyAssignments/demo",
+            "policyDefinitionReferenceIds": ["public-network"],
+            "exemptionCategory": "Waiver",
+            "metadata": {"demoOwner": "demo-owner/demo-repo", "createdBy": "copilot-demo-build"},
+        }
+        exempt_storage_policy.verify_exemption(valid, account, rule, "demo-owner/demo-repo")
+        changes = [
+            ("id", "/subscriptions/demo/providers/Microsoft.Authorization/policyExemptions/demo-exemption"),
+            ("policyDefinitionReferenceIds", []),
+            ("policyDefinitionReferenceIds", ["public-network", "anonymous-access"]),
+            ("policyAssignmentId", "/policyAssignments/other"),
+            ("metadata", None),
+        ]
+        for key, value in changes:
+            exemption = copy.deepcopy(valid)
+            exemption[key] = value
+            with self.subTest(key=key, value=value):
+                with self.assertRaises(ContextError):
+                    exempt_storage_policy.verify_exemption(exemption, account, rule, "demo-owner/demo-repo")
 
 
 if __name__ == "__main__":

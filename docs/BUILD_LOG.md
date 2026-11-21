@@ -287,6 +287,53 @@ continue Steps 2-9 in order.
   no existing metastore setting has been changed yet.
 - No catalog/schema/table or compute created by this automation; starter
   warehouse remains untouched. Step 1 stays BLOCKED and Steps 2-9 are pending.
+
+### Approved storage-policy exceptions
+
+- User reported that public network access is disabled by policy and explicitly
+  requested an exception, then expanded this to all storage accounts.
+- Clarification confirmed scope `existing-subscription`: all existing storage
+  accounts in verified subscription `61ab2275-fb68-4081-ac0f-076c87caf0c1`;
+  not future accounts and not tenant-wide.
+- User also approved enabling external data access on the identified metastore.
+- Read official policy exemption CLI documentation and exemption structure.
+- Policy Insights identified the actual Modify rule that forces
+  `Microsoft.Storage/storageAccounts/publicNetworkAccess` to `Disabled`.
+- Assignment: management-group `MCAPSGovDeployPolicies`; definition:
+  `StorageAccount_PublicNetwork_Modify`. The exact initiative reference is
+  `StorageAccountPublicNetworkModify` (Policy Insights lowercases it).
+- The definition's exclusion tag could affect other rules, so use a narrowly
+  reference-scoped policy exemption instead of tagging resources or disabling
+  the initiative. Other rules, including anonymous blob protection, stay active.
+- Current storage inventory: 10 accounts, including pre-existing and managed
+  accounts. The script snapshots their IDs before the first write and saves each
+  resulting exemption ID in config/environments.yml.
+- Added `infra/exempt_storage_policy.py`: idempotent, dry-run, fresh context
+  verification per write, no overwrites of unowned exemptions, no future-account
+  coverage, and exact scope/reference/category read-back.
+- Only the created demo storage account will have its network setting reapplied
+  after exemptions; no network settings on other storage accounts are changed.
+
+- Focused exemption/network tests: PASS (5 tests); Python compile-check: PASS.
+- `python infra/exempt_storage_policy.py --dry-run`: plan completed for the
+  approved existing 10-account snapshot, without writes. Dry-run does not
+  validate effective permissions.
+- `python infra/exempt_storage_policy.py`: partially applied, then stopped.
+- Created and verified `demo-storage-public-network` on account
+  `demoaasn0dv1901`. Its resource-scoped ID and exact single-rule reference are
+  persisted in config/environments.yml.
+- Next account `scaneastus2jqfxsge` in `managed-rg-kiwamfn` rejected the write
+  with `DenyAssignmentAuthorizationFailed`, despite the administrator having
+  normal policy-exemption write permission.
+- Platform deny assignment: name `e28e75fa-25df-413e-8a75-bdb2ee4a02fd`,
+  ID `e28e75fa25df413e8a75bdb2ee4a02fd`, scoped to that managed resource group.
+- Current result: 1/10 exemptions verified; 9 pending. No existing exemption,
+  deny assignment, initiative or storage network setting was changed by this run.
+- A supported managed-resource owner action or an approved scope exclusion is
+  required. Do not remove/bypass the platform deny assignment or create a
+  subscription-wide exemption that would cover unapproved future accounts.
+- Existing-account snapshots and partial exemption IDs are durable, so rerunning
+  can reuse the verified first exemption without duplicating it.
 - Step 1 has not started.
 
 - 2026-11-21T17:18:21+00:00: Created resource group `rg-demo-databricks` in `westeurope` with ownership tags.
@@ -334,3 +381,11 @@ continue Steps 2-9 in order.
 - 2026-11-21T18:39:06+00:00: Re-applied the demo-only public network setting with `az storage account update`.
 
 - 2026-11-21T18:55:22+00:00: Re-applied the demo-only public network setting with method `arm`.
+
+- 2026-11-21T19:20:04+00:00: Approved existing-account exemption snapshot: 10 accounts; no future accounts.
+
+- 2026-11-21T19:20:16+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demoaas-n0dv-1901/providers/Microsoft.Storage/storageAccounts/demoaasn0dv1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:20:25+00:00: Storage exemption blocked: az.CMD policy exemption create --name demo-storage-public-network --scope /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/managed-rg-kiwamfn/providers/Microsoft.Storage/storageAccounts/scaneastus2jqfxsge --policy-assignment /providers/Microsoft.Management/managementGroups/5c41223c-f1f5-4979-930f-d5f3c72353f9/providers/Microsoft.Authorization/policyAssignments/MCAPSGovDeployPolicies --exemption-category Waiver --display-name Demo storage public-network exception --description Approved existing-storage-account waiver for public network access only. --only-show-errors --output json --policy-definition-reference-ids @C:\Users\RISHAB~1\AppData\Local\Temp\demo-exemption-m8ofezu2\references.json --metadata @C:\Users\RISHAB~1\AppData\Local\Temp\demo-exemption-m8ofezu2\metadata.json failed (exit 1): ERROR: (DenyAssignmentAuthorizationFailed) The client 'admin@caldova30465160.onmicrosoft.com' with object id '341769a6-9b1d-422e-8080-a666d62dc21d' has permission to perform action 'Microsoft.Authorization/policyExemptions/write' on scope '/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/managed-rg-kiwamfn/providers/Microsoft.Storage/storageAccounts/scaneastus2jqfxsge/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network'; however, the access is denied because of the deny assignment with name 'e28e75fa-25df-413e-8a75-bdb2ee4a02fd' and Id 'e28e75fa25df413e8a75bdb2ee4a02fd' at scope '/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourcegroups/managed-rg-kiwamfn'.
+Code: DenyAssignmentAuthorizationFailed
+Message: The client 'admin@caldova30465160.onmicrosoft.com' with object id '341769a6-9b1d-422e-8080-a666d62dc21d' has permission to perform action 'Microsoft.Authorization/policyExemptions/write' on scope '/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/managed-rg-kiwamfn/providers/Microsoft.Storage/storageAccounts/scaneastus2jqfxsge/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network'; however, the access is denied because of the deny assignment with name 'e28e75fa-25df-413e-8a75-bdb2ee4a02fd' and Id 'e28e75fa25df413e8a75bdb2ee4a02fd' at scope '/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourcegroups/managed-rg-kiwamfn'.
