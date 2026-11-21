@@ -7,6 +7,8 @@
 - [ ] Browser profiles, signed in and on the right page:
   - **P1 – Presenter (tenant A admin):** Fabric `DEMO-Analytics-Dev`, Databricks SQL editor, GitHub repo, SharePoint `DemoData/Forecasts/Dev/standard`.
   - **P2 – demo.north (tenant A, Viewer):** `RPT_Sales` in Prod, Teams with M365 Copilot.
+    `demo.north` is the persona label; sign in with the actual North UPN from
+    `config/environments.yml` when an existing licensed test account is reused.
   - **P3 – partner.user (tenant B):** Fabric `PARTNER-Inbound`.
 - [ ] VS Code open on `fabric-demo-platform`, branch `main`, terminal ready, Copilot Chat in agent mode.
 - [ ] Files ready: `seed/excel/live/forecast_2026-12_late.xlsx` on desktop.

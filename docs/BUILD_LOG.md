@@ -586,8 +586,8 @@ Message: The client 'admin@caldova30465160.onmicrosoft.com' with object id '3417
 
 ## 2026-11-21 - Step 2: Fabric tenant, workspaces and identities
 
-Status: infrastructure bootstrap complete on approved F8; completing OIDC access
-proof, then awaiting test-user licence allocation. Steps 3-9 have not started.
+Status: COMPLETE on explicitly approved F8. Domains, workspaces, roles, OIDC access
+and licensed viewer personas are verified. Commit before starting Step 3.
 
 - Step 1 completion commit `d5fdd0ba5e39b52b581da158952b7c582564bfa1` pushed
   and remote HEAD verified.
@@ -826,3 +826,35 @@ proof, then awaiting test-user licence allocation. Steps 3-9 have not started.
 - Dry-run and actual credential update passed; no new identities, credentials,
   passwords, licences or Azure resources were created.
 - Rerun the read-only OIDC proof before the licence-allocation checkpoint.
+
+- 2026-11-21T21:55:40+00:00: Step 2 Check: GitHub OIDC SP lists Test items PASS; `https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/44954014294`.
+
+- 2026-11-21T22:02:43+00:00: Selected existing licensed `north` viewer `aadik@Caldova30465160.onmicrosoft.com`: `65546fca-dad1-412b-8f87-4b6b83b84ccf`; licences/password unchanged.
+
+- 2026-11-21T22:02:43+00:00: Selected existing licensed `south` viewer `andrel@Caldova30465160.onmicrosoft.com`: `6de428d2-b6a8-42be-8ac2-7f700616576b`; licences/password unchanged.
+
+### Step 2 final checks and existing-user reuse
+
+- Actual OIDC rerun `44954014294` succeeded:
+  https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/44954014294.
+  The configured service principal authenticated through GitHub OIDC and listed
+  Test items; no Azure subscription role or client secret was required.
+- User explicitly chose existing E7 accounts instead of moving licences:
+  AadiK for the North persona and AndreL for the South persona.
+- Added and dry-ran `tools/select_test_users.py`; it verifies active Power BI Pro
+  and M365 Copilot service plans, rejects privileged Prod roles/opposite sales-group
+  membership, then adds only the approved sales-group memberships.
+- Actual selection passed: both accounts are licensed, non-privileged Prod viewers
+  through the corresponding existing Viewer groups.
+- No existing licences, passwords, account properties or prior memberships were
+  removed/changed. No licences purchased or reclaimed from other accounts.
+- Runtime persona UPNs/IDs are now in config/environments.yml. The originally
+  created demo.north/demo.south identities are retained under created_test_users
+  as unused, unlicensed accounts; no deletion or password reset was performed.
+- Entra bootstrap recognises explicitly reused accounts and will not recreate
+  them if they disappear.
+- Added two focused viewer-eligibility tests; targeted Fabric tests passed (16).
+- Step 2 Check: four workspaces on approved F8 PASS; exact domains/roles PASS;
+  GitHub OIDC SP access PASS; existing licensed viewer personas PASS.
+- Step 2 is complete; no outstanding licence allocation is required for the
+  selected personas. Continue Step 3 after committing/pushing this result.

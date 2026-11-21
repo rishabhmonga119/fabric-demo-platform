@@ -11,6 +11,7 @@ import http_api
 from bootstrap_entra import federation_subjects, has_membership
 from bootstrap_fabric import domain_role_plan, setting_proposal
 from check_demo_licenses import license_features
+from select_test_users import assert_viewer_eligible
 
 
 class FabricPaginationTests(unittest.TestCase):
@@ -161,6 +162,27 @@ class FederationSubjectTests(unittest.TestCase):
                 {"use_default": True, "use_immutable_subject": True,
                  "sub_claim_prefix": "repo:other@10/repo@20"}
             )
+
+
+class ViewerEligibilityTests(unittest.TestCase):
+    def test_viewer_role_is_valid_but_privileged_group_membership_is_rejected(self):
+        assignments = [
+            {"role": "Viewer", "principal": {"id": "sales", "type": "Group"}},
+            {"role": "Admin", "principal": {"id": "admins", "type": "Group"}},
+        ]
+        assert_viewer_eligible("test-user", assignments, {"sales"})
+        with self.assertRaisesRegex(RuntimeError, "bypasses OneLake security"):
+            assert_viewer_eligible("test-user", assignments, {"sales", "admins"})
+
+    def test_direct_privileged_or_entire_tenant_access_is_rejected(self):
+        for principal in (
+            {"id": "test-user", "type": "User"},
+            {"id": "tenant", "type": "EntireTenant"},
+        ):
+            with self.subTest(principal=principal), self.assertRaises(RuntimeError):
+                assert_viewer_eligible(
+                    "test-user", [{"role": "Contributor", "principal": principal}], set()
+                )
 
 
 if __name__ == "__main__":

@@ -202,6 +202,8 @@ def main() -> None:
         users = objects("users", "userPrincipalName", user_config["upn"],
                         "id,userPrincipalName,accountEnabled")
         user = unique(users, "userPrincipalName", user_config["upn"])
+        if user is None and user_config.get("reuse_existing") is True:
+            raise ContextError("Explicitly reused account is missing; it will not be recreated.")
         if user:
             if user_config["id"] != user["id"] or user["accountEnabled"] is not True:
                 raise ContextError(f"STOP: existing user {user_config['upn']} is unowned or disabled.")

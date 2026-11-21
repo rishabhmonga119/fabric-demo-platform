@@ -132,6 +132,12 @@ granting Azure subscription roles or using a client secret.
 The Entra bootstrap discovers GitHub's current OIDC subject prefix (including
 immutable owner/repository IDs where enabled) instead of assuming legacy subjects.
 
+Existing licensed test accounts can be selected with
+`tools/select_test_users.py --north <UPN> --south <UPN> --dry-run`, then without
+`--dry-run`. It verifies licence capabilities and rejects privileged Prod access,
+changes only the corresponding sales-group memberships, and records runtime
+personas. Existing licences/passwords are not moved or reset.
+
 `tools/check_demo_licenses.py --dry-run` checks actual service-plan capabilities
 for the presenter and demo users. Licence purchases/reallocation and initial
 password resets remain human checkpoints; secrets must never be saved here.

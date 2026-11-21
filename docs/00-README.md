@@ -113,6 +113,11 @@ GitHub repo fabric-demo-platform:
 
 Customer branding (company name, product names, language of report titles) comes from `config/demo_profile.yml` and the seed data only.
 
+`demo.north` / `demo.south` are logical demo personas and default account names.
+Existing licensed test accounts may be reused instead; the actual UPNs and IDs
+come from `config/environments.yml` (`entra.users.north` / `entra.users.south`).
+They must remain non-privileged Viewers in Prod to test OneLake security.
+
 ---
 
 ## 4. Prerequisites checklist

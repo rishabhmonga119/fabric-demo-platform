@@ -133,6 +133,11 @@ Support --dry-run. Read capacity id and group object IDs from config.
      `tools/bootstrap_entra.py` verifies the current prefix and records it in
      `config/environments.yml`; it updates only this build's recorded credentials.
 2. Users `demo.north`, `demo.south` → groups `SG-Demo-Sales-North` / `-South`; licences: M365 Copilot + Power BI Pro.
+   - Alternatively, reuse two existing licensed test accounts with
+     `tools/select_test_users.py --north <UPN> --south <UPN> --dry-run`, then
+     without `--dry-run`. The script verifies licences and non-privileged Prod
+     access, adds only sales-group memberships, and records the runtime UPNs.
+     It does not move licences, change passwords or delete existing accounts.
 
 **Check:** `fab ls` shows 4 workspaces on the F4 capacity; SP can list items in Test via a token from `az login --service-principal` (or a quick OIDC test workflow).
 

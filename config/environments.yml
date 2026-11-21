@@ -99,6 +99,11 @@ github:
   owner_id: 23618963
   repository_id: 1466744419
   oidc_subject_prefix: repo:rishabhmonga119@23618963/fabric-demo-platform@1466744419
+  oidc_check:
+    run_id: 44954014294
+    url: https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/44954014294
+    commit: 9d8d7c3a5781e1ccf1adc36f0b4989dae288dd15
+    result: success
 entra:
   application:
     name: sp-fabric-demo-cicd
@@ -123,6 +128,15 @@ entra:
       name: SG-Demo-Sales-South
       id: 199f4419-549f-4f29-9e4a-33a25afc0a36
   users:
+    north:
+      id: 65546fca-dad1-412b-8f87-4b6b83b84ccf
+      upn: aadik@Caldova30465160.onmicrosoft.com
+      reuse_existing: true
+    south:
+      id: 6de428d2-b6a8-42be-8ac2-7f700616576b
+      upn: andrel@Caldova30465160.onmicrosoft.com
+      reuse_existing: true
+  created_test_users:
     north:
       upn: demo.north@Caldova30465160.onmicrosoft.com
       id: 62edf9fe-1ae2-46de-bda8-6bede313c3f5
