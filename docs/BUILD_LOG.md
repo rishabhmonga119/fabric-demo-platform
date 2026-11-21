@@ -243,6 +243,10 @@ continue Steps 2-9 in order.
   "provision guarded Azure infrastructure and record blocked checks"`, explicit
   changed paths, fresh context checks, co-author trailer and verified push.
   This is a blocked checkpoint commit, not a claim that Step 1 is complete.
+- Checkpoint commit `047fa13c9890b321fb0902a62f36c919459121a0` pushed:
+  PASS; remote `main` equals local HEAD. Worktree was clean after the push.
+- Updating this log with the verified checkpoint commit before requesting the
+  human action; the log-only update is committed separately.
 - Step 1 has not started.
 
 - 2026-11-21T17:18:21+00:00: Created resource group `rg-demo-databricks` in `westeurope` with ownership tags.
