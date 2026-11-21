@@ -73,5 +73,18 @@ It snapshots only the existing storage accounts in the verified subscription
 and creates a separate, resource-scoped exemption for the public-network rule.
 Other security rules, storage settings and future accounts are not exempted.
 
+Unity Catalog setup continues with:
+
+```powershell
+.\.venv\Scripts\python.exe .\tools\bootstrap_databricks.py --dry-run
+.\.venv\Scripts\python.exe .\tools\bootstrap_databricks.py
+```
+
+Enabling external data access requires metastore-administrator privileges;
+workspace-administrator privileges alone are insufficient. The script changes
+that existing flag only after the recorded explicit approval. It then creates
+owned credentials, per-stage managed locations/catalogs/schemas and grants.
+File events stay disabled to avoid additional queue/Event Grid resources.
+
 Do not start Step 2 until Unity Catalog, external-access grants and storage
 checks pass. An ARM deployment marked `Succeeded` alone is not a completed step.

@@ -99,8 +99,8 @@ No cloud resources created or modified.
 
 ## 2026-11-21 - Step 1: Azure Databricks infrastructure
 
-Status: BLOCKED after Azure provisioning. Step 1 is not complete; Steps 2-9
-have not started.
+Status: BLOCKED awaiting a metastore administrator to enable external data access.
+Azure and storage checks now pass. Step 1 is not complete; Steps 2-9 have not started.
 
 - Read official Microsoft Learn resource schemas for storage accounts and
   containers (2023-05-01), access connectors (2023-05-01), role assignments
@@ -354,6 +354,36 @@ continue Steps 2-9 in order.
   `publicNetworkAccess=Enabled`; anonymous blob access remains disabled.
   No other account's network configuration was changed.
 - Storage exception subtask is complete. Continue Unity Catalog setup in Step 1.
+- Storage-exception completion commit `dbb975842cab30d94337887c9fa2ecca6402e9e1`
+  pushed and verified; the approved scope has 9 exemptions and 1 protected exclusion.
+
+### Unity Catalog setup and administrator checkpoint
+
+- Added `tools/bootstrap_databricks.py`, using the documented Databricks API
+  schemas and Azure CLI authentication. It gates the existing metastore flag on
+  explicit approval, refuses to overwrite unowned UC objects, keeps per-stage
+  managed storage locations separate, and disables file events.
+- Read official storage-credential, external-location, catalog, schema, grants
+  and metastore API references; exact reference URLs are cited in the script.
+- Python compile-check and `bootstrap_databricks.py --dry-run`: PASS.
+  Dry-run printed the planned payloads without changing settings, IDs or data.
+- `bootstrap_databricks.py`: stopped at its first Databricks write, the approved
+  external-access flag. Error:
+  `User is not a metastore admin for Metastore 'metastore_azure_northeurope'.`
+- No credential, external location, catalog, schema, table or compute was created
+  by the failed UC bootstrap. The flag remains disabled.
+- No metastore ownership, owner-group membership or permissions were changed;
+  approval to change the flag is not approval to grant ourselves administrator access.
+- Human action: have a metastore administrator enable **External data access**
+  for metastore `63247cf6-7207-4507-8329-1310ece4d4e7` (name
+  `metastore_azure_northeurope`) in Catalog -> gear -> Metastore -> Details.
+  Then reply `done`; contexts and the actual flag will be rechecked before continuing.
+- Step 1 Check: Azure Premium workspace, HNS/private containers, access connector
+  grant and public endpoint PASS; metastore external access, explicit gold grants
+  and first-table `__unitystorage` verification remain BLOCKED.
+- Read GA SQL warehouse/Statement Execution references for the future first-table
+  probe. Do not use Statement Execution v2 for this probe: it is Lakehouse//RT-only.
+  No warehouse was created or started. The auto-provisioned starter stays untouched.
 
 - 2026-11-21T17:18:21+00:00: Created resource group `rg-demo-databricks` in `westeurope` with ownership tags.
 
@@ -432,3 +462,7 @@ Message: The client 'admin@caldova30465160.onmicrosoft.com' with object id '3417
 - 2026-11-21T19:28:33+00:00: Re-applied the demo-only public network setting with method `arm`.
 
 - 2026-11-21T19:28:33+00:00: Storage network verification: PASS (public endpoint enabled; anonymous blobs disabled).
+
+- 2026-11-21T19:37:54+00:00: Storage network verification: PASS (public endpoint enabled; anonymous blobs disabled).
+
+- 2026-11-21T19:38:13+00:00: Databricks bootstrap blocked: databricks.exe api patch /api/2.1/unity-catalog/metastores/63247cf6-7207-4507-8329-1310ece4d4e7 --output json --json @C:\Users\RISHAB~1\AppData\Local\Temp\demo-databricks-body-heq_j0p1\body.json failed (exit 1): Error: User is not a metastore admin for Metastore 'metastore_azure_northeurope'.
