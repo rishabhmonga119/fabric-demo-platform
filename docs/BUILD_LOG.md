@@ -247,6 +247,46 @@ continue Steps 2-9 in order.
   PASS; remote `main` equals local HEAD. Worktree was clean after the push.
 - Updating this log with the verified checkpoint commit before requesting the
   human action; the log-only update is committed separately.
+
+### First-launch checkpoint completed
+
+- User replied `done` to the first interactive launch checkpoint.
+- `python tools/check_databricks.py --dry-run`: PASS for all three contexts
+  and Databricks identity `admin@caldova30465160.onmicrosoft.com`.
+- Unity Catalog assignment confirmed: workspace `7405618307807698`,
+  metastore `63247cf6-7207-4507-8329-1310ece4d4e7`,
+  default catalog `dbw_demo`, metastore name `metastore_azure_northeurope`.
+- Metastore `external_access_enabled` is false. It was automatically provisioned,
+  not explicitly created by this script; request approval before changing it.
+- Auto-provisioned `Serverless Starter Warehouse` ID `8cf2dc575a41aa17` is
+  STOPPED, serverless, auto-stop 10 minutes. It is not modified or started.
+  Any compute created by this automation must have the requested 15-minute
+  auto-stop setting.
+- Added the official ARM PATCH alternative for storage network repair
+  (`--network-method arm`); payload is limited to `publicNetworkAccess=Enabled`.
+  It uses a temporary non-secret body file and verifies the resulting state.
+
+### Remaining Step 1 checkpoint
+
+- `python -m unittest discover -s tests -p test_infra.py -v`: PASS (3 network
+  safety tests before the ARM diagnostic).
+- `infra/deploy.ps1 --repair-network-only --network-method arm --dry-run`: PASS.
+- `infra/deploy.ps1 --repair-network-only --network-method arm`: PATCH completed,
+  but exact read-back is still `publicNetworkAccess=Disabled`,
+  `allowBlobPublicAccess=False`; check FAIL.
+- Three distinct implementations now leave the required public endpoint
+  disabled: Bicep deployment, storage CLI update, and direct ARM PATCH.
+  Stop rather than retrying again or bypassing any policy.
+- Databricks workspace API access is now PASS after the user's first launch.
+- Human action: verify/save public network access for the created demo storage
+  account in Azure portal (or report a policy/error if it cannot remain enabled).
+  Keep anonymous blob access disabled; do not disable an organisation policy.
+- Human authorisation: approve changing only `external_access_enabled` on the
+  automatically provisioned metastore `63247cf6-7207-4507-8329-1310ece4d4e7`.
+  The script will perform the documented CLI change after explicit approval;
+  no existing metastore setting has been changed yet.
+- No catalog/schema/table or compute created by this automation; starter
+  warehouse remains untouched. Step 1 stays BLOCKED and Steps 2-9 are pending.
 - Step 1 has not started.
 
 - 2026-11-21T17:18:21+00:00: Created resource group `rg-demo-databricks` in `westeurope` with ownership tags.
@@ -292,3 +332,5 @@ continue Steps 2-9 in order.
 - 2026-11-21T17:28:28+00:00: Azure deployment: PASS. Unity Catalog configuration/checks still pending.
 
 - 2026-11-21T18:39:06+00:00: Re-applied the demo-only public network setting with `az storage account update`.
+
+- 2026-11-21T18:55:22+00:00: Re-applied the demo-only public network setting with method `arm`.

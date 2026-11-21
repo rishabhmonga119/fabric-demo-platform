@@ -52,6 +52,16 @@ class NetworkGuardTests(unittest.TestCase):
                 self.assertTrue(mutate.call_args.args[1])
                 deploy.record.assert_not_called()
 
+    def test_arm_dry_run_does_not_create_a_payload_file(self):
+        storage = copy.deepcopy(STORAGE)
+        storage["id"] = "/subscriptions/demo/resourceGroups/demo/providers/Microsoft.Storage/storageAccounts/demo"
+        with patch.object(deploy, "run", return_value=json.dumps(storage)):
+            with patch.object(deploy, "mutate") as mutate:
+                with patch.object(deploy.tempfile, "TemporaryDirectory") as temporary:
+                    deploy.ensure_storage_network(CONFIG, dry_run=True, method="arm")
+                    temporary.assert_not_called()
+                    self.assertTrue(mutate.call_args.kwargs["dry_run"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
+import tempfile
 import time
 
 import yaml
@@ -29,7 +30,9 @@ def save_config(config: dict) -> None:
         yaml.safe_dump(config, target, sort_keys=False)
 
 
-def ensure_storage_network(config: dict, dry_run: bool = False) -> None:
+def ensure_storage_network(
+    config: dict, dry_run: bool = False, method: str = "cli"
+) -> None:
     azure = config["azure"]
     if not azure["storage_account_name"]:
         raise ContextError("Storage account has not been deployed yet.")
@@ -48,13 +51,35 @@ def ensure_storage_network(config: dict, dry_run: bool = False) -> None:
             "--name", azure["storage_account_name"], "--public-network-access", "Enabled",
             "--only-show-errors", "--output", "json"
         ]
-        # Official CLI help: az storage account update --help, --public-network-access.
-        mutate(update, dry_run)
+        if method == "arm":
+            # https://learn.microsoft.com/rest/api/storagerp/storage-accounts/update?view=rest-storagerp-2023-05-01
+            payload = {"properties": {"publicNetworkAccess": "Enabled"}}
+            update = [
+                az, "rest", "--method", "patch", "--url",
+                f"https://management.azure.com{storage['id']}?api-version=2023-05-01",
+                "--only-show-errors", "--output", "json"
+            ]
+            if dry_run:
+                mutate([*update, "--body", json.dumps(payload)], dry_run=True)
+            else:
+                with tempfile.TemporaryDirectory(prefix="demo-network-") as directory:
+                    body = Path(directory) / "body.json"
+                    body.write_text(json.dumps(payload), encoding="utf-8")
+                    mutate([*update, "--body", f"@{body}"])
+        else:
+            # Official CLI help: az storage account update --help, --public-network-access.
+            mutate(update, dry_run)
         if dry_run:
             return
         storage = json.loads(run(command))
-        record("Re-applied the demo-only public network setting with `az storage account update`.")
+        record(f"Re-applied the demo-only public network setting with method `{method}`.")
     if storage["publicNetworkAccess"] != "Enabled" or storage["allowBlobPublicAccess"] is not False:
+        if not dry_run:
+            record(
+                "Storage network check FAILED: "
+                f"publicNetworkAccess={storage['publicNetworkAccess']}, "
+                f"allowBlobPublicAccess={storage['allowBlobPublicAccess']}."
+            )
         raise RuntimeError(
             "Storage network verification failed: expected publicNetworkAccess=Enabled "
             f"and allowBlobPublicAccess=False; got {storage['publicNetworkAccess']} "
@@ -71,6 +96,8 @@ def main() -> None:
     parser.add_argument("--region", help="Override the configured deployment region.")
     parser.add_argument("--repair-network-only", action="store_true",
                         help="Verify/reapply the demo storage network setting without redeploying.")
+    parser.add_argument("--network-method", choices=("cli", "arm"), default="cli",
+                        help="Documented storage update implementation for network repair.")
     args = parser.parse_args()
     verify_context()
     config = load_config()
@@ -109,7 +136,7 @@ def main() -> None:
     if not exists and read("group", "exists", "--name", managed_group):
         raise ContextError(f"STOP: managed resource group {managed_group} already exists.")
     if args.repair_network_only:
-        ensure_storage_network(config, args.dry_run)
+        ensure_storage_network(config, args.dry_run, args.network_method)
         return
     parameters = [
         f"location={azure['region']}",

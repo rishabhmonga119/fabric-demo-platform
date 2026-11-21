@@ -15,6 +15,8 @@ azure:
   storage_account_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Storage/storageAccounts/stdemolakenzskwyvxcpeuk
   access_connector_principal_id: bc435bde-5ec3-4da6-bb00-6dca87807b91
   managed_resource_group_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks-managed
+  databricks_metastore_id: 63247cf6-7207-4507-8329-1310ece4d4e7
+  databricks_starter_warehouse_id: 8cf2dc575a41aa17
 fabric:
   capacity_id: null
   capacity_sku: F4

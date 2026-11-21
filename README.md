@@ -63,6 +63,9 @@ The read-only `--rest` diagnostic on `check_databricks.py` bypasses SDK tenant
 discovery. `deploy.ps1 --repair-network-only --dry-run` previews reapplying the
 required public storage endpoint without redeploying infrastructure; anonymous
 blob access must remain disabled.
+The documented direct ARM alternative is
+`deploy.ps1 --repair-network-only --network-method arm`; it has the same
+ownership, context, dry-run and exact read-back checks.
 
 Do not start Step 2 until Unity Catalog, external-access grants and storage
 checks pass. An ARM deployment marked `Succeeded` alone is not a completed step.
