@@ -586,8 +586,8 @@ Message: The client 'admin@caldova30465160.onmicrosoft.com' with object id '3417
 
 ## 2026-11-21 - Step 2: Fabric tenant, workspaces and identities
 
-Status: read-only preflight complete; awaiting governance/scope approval before
-overwriting existing tenant-setting scopes or creating domains.
+Status: BLOCKED by capacity SKU mismatch. Entra identities/OIDC are complete;
+configured existing capacity now reports F8, but the approved guardrail remains F4.
 
 - Step 1 completion commit `d5fdd0ba5e39b52b581da158952b7c582564bfa1` pushed
   and remote HEAD verified.
@@ -624,5 +624,79 @@ overwriting existing tenant-setting scopes or creating domains.
 - Before creating domains, the skill requires explicit choices for owner,
   description, default sensitivity label (or conscious skip), and contributor scope.
   Proposed owner/contributor group for both domains: SG-Demo-Fabric-Admins.
-- No Entra identities, domains or workspaces have yet been created in Step 2.
-  Steps 3-9 remain pending.
+- At the preflight checkpoint, no Step 2 cloud objects had been created.
+  Subsequent results and changes are recorded below; Steps 3-9 remain pending.
+
+- 2026-11-21T21:00:17+00:00: Verified security group `SG-Demo-Fabric-Admins`: `c3e74838-ac5e-4541-963a-d9dd63f333ff`.
+
+- 2026-11-21T21:00:25+00:00: Verified security group `SG-Demo-Fabric-API`: `4644c7fa-fc3a-43d0-a29d-d65f5f7b7305`.
+
+- 2026-11-21T21:00:34+00:00: Verified security group `SG-Demo-Sales-North`: `ad4dc1e3-8180-4f7f-98fa-1134f37cc239`.
+
+- 2026-11-21T21:00:42+00:00: Verified security group `SG-Demo-Sales-South`: `199f4419-549f-4f29-9e4a-33a25afc0a36`.
+
+- 2026-11-21T21:01:00+00:00: Verified CI/CD application `sp-fabric-demo-cicd` and SP `e4234475-0f90-44c2-b256-20ce1b6c7614`.
+
+- 2026-11-21T21:01:09+00:00: Verified OIDC credential `github-test`: `e9cb629f-3d30-4794-94b6-ff9adc47dde5`; subject `repo:rishabhmonga119/fabric-demo-platform:environment:test`.
+
+- 2026-11-21T21:01:15+00:00: Verified OIDC credential `github-prod`: `059e40c1-f4e4-4468-9646-e05a15489cc6`; subject `repo:rishabhmonga119/fabric-demo-platform:environment:prod`.
+
+- 2026-11-21T21:01:22+00:00: Verified OIDC credential `github-main`: `7bb1ec3a-a212-45b6-aa1d-02403daea726`; subject `repo:rishabhmonga119/fabric-demo-platform:ref:refs/heads/main`.
+
+- 2026-11-21T21:01:35+00:00: Entra bootstrap blocked: Group membership read-back failed.
+
+- 2026-11-21T21:04:13+00:00: Verified security group `SG-Demo-Fabric-Admins`: `c3e74838-ac5e-4541-963a-d9dd63f333ff`.
+
+- 2026-11-21T21:04:15+00:00: Verified security group `SG-Demo-Fabric-API`: `4644c7fa-fc3a-43d0-a29d-d65f5f7b7305`.
+
+- 2026-11-21T21:04:16+00:00: Verified security group `SG-Demo-Sales-North`: `ad4dc1e3-8180-4f7f-98fa-1134f37cc239`.
+
+- 2026-11-21T21:04:18+00:00: Verified security group `SG-Demo-Sales-South`: `199f4419-549f-4f29-9e4a-33a25afc0a36`.
+
+- 2026-11-21T21:04:21+00:00: Verified CI/CD application `sp-fabric-demo-cicd` and SP `e4234475-0f90-44c2-b256-20ce1b6c7614`.
+
+- 2026-11-21T21:04:23+00:00: Verified OIDC credential `github-test`: `e9cb629f-3d30-4794-94b6-ff9adc47dde5`; subject `repo:rishabhmonga119/fabric-demo-platform:environment:test`.
+
+- 2026-11-21T21:04:23+00:00: Verified OIDC credential `github-prod`: `059e40c1-f4e4-4468-9646-e05a15489cc6`; subject `repo:rishabhmonga119/fabric-demo-platform:environment:prod`.
+
+- 2026-11-21T21:04:23+00:00: Verified OIDC credential `github-main`: `7bb1ec3a-a212-45b6-aa1d-02403daea726`; subject `repo:rishabhmonga119/fabric-demo-platform:ref:refs/heads/main`.
+
+- 2026-11-21T21:05:16+00:00: Verified test user `demo.north@Caldova30465160.onmicrosoft.com`: `62edf9fe-1ae2-46de-bda8-6bede313c3f5`; password not stored; licences pending.
+
+- 2026-11-21T21:05:45+00:00: Verified test user `demo.south@Caldova30465160.onmicrosoft.com`: `b642d835-0e39-48cb-8ebe-a4fdd90320ca`; password not stored; licences pending.
+
+- 2026-11-21T21:09:31+00:00: Fabric bootstrap blocked: Configured F4 capacity is not visible and Active; never substitute or resize.
+
+### Approved governance and Entra results
+
+- User approved preserving already-enabled tenant-setting scopes, the two
+  suggested domain descriptions, SG-Demo-Fabric-Admins as owner/contributor,
+  and explicitly skipping default sensitivity labels for this synthetic demo.
+  Choices were stored in config/environments.yml.
+- Added `tools/http_api.py` for AzureCliCredential-authenticated Graph/Fabric
+  requests: context before writes, fixed authenticated origins, no credential
+  redirects or request-body logging, bounded retries, and no success claim on 202.
+- Added and dry-ran `tools/bootstrap_entra.py` using official Graph schemas.
+- Created four owned security groups, sp-fabric-demo-cicd application/SP,
+  and three GitHub OIDC federated credentials. All non-secret IDs are persisted.
+- Initial membership verification exposed the documented Graph v1.0 issue:
+  service principals are omitted from group member listings. Replaced it with
+  documented directoryObject/checkMemberGroups, with explicit response validation.
+- Retried idempotently: groups/application/credentials reused, memberships
+  verified, and demo.north/demo.south created and added to their sales groups.
+- Initial user passwords were generated only in memory, transmitted to Graph,
+  never printed or stored. Reset through Entra before first use; licences pending.
+- Added `tools/bootstrap_fabric.py` for approved missing tenant settings, complete
+  domain governance and four workspaces created directly on the existing capacity.
+  Existing enabled scopes and conflicting/unowned objects are preserved.
+- API/Graph membership/tenant-scope tests passed (9 targeted tests).
+- Fabric dry-run stopped at the capacity guard before any Fabric writes:
+  capacity 5332e7ad-fe3b-4c0b-a1b7-3f1975e7b2dd now reports F8, Active.
+- Both the direct authenticated API client and CLI preflight confirmed F8.
+  Previously it was F4. No capacity resize was performed by this automation.
+- Another visible F4, capacityswedencentral, is Inactive; it was not substituted
+  or resumed.
+- No demo domains/workspaces or tenant-setting changes were made in this run.
+- Human decision required: restore the selected shared capacity to F4, or
+  explicitly revise the cost guardrail to allow the already-existing F8.
+  Do not overwrite the capacity's externally changed SKU without approval.

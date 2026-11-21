@@ -109,5 +109,19 @@ settings with installed Skills for Fabric references. It never creates or resize
 a capacity, and no settings are changed until existing scopes and domain
 governance choices are explicitly approved.
 
+After approval, run the idempotent identity and Fabric bootstraps:
+
+```powershell
+.\.venv\Scripts\python.exe .\tools\bootstrap_entra.py --dry-run
+.\.venv\Scripts\python.exe .\tools\bootstrap_entra.py
+.\.venv\Scripts\python.exe .\tools\bootstrap_fabric.py --dry-run
+.\.venv\Scripts\python.exe .\tools\bootstrap_fabric.py
+```
+
+OIDC uses federated credentials, not a client secret. Test-user passwords are
+generated only in memory and must be reset in Entra before use; never store them.
+The Fabric bootstrap preserves existing enabled tenant scopes, verifies exact
+domain/workspace roles, and stops if the selected capacity is no longer F4.
+
 Do not start Step 2 until Unity Catalog, external-access grants and storage
 checks pass. An ARM deployment marked `Succeeded` alone is not a completed step.

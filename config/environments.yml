@@ -64,13 +64,22 @@ fabric:
   capacity_sku: F4
   capacity_name: capacityswitzerlandnorth
   capacity_region: Switzerland North
+  governance_approved: true
+  tenant_settings_scope: preserve-enabled
+  sensitivity_label_skipped: true
   domains:
     analytics:
       name: Demo Analytics
       id: null
+      description: Synthetic beverage analytics across Dev, Test and Prod.
+      administrator_group: SG-Demo-Fabric-Admins
+      contributor_group: SG-Demo-Fabric-Admins
     partners:
       name: Demo Partners
       id: null
+      description: Partner-specific datasets and demo cross-tenant sharing.
+      administrator_group: SG-Demo-Fabric-Admins
+      contributor_group: SG-Demo-Fabric-Admins
   connections:
     databricks:
       name: conn-dbw-demo
@@ -86,29 +95,33 @@ github:
 entra:
   application:
     name: sp-fabric-demo-cicd
-    client_id: null
-    object_id: null
-    service_principal_id: null
+    client_id: 4d3bdf19-e671-4e5a-b2cb-b2b0098a5d89
+    object_id: 816b2ee3-a360-4433-a789-1c1fc0be1db6
+    service_principal_id: e4234475-0f90-44c2-b256-20ce1b6c7614
+    federated_credential_ids:
+      github-test: e9cb629f-3d30-4794-94b6-ff9adc47dde5
+      github-prod: 059e40c1-f4e4-4468-9646-e05a15489cc6
+      github-main: 7bb1ec3a-a212-45b6-aa1d-02403daea726
   groups:
     admins:
       name: SG-Demo-Fabric-Admins
-      id: null
+      id: c3e74838-ac5e-4541-963a-d9dd63f333ff
     api:
       name: SG-Demo-Fabric-API
-      id: null
+      id: 4644c7fa-fc3a-43d0-a29d-d65f5f7b7305
     sales_north:
       name: SG-Demo-Sales-North
-      id: null
+      id: ad4dc1e3-8180-4f7f-98fa-1134f37cc239
     sales_south:
       name: SG-Demo-Sales-South
-      id: null
+      id: 199f4419-549f-4f29-9e4a-33a25afc0a36
   users:
     north:
       upn: demo.north@Caldova30465160.onmicrosoft.com
-      id: null
+      id: 62edf9fe-1ae2-46de-bda8-6bede313c3f5
     south:
       upn: demo.south@Caldova30465160.onmicrosoft.com
-      id: null
+      id: b642d835-0e39-48cb-8ebe-a4fdd90320ca
 sharepoint:
   site_name: DemoData
   site_id: null
