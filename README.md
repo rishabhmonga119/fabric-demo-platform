@@ -86,5 +86,17 @@ that existing flag only after the recorded explicit approval. It then creates
 owned credentials, per-stage managed locations/catalogs/schemas and grants.
 File events stay disabled to avoid additional queue/Event Grid resources.
 
+Complete Step 1's physical-storage and SQL-grant checks with:
+
+```powershell
+.\.venv\Scripts\python.exe .\tools\check_managed_storage.py --dry-run
+.\.venv\Scripts\python.exe .\tools\check_managed_storage.py
+```
+
+This creates one-row bronze infrastructure probes per stage and verifies their
+actual files under each container's `__unitystorage` path. Its owned serverless
+2X-Small warehouse is limited to one cluster, auto-stops after 15 minutes, and
+is explicitly stopped after verification. The starter warehouse is untouched.
+
 Do not start Step 2 until Unity Catalog, external-access grants and storage
 checks pass. An ARM deployment marked `Succeeded` alone is not a completed step.

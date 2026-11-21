@@ -14,6 +14,14 @@ sys.path.insert(0, str(ROOT))
 from infra.deploy import ensure_storage_network, record, save_config
 
 
+def explicit_privileges(response: dict, principal: str) -> set[str]:
+    privileges = set()
+    for assignment in response.get("privilege_assignments", []):
+        if assignment["principal"].casefold() == principal.casefold():
+            privileges.update(assignment["privileges"])
+    return privileges
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
@@ -137,19 +145,15 @@ def main() -> None:
                 missing = privileges
             else:
                 grants = read("grants", "get", kind, name, "--principal", principal)
-                assigned = set()
-                for grant in grants["privilege_assignments"]:
-                    if grant["principal"].casefold() == principal.casefold():
-                        assigned.update(grant["privileges"])
+                assigned = explicit_privileges(grants, principal)
                 missing = [privilege for privilege in privileges if privilege not in assigned]
             if missing:
                 write("patch", f"/api/2.1/unity-catalog/permissions/{kind}/{name}",
                       {"changes": [{"principal": principal, "add": missing}]})
         if not args.dry_run:
             grants = read("grants", "get", "schema", f"{catalog_name}.gold", "--principal", principal)
-            if not any("EXTERNAL_USE_SCHEMA" in grant["privileges"]
-                       for grant in grants["privilege_assignments"]
-                       if grant["principal"].casefold() == principal.casefold()):
+            if "EXTERNAL_USE_SCHEMA" not in explicit_privileges(grants, principal):
+                record(f"Explicit EXTERNAL USE SCHEMA on `{catalog_name}.gold`: FAILED.")
                 raise RuntimeError(f"Explicit EXTERNAL USE SCHEMA check failed: {catalog_name}.gold")
             record(f"Explicit EXTERNAL USE SCHEMA on `{catalog_name}.gold`: PASS.")
 

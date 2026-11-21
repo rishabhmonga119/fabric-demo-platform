@@ -99,8 +99,8 @@ No cloud resources created or modified.
 
 ## 2026-11-21 - Step 1: Azure Databricks infrastructure
 
-Status: BLOCKED awaiting a metastore administrator to enable external data access.
-Azure and storage checks now pass. Step 1 is not complete; Steps 2-9 have not started.
+Status: COMPLETE. Azure, external-access, explicit grants and physical managed-storage
+checks passed for Dev, Test and Prod. The owned verification warehouse is stopped.
 
 - Read official Microsoft Learn resource schemas for storage accounts and
   containers (2023-05-01), access connectors (2023-05-01), role assignments
@@ -384,6 +384,33 @@ continue Steps 2-9 in order.
 - Read GA SQL warehouse/Statement Execution references for the future first-table
   probe. Do not use Statement Execution v2 for this probe: it is Lakehouse//RT-only.
   No warehouse was created or started. The auto-provisioned starter stays untouched.
+- User enabled external data access; the read-only Databricks preflight confirmed
+  `external_access_enabled=true` and all three required authentication contexts.
+- Resumed UC bootstrap created `sc_demo`, `el_uc_dev|test|prod`,
+  `demo_dev|demo_test|demo_prod`, and each catalog's bronze/silver/gold schemas.
+  Managed locations use the stage's own `uc-<stage>` container. File events remain off.
+- First resumed run stopped on an empty grants response: Databricks CLI returns
+  `{}` when no explicit grants exist. Added focused handling that treats missing
+  assignments as no explicit privileges, then adds the required grants.
+- Fixed bootstrap rerun reused owned existing resources and completed all stages.
+  Explicit `EXTERNAL_USE_SCHEMA`, `USE_SCHEMA`, `SELECT` and `USE_CATALOG`
+  were read back successfully; no other principals' grants were used as a proxy.
+- Added `tools/check_managed_storage.py`, using documented GA warehouse and
+  Statement Execution APIs. It uses one owned serverless 2X-Small warehouse,
+  min/max 1, auto-stop 15 minutes, and never starts the existing starter warehouse.
+- Verification warehouse `wh-demo-bootstrap` ID `56f680445ba7585a` was created.
+- Created a one-row `bronze.bootstrap_probe` Delta table in each stage.
+  These are infrastructure probes, not business seed data.
+- Each probe was read successfully with the correct stage marker and count 1.
+  `DESCRIBE DETAIL` confirmed Delta format, at least one physical data file, and
+  a location under the correct container's `__unitystorage` path.
+- Actual SQL `SHOW GRANTS ON SCHEMA demo_<stage>.gold` lists EXTERNAL USE SCHEMA.
+- The verification script stopped the owned warehouse and polled until STOPPED.
+  Starter warehouse unchanged; Fabric F4 unchanged; no other Azure resources created.
+- Probe IDs/locations and warehouse ID were persisted in config/environments.yml.
+- Four focused Databricks grant/result-shape/compute-guard tests passed.
+- Step 1 Check: PASS for Dev, Test and Prod. Commit and push the completed step
+  before starting Step 2.
 
 - 2026-11-21T17:18:21+00:00: Created resource group `rg-demo-databricks` in `westeurope` with ownership tags.
 
@@ -466,3 +493,93 @@ Message: The client 'admin@caldova30465160.onmicrosoft.com' with object id '3417
 - 2026-11-21T19:37:54+00:00: Storage network verification: PASS (public endpoint enabled; anonymous blobs disabled).
 
 - 2026-11-21T19:38:13+00:00: Databricks bootstrap blocked: databricks.exe api patch /api/2.1/unity-catalog/metastores/63247cf6-7207-4507-8329-1310ece4d4e7 --output json --json @C:\Users\RISHAB~1\AppData\Local\Temp\demo-databricks-body-heq_j0p1\body.json failed (exit 1): Error: User is not a metastore admin for Metastore 'metastore_azure_northeurope'.
+
+- 2026-11-21T19:54:29+00:00: Storage network verification: PASS (public endpoint enabled; anonymous blobs disabled).
+
+- 2026-11-21T19:54:59+00:00: Databricks `POST /api/2.1/unity-catalog/storage-credentials`: completed.
+
+- 2026-11-21T19:55:25+00:00: Databricks `POST /api/2.1/unity-catalog/external-locations`: completed.
+
+- 2026-11-21T19:55:38+00:00: Databricks `POST /api/2.1/unity-catalog/catalogs`: completed.
+
+- 2026-11-21T19:55:52+00:00: Databricks `POST /api/2.1/unity-catalog/schemas`: completed.
+
+- 2026-11-21T19:56:02+00:00: Databricks `POST /api/2.1/unity-catalog/schemas`: completed.
+
+- 2026-11-21T19:56:12+00:00: Databricks `POST /api/2.1/unity-catalog/schemas`: completed.
+
+- 2026-11-21T19:58:41+00:00: Storage network verification: PASS (public endpoint enabled; anonymous blobs disabled).
+
+- 2026-11-21T19:59:36+00:00: Databricks `PATCH /api/2.1/unity-catalog/permissions/catalog/demo_dev`: completed.
+
+- 2026-11-21T19:59:51+00:00: Databricks `PATCH /api/2.1/unity-catalog/permissions/schema/demo_dev.gold`: completed.
+
+- 2026-11-21T19:59:56+00:00: Explicit EXTERNAL USE SCHEMA on `demo_dev.gold`: PASS.
+
+- 2026-11-21T20:00:05+00:00: Databricks `POST /api/2.1/unity-catalog/external-locations`: completed.
+
+- 2026-11-21T20:00:16+00:00: Databricks `POST /api/2.1/unity-catalog/catalogs`: completed.
+
+- 2026-11-21T20:00:31+00:00: Databricks `POST /api/2.1/unity-catalog/schemas`: completed.
+
+- 2026-11-21T20:00:44+00:00: Databricks `POST /api/2.1/unity-catalog/schemas`: completed.
+
+- 2026-11-21T20:00:54+00:00: Databricks `POST /api/2.1/unity-catalog/schemas`: completed.
+
+- 2026-11-21T20:01:10+00:00: Databricks `PATCH /api/2.1/unity-catalog/permissions/catalog/demo_test`: completed.
+
+- 2026-11-21T20:01:24+00:00: Databricks `PATCH /api/2.1/unity-catalog/permissions/schema/demo_test.gold`: completed.
+
+- 2026-11-21T20:01:29+00:00: Explicit EXTERNAL USE SCHEMA on `demo_test.gold`: PASS.
+
+- 2026-11-21T20:01:39+00:00: Databricks `POST /api/2.1/unity-catalog/external-locations`: completed.
+
+- 2026-11-21T20:01:50+00:00: Databricks `POST /api/2.1/unity-catalog/catalogs`: completed.
+
+- 2026-11-21T20:02:05+00:00: Databricks `POST /api/2.1/unity-catalog/schemas`: completed.
+
+- 2026-11-21T20:02:14+00:00: Databricks `POST /api/2.1/unity-catalog/schemas`: completed.
+
+- 2026-11-21T20:02:24+00:00: Databricks `POST /api/2.1/unity-catalog/schemas`: completed.
+
+- 2026-11-21T20:02:42+00:00: Databricks `PATCH /api/2.1/unity-catalog/permissions/catalog/demo_prod`: completed.
+
+- 2026-11-21T20:02:56+00:00: Databricks `PATCH /api/2.1/unity-catalog/permissions/schema/demo_prod.gold`: completed.
+
+- 2026-11-21T20:03:00+00:00: Explicit EXTERNAL USE SCHEMA on `demo_prod.gold`: PASS.
+
+- 2026-11-21T20:03:00+00:00: Unity Catalog credentials, stage locations/catalogs/schemas and explicit grants: PASS.
+
+- 2026-11-21T20:04:38+00:00: Created owned serverless warehouse `wh-demo-bootstrap`: `56f680445ba7585a`; auto-stop 15 minutes.
+
+- 2026-11-21T20:05:06+00:00: SQL statement submitted: `CREATE TABLE IF NOT EXISTS demo_dev.bronze.bootstrap_probe USING DELTA COMMENT 'Demo managed-storage probe owned by rishabhmonga119/fabric-demo-platform' AS SELECT 1 AS probe_id, 'dev' AS env_marker`.
+
+- 2026-11-21T20:05:18+00:00: SQL statement submitted: `DESCRIBE DETAIL demo_dev.bronze.bootstrap_probe`.
+
+- 2026-11-21T20:05:29+00:00: SQL statement submitted: `SELECT COUNT(*) AS row_count, env_marker FROM demo_dev.bronze.bootstrap_probe GROUP BY env_marker`.
+
+- 2026-11-21T20:05:42+00:00: SQL statement submitted: `SHOW GRANTS ON SCHEMA demo_dev.gold`.
+
+- 2026-11-21T20:05:42+00:00: Step 1 Check `dev`: explicit gold grants, one readable row and physical __unitystorage files PASS.
+
+- 2026-11-21T20:05:54+00:00: SQL statement submitted: `CREATE TABLE IF NOT EXISTS demo_test.bronze.bootstrap_probe USING DELTA COMMENT 'Demo managed-storage probe owned by rishabhmonga119/fabric-demo-platform' AS SELECT 1 AS probe_id, 'test' AS env_marker`.
+
+- 2026-11-21T20:06:05+00:00: SQL statement submitted: `DESCRIBE DETAIL demo_test.bronze.bootstrap_probe`.
+
+- 2026-11-21T20:06:15+00:00: SQL statement submitted: `SELECT COUNT(*) AS row_count, env_marker FROM demo_test.bronze.bootstrap_probe GROUP BY env_marker`.
+
+- 2026-11-21T20:06:25+00:00: SQL statement submitted: `SHOW GRANTS ON SCHEMA demo_test.gold`.
+
+- 2026-11-21T20:06:25+00:00: Step 1 Check `test`: explicit gold grants, one readable row and physical __unitystorage files PASS.
+
+- 2026-11-21T20:06:56+00:00: SQL statement submitted: `CREATE TABLE IF NOT EXISTS demo_prod.bronze.bootstrap_probe USING DELTA COMMENT 'Demo managed-storage probe owned by rishabhmonga119/fabric-demo-platform' AS SELECT 1 AS probe_id, 'prod' AS env_marker`.
+
+- 2026-11-21T20:07:09+00:00: SQL statement submitted: `DESCRIBE DETAIL demo_prod.bronze.bootstrap_probe`.
+
+- 2026-11-21T20:07:22+00:00: SQL statement submitted: `SELECT COUNT(*) AS row_count, env_marker FROM demo_prod.bronze.bootstrap_probe GROUP BY env_marker`.
+
+- 2026-11-21T20:07:32+00:00: SQL statement submitted: `SHOW GRANTS ON SCHEMA demo_prod.gold`.
+
+- 2026-11-21T20:07:32+00:00: Step 1 Check `prod`: explicit gold grants, one readable row and physical __unitystorage files PASS.
+
+- 2026-11-21T20:07:47+00:00: Owned bootstrap warehouse `56f680445ba7585a`: STOPPED; starter warehouse untouched.

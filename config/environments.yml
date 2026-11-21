@@ -57,6 +57,8 @@ azure:
       : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-a365-foundry-agent/providers/Microsoft.Storage/storageAccounts/stfoundrybfc74u3drvzlw/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
       ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-customimages/providers/Microsoft.Storage/storageAccounts/udsimggl1901
       : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-customimages/providers/Microsoft.Storage/storageAccounts/udsimggl1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
+  databricks_storage_credential_id: 551b3f50-8c79-4ba5-83df-04fe8f1a9784
+  databricks_sql_warehouse_id: 56f680445ba7585a
 fabric:
   capacity_id: null
   capacity_sku: F4
@@ -118,6 +120,15 @@ environments:
     sharepoint_folder: Forecasts/Dev
     admin_group: SG-Demo-Fabric-Admins
     items: {}
+    databricks_managed_location: abfss://uc-dev@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/
+    databricks_catalog_storage_location: abfss://uc-dev@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/4b8ccb34-73c8-465d-be7f-1f3486560c06
+    databricks_external_location: el_uc_dev
+    databricks_schema_ids:
+      bronze: 5ad4a659-7908-48af-acb6-5425611c96b0
+      silver: 25f212c2-db90-4b1e-9673-8f94e6ad8b8c
+      gold: 49b33b09-f39d-4344-9a0c-60ceeb6705bc
+    databricks_storage_probe_id: 98c0a8e0-1569-4a0c-9aef-9a56ffb0222d
+    databricks_storage_probe_location: abfss://uc-dev@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/4b8ccb34-73c8-465d-be7f-1f3486560c06/tables/1b88ccca-edb7-4eb0-9390-fffde220d51f
   test:
     workspace_name: DEMO-Analytics-Test
     workspace_id: null
@@ -126,6 +137,15 @@ environments:
     sharepoint_folder: Forecasts/Test
     admin_group: SG-Demo-Fabric-Admins
     items: {}
+    databricks_managed_location: abfss://uc-test@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/
+    databricks_catalog_storage_location: abfss://uc-test@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/19327965-c698-4679-9f7e-79e860ed1ebc
+    databricks_external_location: el_uc_test
+    databricks_schema_ids:
+      bronze: f61c7d6d-a3e3-437e-b303-798686ac0149
+      silver: 12dec063-55bf-4341-bcba-89d1642b91cd
+      gold: b72d5983-0cb6-4f76-bebe-16bd0d8d04f4
+    databricks_storage_probe_id: db1debd8-917f-4915-a095-b17d15cfaed9
+    databricks_storage_probe_location: abfss://uc-test@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/19327965-c698-4679-9f7e-79e860ed1ebc/tables/8224426b-137f-4b90-b1bf-fe5cc3c56a1d
   prod:
     workspace_name: DEMO-Analytics-Prod
     workspace_id: null
@@ -137,6 +157,15 @@ environments:
     - SG-Demo-Sales-North
     - SG-Demo-Sales-South
     items: {}
+    databricks_managed_location: abfss://uc-prod@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/
+    databricks_catalog_storage_location: abfss://uc-prod@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/56c770b2-9622-4eb2-91a6-a047c665e3e3
+    databricks_external_location: el_uc_prod
+    databricks_schema_ids:
+      bronze: 4be97434-8313-4a0c-a429-daf2e385d743
+      silver: 14fab05f-0875-4c4d-933c-d93262aaa569
+      gold: 199a9908-51fc-488e-b356-c11b635e7b0d
+    databricks_storage_probe_id: 02097b02-f2b1-4861-a2a1-ba284646564d
+    databricks_storage_probe_location: abfss://uc-prod@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/56c770b2-9622-4eb2-91a6-a047c665e3e3/tables/8fe283b6-4def-4f18-ad43-004fdb27c8a4
 partner:
   workspace_name: DEMO-Partner-A
   workspace_id: null
