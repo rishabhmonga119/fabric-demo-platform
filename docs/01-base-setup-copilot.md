@@ -193,9 +193,42 @@ device-code login) to upload seed/excel/<env>/ to site DemoData, library Documen
 folder Forecasts/<Env>/. Idempotent; --dry-run.
 ```
 
-**Manual:** create site `DemoData`; run the upload for dev, test, prod.
+**Automation / human authentication:**
+```
+python tools/generate_excel.py --dry-run
+python tools/generate_excel.py
+python tools/prepare_sharepoint_auth.py --dry-run
+python tools/prepare_sharepoint_auth.py
+python tools/upload_sharepoint.py --dry-run
+```
+The owned single-tenant public client requests delegated `Sites.Create.All`,
+`Sites.Selected` and `User.Read`, without a client secret or tenant-wide site-read
+scope. An administrator must consent and complete device-code/MFA sign-in:
+`python tools/upload_sharepoint.py --authenticate`.
+Then provide the authoritative site URL:
+`python tools/upload_sharepoint.py --site-url https://<tenant-host>.sharepoint.com/sites/DemoData`.
+
+The script uses the documented Microsoft Graph beta Create Site operation and
+polls `getOperationStatus` before reading back the site. The creating application
+receives selected-site access under the documented site-creation flow. Existing
+unrecorded sites/files are not overwritten. For an already-existing site, review
+and explicitly grant this app selected-site access rather than recreating it.
+See [Create site](https://learn.microsoft.com/graph/api/site-post-sites?view=graph-rest-beta)
+and [selected permissions](https://learn.microsoft.com/graph/permissions-selected-overview).
+If Graph accepts creation without a usable Graph-origin operation URL, the
+script records acceptance and verifies named-site/default-drive readiness using
+Graph GETs instead; it never forwards credentials to a foreign Location.
+
+**File-protection prerequisite:** locally generated files must remain readable
+XLSX containers. If organizational protection wraps them as encrypted Office
+files, the uploader stops before authenticating/uploading. Have the data owner
+review an appropriate approved classification for the synthetic files; do not
+decrypt them, disable protection policies or move them to evade protection.
 
 **Check:** 6 files per stage folder in SharePoint.
+Upload verification compares complete worksheet/cell values, not package byte
+size (SharePoint can update Office package properties). A repeat run must reuse
+the recorded site/files; the December live workbook stays outside upload roots.
 
 ---
 

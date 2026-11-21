@@ -1075,3 +1075,138 @@ Status: Databricks build and all Step 3 checks COMPLETE. Step 2 was committed/pu
 - 2026-11-21T23:08:24+00:00: Captured verified actual counts/checksums in seed/expected_counts.json.
 
 - 2026-11-21T23:08:42+00:00: Owned verification warehouse confirmed STOPPED after Step 3 checks.
+
+- 2026-11-21T23:16:19+00:00: Generated six deterministic forecast workbooks per stage plus one unuploaded live workbook; 4,928 unique baseline forecast grains per stage, one raw unknown-SKU reject and one intentional raw duplicate.
+
+- 2026-11-21T23:16:52+00:00: Prepared owned single-tenant public client `app-demo-sharepoint-upload`, object `55db0d6a-4a8c-4760-8ad0-d8468fd54a5d`, for delegated site creation/selected-site access; no secrets or consent grants created. Human consent/login remains required.
+
+## Step 4 - Forecast workbooks and SharePoint authentication
+
+Status: SharePoint site, uploads and all Step 4 checks COMPLETE. Earlier human
+file-protection and delegated-login checkpoints were resolved as recorded below.
+
+- Verified DemoData site/default Documents library. Drive ID:
+  `b!fl7D45miBEi-DN8YNgdCVLYZkNTPBsZKkNc3zApyYUs2ryRWykplRKoRpOUJJg1w`.
+- Exactly six expected workbooks in each of Forecasts/Dev, Forecasts/Test and
+  Forecasts/Prod: 18 uploaded total. Every uploaded workbook's complete sheet
+  names and cell values matched its local source. December live file excluded.
+- Final uploader rerun passed all three stage Checks with no create/upload
+  writes, proving idempotence. Recorded per-file IDs, etags, source SHA256 and
+  verification flags in configuration. No tokens or download URLs recorded.
+- Commit/push uses explicit Step 4 paths and remote-HEAD verification before
+  starting Step 5 Fabric item creation.
+
+- Step 3 commit `6922f59e438b50f06a4615fc3830955c2176907b` pushed; remote HEAD
+  verified and worktree was clean before Step 4.
+- Added declared openpyxl dependency and restored requirements. Generated three
+  standard and three messy workbooks per stage, plus one live December file
+  outside the upload roots. All stages use identical canonical source data.
+- Forecast baseline has 4,928 unique month/product/package/region/channel
+  grains per stage. November and live December project corresponding 2025
+  actuals with 4% YoY growth; Jan-Oct use actuals, with seeded 0.85-1.15 variation.
+- WEST retail includes RETAIL and ECOM; separate raw files cover HORECA and
+  WHOLESALE. Raw inputs deliberately retain comma decimals, title/merged rows,
+  month text, one blank row, one unknown SKU and one exact duplicate.
+- Found openpyxl Workbook.save overrides the fixed modified timestamp.
+  Used ExcelWriter with fixed properties/canonical ZIP timestamps; in-memory
+  cross-time binary determinism test PASS.
+- `python -m unittest test_excel test_fabric -v`: 20 tests PASS before adding
+  the explicit protected-container guard. Generator, auth preparation and initial
+  uploader dry-runs PASS. Auth-preparation rerun verified no duplicate app/writes.
+- Actual on-disk equality check FAILED: newly generated Dev/Test
+  Planung_West_Handel.xlsx became OLE containers (`d0cf11e0a1b11ae1`) containing
+  an EncryptedPackage, whereas the generated buffer and sampled Prod file were
+  ordinary XLSX ZIPs. This indicates post-write Office file protection. Did not
+  decrypt, remove labels, disable policies or relocate files to evade protection.
+  Added readability guards before authentication and again before each upload.
+- Prepared owned public client app-demo-sharepoint-upload, object
+  `55db0d6a-4a8c-4760-8ad0-d8468fd54a5d`; requested delegated Sites.Create.All,
+  Sites.Selected and User.Read only. No secret or consent grant created.
+  Cached Azure CLI Graph token lacks Sites scopes; CI/CD app was not changed.
+- Required human actions: appropriate organizational classification/protection
+  review for these synthetic files, admin consent for the upload public client,
+  authoritative DemoData site URL, then device-code/MFA sign-in. Live SharePoint
+  six-files-per-stage Check remains pending; do not commit Step 4 as complete.
+- User confirmed approved readable files and DEMO-tenant admin consent, and
+  supplied `https://caldova30465160.sharepoint.com/sites/DemoData`. Verify these
+  prerequisites before starting the required device-code/MFA authentication.
+- User applied Public labels; all 18 upload workbooks then passed the readable
+  XLSX preflight. Completed and verified delegated DEMO-admin sign-in; no
+  authentication codes/tokens were saved to this log or Git.
+- Graph accepted site creation with HTTP 202 but no acceptable Graph-origin
+  operation Location. Failed closed rather than forwarding credentials.
+  Read-only Graph Get Site by Path found the newly created DemoData site,
+  created `2026-11-21T23:40:35.093Z`, ID
+  `caldova30465160.sharepoint.com,e3c35e7e-a299-4804-be0c-df1836074254,d49019b6-06cf-4ac6-90d7-37cc0a72614b`.
+  Recorded the actual site ID; did not resubmit creation.
+- Added same-origin relative Location support. If an accepted site creation
+  lacks a usable Graph operation URL, persist acceptance and verify the named
+  site/default-drive readiness via documented Graph GETs. This is resource
+  readiness, not a claim that an unavailable LRO status was polled.
+- First file upload returned a valid XLSX but server package size was 52,409
+  bytes versus 41,573 local bytes; IRM flags were false. A byte-size equality
+  check is not appropriate for SharePoint Office package processing.
+  Read-back showed creator application exactly matches the owned upload client.
+  Replaced size equality with exact worksheet/cell-value verification through
+  fresh same-tenant download URLs (no bearer forwarding/URL logging), and
+  persist upload IDs before validation so partial successes remain tracked.
+  Recover an unrecorded previous upload only when its creator app matches and
+  its complete sheet/cell values match; never overwrite unknown files.
+
+- 2026-11-21T23:22:04+00:00: SharePoint upload blocked: C:\Users\rishabhmonga\OneDrive - Microsoft\Customer\Retail - T8 - Eva\gerolsteiner\fabric-demo-platform\seed\excel\dev\raw\Planung_West_Handel.xlsx: not a readable XLSX ZIP container; protected/encrypted files require human policy review before upload.
+
+- 2026-11-21T23:27:13+00:00: SharePoint upload blocked: C:\Users\rishabhmonga\OneDrive - Microsoft\Customer\Retail - T8 - Eva\gerolsteiner\fabric-demo-platform\seed\excel\dev\raw\Planung_West_Handel.xlsx: not a readable XLSX ZIP container; protected/encrypted files require human policy review before upload.
+
+- 2026-11-21T23:39:46+00:00: Delegated SharePoint demo-admin login verified; encrypted token cache is outside Git; no SharePoint writes.
+
+- 2026-11-21T23:40:39+00:00: SharePoint upload blocked: Accepted operation requires a same-origin Location header.
+
+- 2026-11-21T23:45:32+00:00: SharePoint upload blocked: Uploaded workbook read-back shape/size differs: standard/forecast_EAST_2026.xlsx
+
+- 2026-11-21T23:49:49+00:00: Recovered previously created `dev/standard/forecast_EAST_2026.xlsx` by verified creator-app identity and exact sheet/cell equality; no overwrite.
+
+- 2026-11-21T23:49:57+00:00: Uploaded synthetic `dev/standard/forecast_NORTH_2026.xlsx`: `01ZWHYQXUXFZWE4OOOOVEYGE3H3UJBB7L5`.
+
+- 2026-11-21T23:50:05+00:00: Uploaded synthetic `dev/standard/forecast_SOUTH_2026.xlsx`: `01ZWHYQXWKJBTNQCOUJVG2XCJOJTRLT2B3`.
+
+- 2026-11-21T23:50:19+00:00: Uploaded synthetic `dev/raw/Planung_West_Handel.xlsx`: `01ZWHYQXXYKBZ6L3IIP5E2FFGWQOERDASO`.
+
+- 2026-11-21T23:50:27+00:00: Uploaded synthetic `dev/raw/West-GFGH.xlsx`: `01ZWHYQXXHKQFY7AZG7ZGL25FBD3LYE2RW`.
+
+- 2026-11-21T23:50:35+00:00: Uploaded synthetic `dev/raw/west_gastro_forecast_v3_FINAL.xlsx`: `01ZWHYQXWNDSIOFWNOINDKPWAPOIZVCJS2`.
+
+- 2026-11-21T23:50:37+00:00: Step 4 Check `dev`: exactly six expected SharePoint workbooks PASS; live file absent.
+
+- 2026-11-21T23:50:58+00:00: Uploaded synthetic `test/standard/forecast_EAST_2026.xlsx`: `01ZWHYQXSEPMKVEWTTLBC3VVJYHIPDTKPA`.
+
+- 2026-11-21T23:51:06+00:00: Uploaded synthetic `test/standard/forecast_NORTH_2026.xlsx`: `01ZWHYQXVLHBURY45J7ZBIITSJIPB3VC7O`.
+
+- 2026-11-21T23:51:13+00:00: Uploaded synthetic `test/standard/forecast_SOUTH_2026.xlsx`: `01ZWHYQXW62VNP4J2WIVAYLJBZ3DMRTO5D`.
+
+- 2026-11-21T23:51:27+00:00: Uploaded synthetic `test/raw/Planung_West_Handel.xlsx`: `01ZWHYQXTHYRAU5A3C7BF2OPO6LJS62OCJ`.
+
+- 2026-11-21T23:51:34+00:00: Uploaded synthetic `test/raw/West-GFGH.xlsx`: `01ZWHYQXTRYMVKWMZODJFKU4ZNZW6HWVPM`.
+
+- 2026-11-21T23:51:42+00:00: Uploaded synthetic `test/raw/west_gastro_forecast_v3_FINAL.xlsx`: `01ZWHYQXS2HHHHTG4UFZGJVS23JTAXRL37`.
+
+- 2026-11-21T23:51:44+00:00: Step 4 Check `test`: exactly six expected SharePoint workbooks PASS; live file absent.
+
+- 2026-11-21T23:52:05+00:00: Uploaded synthetic `prod/standard/forecast_EAST_2026.xlsx`: `01ZWHYQXUZW573QBC5LFC3L45FXXPB2YWQ`.
+
+- 2026-11-21T23:52:13+00:00: Uploaded synthetic `prod/standard/forecast_NORTH_2026.xlsx`: `01ZWHYQXQ6OJ66Q2LM35DJH2DO35WJYSTZ`.
+
+- 2026-11-21T23:52:23+00:00: Uploaded synthetic `prod/standard/forecast_SOUTH_2026.xlsx`: `01ZWHYQXSYEG4T7HKFFJGYTHPZIFF3MXDB`.
+
+- 2026-11-21T23:52:37+00:00: Uploaded synthetic `prod/raw/Planung_West_Handel.xlsx`: `01ZWHYQXXXXFHEZT2EVBFKSFAZF3IUJXPZ`.
+
+- 2026-11-21T23:52:44+00:00: Uploaded synthetic `prod/raw/West-GFGH.xlsx`: `01ZWHYQXXFQFQMBGWVAVHKFP3KHR42IOS3`.
+
+- 2026-11-21T23:52:52+00:00: Uploaded synthetic `prod/raw/west_gastro_forecast_v3_FINAL.xlsx`: `01ZWHYQXVW5DONFNODORGIR6VTKZLVB4SF`.
+
+- 2026-11-21T23:52:54+00:00: Step 4 Check `prod`: exactly six expected SharePoint workbooks PASS; live file absent.
+
+- 2026-11-21T23:55:03+00:00: Step 4 Check `dev`: exactly six expected SharePoint workbooks PASS; live file absent.
+
+- 2026-11-21T23:55:10+00:00: Step 4 Check `test`: exactly six expected SharePoint workbooks PASS; live file absent.
+
+- 2026-11-21T23:55:18+00:00: Step 4 Check `prod`: exactly six expected SharePoint workbooks PASS; live file absent.

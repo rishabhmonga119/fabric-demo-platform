@@ -1,0 +1,18 @@
+headers:
+  Monat: month
+  Artikelnummer: sku
+  Gebinde: package_code
+  Region: region_code
+  Kanal: channel_code
+  Menge (hl): forecast_hl
+channels:
+  Handel: RETAIL
+  Gastro: HORECA
+  GFGH: WHOLESALE
+  Online: ECOM
+packages:
+  Still 0,75 Glas: GL-075-RET
+  0,25 Glas: GL-025-RET
+  PET 1,0: PET-100
+  PET 0,5: PET-050
+  PET 1,5: PET-150

@@ -75,6 +75,39 @@ class JsonApiGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(http_api.ApiError, "requires documented LRO"):
                 api.request("POST", "/v1/workspaces")
 
+    def test_explicit_operation_acceptance_requires_same_origin_location(self):
+        response = MagicMock()
+        response.status = 202
+        response.read.return_value = b""
+        with patch.object(http_api, "AzureCliCredential"), \
+             patch.object(http_api, "build_opener") as opener, \
+             patch.object(http_api, "verify_context"):
+            opener.return_value.open.return_value.__enter__.return_value = response
+            api = http_api.Api("https://graph.microsoft.com", "demo")
+            response.headers.get.return_value = "https://graph.microsoft.com/beta/sites/operation"
+            self.assertEqual(api.request("POST", "/beta/sites", accept_operation=True),
+                             {"operation_uri": "https://graph.microsoft.com/beta/sites/operation"})
+            response.headers.get.return_value = "/beta/sites/operation"
+            self.assertEqual(api.request("POST", "/beta/sites", accept_operation=True),
+                             {"operation_uri": "https://graph.microsoft.com/beta/sites/operation"})
+            for location in (None, "https://unexpected.example/operation"):
+                response.headers.get.return_value = location
+                with self.assertRaisesRegex(http_api.ApiError, "same-origin Location"):
+                    api.request("POST", "/beta/sites", accept_operation=True)
+
+    def test_binary_upload_bytes_are_not_json_encoded(self):
+        response = MagicMock()
+        response.status = 201
+        response.read.return_value = b'{"id":"uploaded"}'
+        with patch.object(http_api, "AzureCliCredential"), \
+             patch.object(http_api, "build_opener") as opener, \
+             patch.object(http_api, "verify_context"):
+            opener.return_value.open.return_value.__enter__.return_value = response
+            api = http_api.Api("https://graph.microsoft.com", "demo")
+            api.request("PUT", "/v1.0/drives/demo/items/new/content", b"PK\x00\x01",
+                        content_type="application/octet-stream")
+            self.assertEqual(opener.return_value.open.call_args.args[0].data, b"PK\x00\x01")
+
 
 class GroupMembershipTests(unittest.TestCase):
     def test_membership_check_supports_service_principals_without_member_listing(self):
