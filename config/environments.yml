@@ -96,6 +96,9 @@ github:
     test:
       id: 28115104729
       name: test
+  owner_id: 23618963
+  repository_id: 1466744419
+  oidc_subject_prefix: repo:rishabhmonga119@23618963/fabric-demo-platform@1466744419
 entra:
   application:
     name: sp-fabric-demo-cicd

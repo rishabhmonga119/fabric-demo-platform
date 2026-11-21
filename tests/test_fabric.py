@@ -8,7 +8,7 @@ from urllib.parse import parse_qs, urlparse
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import fabric_preflight
 import http_api
-from bootstrap_entra import has_membership
+from bootstrap_entra import federation_subjects, has_membership
 from bootstrap_fabric import domain_role_plan, setting_proposal
 from check_demo_licenses import license_features
 
@@ -143,6 +143,24 @@ class LicenseFeatureTests(unittest.TestCase):
             license_features({"COPILOT_CREDIT_FOR_D365_PREMIUM"}),
             {"power_bi_pro": False, "m365_copilot": False}
         )
+
+
+class FederationSubjectTests(unittest.TestCase):
+    def test_immutable_subjects_match_owner_repository_and_environment_ids(self):
+        repository = {"full_name": "owner/repo", "owner": {"id": 10}, "id": 20}
+        oidc = {"use_default": True, "use_immutable_subject": True,
+                "sub_claim_prefix": "repo:owner@10/repo@20"}
+        subjects = federation_subjects(repository, oidc)
+        self.assertEqual(subjects["github-test"], "repo:owner@10/repo@20:environment:test")
+        self.assertEqual(subjects["github-main"], "repo:owner@10/repo@20:ref:refs/heads/main")
+
+    def test_other_repository_prefix_is_never_trusted(self):
+        with self.assertRaises(RuntimeError):
+            federation_subjects(
+                {"full_name": "owner/repo", "owner": {"id": 10}, "id": 20},
+                {"use_default": True, "use_immutable_subject": True,
+                 "sub_claim_prefix": "repo:other@10/repo@20"}
+            )
 
 
 if __name__ == "__main__":

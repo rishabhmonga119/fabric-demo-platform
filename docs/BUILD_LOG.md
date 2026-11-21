@@ -784,3 +784,45 @@ proof, then awaiting test-user licence allocation. Steps 3-9 have not started.
   end-user licence prerequisites BLOCKED until allocation.
 
 - 2026-11-21T21:42:08+00:00: Verified GitHub test environment and three non-secret OIDC variables; no client secret.
+
+- 2026-11-21T21:43:54+00:00: OIDC check FAILED: `https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/44953000815`.
+
+- 2026-11-21T21:50:32+00:00: Verified security group `SG-Demo-Fabric-Admins`: `c3e74838-ac5e-4541-963a-d9dd63f333ff`.
+
+- 2026-11-21T21:50:34+00:00: Verified security group `SG-Demo-Fabric-API`: `4644c7fa-fc3a-43d0-a29d-d65f5f7b7305`.
+
+- 2026-11-21T21:50:36+00:00: Verified security group `SG-Demo-Sales-North`: `ad4dc1e3-8180-4f7f-98fa-1134f37cc239`.
+
+- 2026-11-21T21:50:38+00:00: Verified security group `SG-Demo-Sales-South`: `199f4419-549f-4f29-9e4a-33a25afc0a36`.
+
+- 2026-11-21T21:50:43+00:00: Verified CI/CD application `sp-fabric-demo-cicd` and SP `e4234475-0f90-44c2-b256-20ce1b6c7614`.
+
+- 2026-11-21T21:50:55+00:00: Verified OIDC credential `github-test`: `e9cb629f-3d30-4794-94b6-ff9adc47dde5`; subject `repo:rishabhmonga119@23618963/fabric-demo-platform@1466744419:environment:test`.
+
+- 2026-11-21T21:51:04+00:00: Verified OIDC credential `github-prod`: `059e40c1-f4e4-4468-9646-e05a15489cc6`; subject `repo:rishabhmonga119@23618963/fabric-demo-platform@1466744419:environment:prod`.
+
+- 2026-11-21T21:51:13+00:00: Verified OIDC credential `github-main`: `7bb1ec3a-a212-45b6-aa1d-02403daea726`; subject `repo:rishabhmonga119@23618963/fabric-demo-platform@1466744419:ref:refs/heads/main`.
+
+- 2026-11-21T21:51:56+00:00: Verified test user `demo.north@Caldova30465160.onmicrosoft.com`: `62edf9fe-1ae2-46de-bda8-6bede313c3f5`; password not stored; licences pending.
+
+- 2026-11-21T21:52:12+00:00: Verified test user `demo.south@Caldova30465160.onmicrosoft.com`: `b642d835-0e39-48cb-8ebe-a4fdd90320ca`; password not stored; licences pending.
+
+### OIDC immutable-subject compatibility fix
+
+- First OIDC run `44953000815` failed during Azure login with AADSTS700213.
+  GitHub emitted `repo:rishabhmonga119@23618963/fabric-demo-platform@1466744419:environment:test`,
+  while the initial credentials used the older name-only subject.
+- Read Microsoft's current immutable-subject migration and Graph FIC-update docs.
+- GitHub OIDC settings confirmed use_default=true, use_immutable_subject=true,
+  and the exact sub_claim_prefix. Repository/owner IDs were independently read
+  and verified against the requested repository.
+- Updated only the three recorded federated credentials created by this build:
+  names, IDs, issuer and audience preserved; subjects now match the verified
+  immutable prefix for test, prod and main. Graph read-back passed.
+- GitHub's repository OIDC configuration was not changed or downgraded.
+- Updated the idempotent Entra script to derive and verify the current format,
+  refuse custom/unexpected prefixes and unowned credential changes, and persist
+  immutable IDs/prefix. Added two focused subject/ownership-boundary tests.
+- Dry-run and actual credential update passed; no new identities, credentials,
+  passwords, licences or Azure resources were created.
+- Rerun the read-only OIDC proof before the licence-allocation checkpoint.

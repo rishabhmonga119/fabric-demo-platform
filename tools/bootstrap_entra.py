@@ -1,13 +1,14 @@
 """Create Step 2 demo groups, OIDC application and users without persisting secrets."""
 
 import argparse
+import json
 import secrets
 import string
 import sys
 import time
 from urllib.parse import urlencode
 
-from common import ContextError, ROOT, load_config, verify_context
+from common import ContextError, ROOT, cli, load_config, run, verify_context
 from http_api import Api, ApiError
 
 sys.path.insert(0, str(ROOT))
@@ -34,6 +35,23 @@ def has_membership(api: Api, group_id: str, member_id: str) -> bool:
     if result is None or not isinstance(result.get("value"), list):
         raise ApiError("Graph membership-check response is missing its value collection.")
     return group_id in result["value"]
+
+
+def federation_subjects(repository: dict, oidc: dict) -> dict[str, str]:
+    owner, name = repository["full_name"].split("/")
+    if oidc.get("use_default") is not True:
+        raise ContextError("Custom GitHub OIDC subjects require an explicit verified template.")
+    if oidc.get("use_immutable_subject") is True:
+        prefix = f"repo:{owner}@{repository['owner']['id']}/{name}@{repository['id']}"
+    else:
+        prefix = f"repo:{owner}/{name}"
+    if oidc.get("sub_claim_prefix", prefix) != prefix:
+        raise ContextError("GitHub OIDC prefix does not match the verified repository/owner IDs.")
+    return {
+        "github-test": prefix + ":environment:test",
+        "github-prod": prefix + ":environment:prod",
+        "github-main": prefix + ":ref:refs/heads/main",
+    }
 
 
 def main() -> None:
@@ -111,20 +129,46 @@ def main() -> None:
             save_config(config)
             record(f"Verified CI/CD application `{application['name']}` and SP `{principal['id']}`.")
         existing = api.list(f"/v1.0/applications/{app['id']}/federatedIdentityCredentials")
-        repository = f"{config['github']['owner']}/{config['github']['repository']}"
-        subjects = {
-            "github-test": f"repo:{repository}:environment:test",
-            "github-prod": f"repo:{repository}:environment:prod",
-            "github-main": f"repo:{repository}:ref:refs/heads/main",
-        }
+        repository_name = f"{config['github']['owner']}/{config['github']['repository']}"
+        repository = json.loads(run([cli("gh"), "api", f"repos/{repository_name}"]))
+        if repository["full_name"].casefold() != repository_name.casefold():
+            raise ContextError("GitHub repository differs from the approved repository.")
+        oidc = json.loads(run([cli("gh"), "api", f"repos/{repository_name}/actions/oidc/customization/sub"]))
+        # https://learn.microsoft.com/entra/workload-id/workload-identities-github-immutable-subjects
+        subjects = federation_subjects(repository, oidc)
+        if not args.dry_run:
+            config["github"]["owner_id"] = repository["owner"]["id"]
+            config["github"]["repository_id"] = repository["id"]
+            config["github"]["oidc_subject_prefix"] = oidc.get("sub_claim_prefix")
+            save_config(config)
         # https://learn.microsoft.com/graph/api/federatedidentitycredential-post
         for name, subject in subjects.items():
             payload = {"name": name, "issuer": "https://token.actions.githubusercontent.com",
                        "subject": subject, "audiences": ["api://AzureADTokenExchange"]}
             credential = unique(existing, "name", name)
             if credential:
-                if any(credential[key] != value for key, value in payload.items()):
+                if any(credential[key] != payload[key] for key in ("name", "issuer", "audiences")):
                     raise ContextError(f"STOP: existing federated credential {name} differs.")
+                if credential["subject"] != subject:
+                    recorded = application.get("federated_credential_ids", {}).get(name)
+                    if credential["id"] != recorded:
+                        raise ContextError("STOP: cannot update an unowned federated credential.")
+                    suffix = {"github-test": "environment:test", "github-prod": "environment:prod",
+                              "github-main": "ref:refs/heads/main"}[name]
+                    if credential["subject"] != f"repo:{repository_name}:{suffix}":
+                        raise ContextError("STOP: existing federated trust is not the expected legacy subject.")
+                    # Only migrate our newly created trust to this repo's actual immutable claim.
+                    # https://learn.microsoft.com/graph/api/federatedidentitycredential-update
+                    api.request(
+                        "PATCH", f"/v1.0/applications/{app['id']}/federatedIdentityCredentials/{credential['id']}",
+                        {"subject": subject}, dry_run=args.dry_run
+                    )
+                    if not args.dry_run:
+                        credential = api.request(
+                            "GET", f"/v1.0/applications/{app['id']}/federatedIdentityCredentials/{credential['id']}"
+                        )
+                        if credential is None or credential["subject"] != subject:
+                            raise ApiError("Immutable OIDC subject read-back failed.")
             else:
                 credential = api.request(
                     "POST", f"/v1.0/applications/{app['id']}/federatedIdentityCredentials",

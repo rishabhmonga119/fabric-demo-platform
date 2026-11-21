@@ -127,6 +127,11 @@ Support --dry-run. Read capacity id and group object IDs from config.
    - `repo:rishabhmonga119/fabric-demo-platform:environment:test`
    - `repo:rishabhmonga119/fabric-demo-platform:environment:prod`
    - `repo:rishabhmonga119/fabric-demo-platform:ref:refs/heads/main` (for the `update-dev` job)
+   - For GitHub's immutable-subject format, the prefix includes owner/repository IDs:
+     `repo:rishabhmonga119@<owner-id>/fabric-demo-platform@<repo-id>`.
+     Read the repository OIDC settings/preview rather than assuming the legacy prefix.
+     `tools/bootstrap_entra.py` verifies the current prefix and records it in
+     `config/environments.yml`; it updates only this build's recorded credentials.
 2. Users `demo.north`, `demo.south` → groups `SG-Demo-Sales-North` / `-South`; licences: M365 Copilot + Power BI Pro.
 
 **Check:** `fab ls` shows 4 workspaces on the F4 capacity; SP can list items in Test via a token from `az login --service-principal` (or a quick OIDC test workflow).

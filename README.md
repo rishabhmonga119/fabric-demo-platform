@@ -129,6 +129,8 @@ The read-only OIDC proof is provisioned with `tools/setup_oidc_check.py` and
 dispatched with `tools/run_oidc_check.py`; both support `--dry-run`. The workflow
 uses GitHub OIDC and verifies the configured SP can list Test items, without
 granting Azure subscription roles or using a client secret.
+The Entra bootstrap discovers GitHub's current OIDC subject prefix (including
+immutable owner/repository IDs where enabled) instead of assuming legacy subjects.
 
 `tools/check_demo_licenses.py --dry-run` checks actual service-plan capabilities
 for the presenter and demo users. Licence purchases/reallocation and initial
