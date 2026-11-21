@@ -46,3 +46,23 @@ Keep the existing Fabric F4 capacity unchanged. Provision only Step 1's storage,
 access connector and one Premium Databricks workspace. Use serverless or
 single-node compute; persistent compute must auto-terminate after 15 minutes.
 Never delete or overwrite pre-existing resources without explicit permission.
+
+## Step 1 automation
+
+```powershell
+.\infra\deploy.ps1 --region northeurope --dry-run
+.\infra\deploy.ps1 --region northeurope
+.\.venv\Scripts\python.exe .\tools\check_databricks.py --dry-run --wait-ready 300
+```
+
+West Europe rejected this tenant's new resources; North Europe is the documented
+alternative selected for the build. See the [build log](docs/BUILD_LOG.md) for
+resource IDs, checks and the current checkpoint.
+
+The read-only `--rest` diagnostic on `check_databricks.py` bypasses SDK tenant
+discovery. `deploy.ps1 --repair-network-only --dry-run` previews reapplying the
+required public storage endpoint without redeploying infrastructure; anonymous
+blob access must remain disabled.
+
+Do not start Step 2 until Unity Catalog, external-access grants and storage
+checks pass. An ARM deployment marked `Succeeded` alone is not a completed step.

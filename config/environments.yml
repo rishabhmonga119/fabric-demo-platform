@@ -5,12 +5,16 @@ tenant:
 azure:
   subscription_id: 61ab2275-fb68-4081-ac0f-076c87caf0c1
   resource_group: rg-demo-databricks
-  region: westeurope
+  resource_group_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks
+  region: northeurope
   databricks_workspace_name: dbw-demo
-  databricks_workspace_id: null
-  databricks_workspace_url: null
-  storage_account_name: null
-  access_connector_id: null
+  databricks_workspace_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Databricks/workspaces/dbw-demo
+  databricks_workspace_url: https://adb-7405618307807698.18.azuredatabricks.net
+  storage_account_name: stdemolakenzskwyvxcpeuk
+  access_connector_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Databricks/accessConnectors/ac-dbw-demo
+  storage_account_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Storage/storageAccounts/stdemolakenzskwyvxcpeuk
+  access_connector_principal_id: bc435bde-5ec3-4da6-bb00-6dca87807b91
+  managed_resource_group_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks-managed
 fabric:
   capacity_id: null
   capacity_sku: F4
@@ -88,8 +92,8 @@ environments:
     sharepoint_folder: Forecasts/Prod
     admin_group: SG-Demo-Fabric-Admins
     viewer_groups:
-      - SG-Demo-Sales-North
-      - SG-Demo-Sales-South
+    - SG-Demo-Sales-North
+    - SG-Demo-Sales-South
     items: {}
 partner:
   workspace_name: DEMO-Partner-A

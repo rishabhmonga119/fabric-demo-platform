@@ -39,17 +39,20 @@ def cli(name: str) -> str:
     raise ContextError(f"Required CLI not found: {name}. Run infra/prepare_workstation.py.")
 
 
-def run(command: list[str]) -> str:
+def run(
+    command: list[str], *, include_stderr: bool = False,
+    env: dict[str, str] | None = None
+) -> str:
     result = subprocess.run(
         command, cwd=ROOT, check=False, capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=180
+        encoding="utf-8", errors="replace", timeout=180, env=env
     )
     if result.returncode != 0:
         raise ContextError(
             f"{Path(command[0]).name} {' '.join(command[1:])} failed "
             f"(exit {result.returncode}): {result.stderr.strip() or result.stdout.strip()}"
         )
-    return result.stdout + result.stderr
+    return result.stdout + result.stderr if include_stderr else result.stdout
 
 
 def verify_context() -> None:
@@ -80,7 +83,10 @@ def verify_context() -> None:
             raise ContextError(f"Fabric context missing or mismatched: {label}. STOP.")
     print("Fabric context: PASS")
 
-    status = run([cli("gh"), "auth", "status", "--active", "--hostname", "github.com"])
+    status = run(
+        [cli("gh"), "auth", "status", "--active", "--hostname", "github.com"],
+        include_stderr=True
+    )
     expected = re.escape(config["github"]["owner"])
     if (
         not re.search(rf"Logged in to github\.com account {expected}(?:\s|$)", status)
@@ -90,9 +96,11 @@ def verify_context() -> None:
     print("GitHub context: PASS")
 
 
-def mutate(command: list[str], dry_run: bool = False) -> str:
+def mutate(
+    command: list[str], dry_run: bool = False, *, env: dict[str, str] | None = None
+) -> str:
     verify_context()
     print(("DRY-RUN: " if dry_run else "RUN: ") + subprocess.list2cmdline(command))
     if dry_run:
         return ""
-    return run(command)
+    return run(command, env=env)

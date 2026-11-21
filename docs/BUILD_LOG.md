@@ -2,7 +2,7 @@
 
 ## 2026-11-21 - Step 0: workstation, repository and guardrails
 
-Status: local setup complete; final checks and remote commit/push pending.
+Status: COMPLETE. Step 0 commit pushed and remote HEAD verified.
 No cloud resources created or modified.
 
 ### Inputs and context
@@ -92,4 +92,199 @@ No cloud resources created or modified.
   committed or pushed by the failed attempt.
 - Immediate read-only recheck of all contexts succeeded, including Fabric.
   The active identities were unchanged; no logout or login was performed.
+- Retried the guarded commit without changing credentials: PASS.
+- Commit: `3ac4a68d57efb2a727cf8f252ea56f4c3e3bdf3a`,
+  `step 0: bootstrap guarded demo repository and local tooling`.
+- Push and read-only `git ls-remote` check: PASS; remote `main` matches local HEAD.
+
+## 2026-11-21 - Step 1: Azure Databricks infrastructure
+
+Status: BLOCKED after Azure provisioning. Step 1 is not complete; Steps 2-9
+have not started.
+
+- Read official Microsoft Learn resource schemas for storage accounts and
+  containers (2023-05-01), access connectors (2023-05-01), role assignments
+  (2022-04-01), and Databricks workspaces (2024-05-01).
+- Read the official Azure workspace quickstart Bicep, Unity Catalog workspace
+  enablement, and managed-identity storage configuration documentation.
+- Added `infra/databricks.bicep`, `infra/deploy.py` and its PowerShell wrapper.
+- Plan: one Premium `dbw-demo`, ADLS Gen2 `stdemolake<deterministicSuffix>`,
+  containers `uc-dev`, `uc-test`, `uc-prod`, and access connector `ac-dbw-demo`.
+- New resources carry ownership tags. Incremental deployments cannot delete
+  orphans; unowned existing resources cause an explicit stop.
+- Public network access is enabled for demo-only access; anonymous blob access
+  remains disabled. No paid networking services, extra workspace or compute
+  are explicitly provisioned. Databricks creates its required managed resources.
+- Unity Catalog is requested with the documented `defaultCatalog.initialType`
+  value `UnityCatalog`; actual metastore configuration will be checked afterwards.
+- Existing Fabric F4 capacity is untouched.
+- `az bicep build --file infra/databricks.bicep --stdout`: PASS; no generated
+  template file left in the repository.
+- Python compile-check and 4 context safety tests: PASS.
+- `infra/deploy.ps1 --dry-run`: PASS; ownership/context/cost preflight succeeded;
+  printed only the resource-group and incremental deployment commands.
+- Actual deployment: starting. No resource deletions or cleanup are authorised.
+
+- First provider validation failed for storage, access connector and workspace:
+  `RequestDisallowedByAzure`, West Europe is not accepting new customers.
+  No paid resource deployment was submitted.
+- Created resource group ID:
+  `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks`.
+  Its metadata location remains West Europe; resource locations can differ.
+- Read https://aka.ms/locationineligible (official ARM troubleshooting).
+  It identifies West Europe as restricted and recommends an alternative region.
+- Provider preflight found `Microsoft.Databricks` NotRegistered and
+  `Microsoft.Storage` Registered. Added explicit, guarded provider registration.
+- Alternative region selected: North Europe, supported by both providers;
+  keeps resources in the EU. Fabric capacity remains unchanged.
+- Added `--region` override; the selected region is persisted with successful
+  deployment outputs. Existing owned resource group is reused, not recreated.
+- Attempting the documented region remedy with prerequisite registration.
+
+- North Europe provider validation: PASS. `Microsoft.Databricks` registered.
+- Incremental deployment failed with `InvalidInitialCatalogName`: the live
+  service does not support a custom initial catalog name despite the schema
+  exposing that optional field.
+- Removed only the optional `defaultCatalog.initialName`; kept the documented
+  `initialType: UnityCatalog`. Stage catalogs are created explicitly later.
+- Added partial-deployment ID persistence for future failed/cancelled ARM runs;
+  no created resources are deleted. Retrying reuses owned resources.
+- Read-only failed-operation inspection confirmed that storage, all three
+  containers, access connector and its RBAC grant succeeded; workspace failed
+  before creation. Retry creates only the missing workspace.
+- Minimal Bicep fix compile-check and North Europe dry-run: PASS.
+- Read the official Databricks Azure CLI authentication guide and Unity Catalog
+  metastore, storage credential, catalog and grants API schemas. The documented
+  metastore flag is `external_access_enabled` / CLI `--external-access-enabled`.
+- Added `tools/check_databricks.py` for read-only, explicitly Azure-CLI-authenticated
+  identity/metastore/compute preflight after the Azure deployment completes.
+- No Databricks login prompt, SQL warehouse, job cluster or table has been created.
+
+- North Europe retry succeeded. Deployment outputs were persisted in
+  `config/environments.yml` and recorded below by the deploy script.
+- First Databricks read-only identity check failed during automatic tenant
+  discovery: `azure-cli auth: load tenant id: parse "": empty url`.
+- Read the official unified-authentication environment-variable reference and
+  upstream Azure CLI authentication implementation. Added the documented
+  `ARM_TENANT_ID` and `ARM_ENVIRONMENT=PUBLIC` to the child-process environment;
+  no global authentication/configuration or tokens are changed.
+- Read-only `az databricks workspace show` needed an uninstalled Azure extension
+  and failed at a noninteractive installation prompt. No extension was installed;
+  use core `az resource show` instead.
+- Explicit tenant configuration fixed the tenant-discovery failure, but
+  Databricks now reports `Did not find workspace with specified org ID:
+  7405618307807698` during the read-only current-user call.
+- Core `az resource show` confirms workspace provisioning `Succeeded`, SKU
+  `premium`, region `northeurope`, and URL
+  `https://adb-7405618307807698.18.azuredatabricks.net`.
+- `az storage container-rm list`: PASS, `uc-dev`, `uc-test`, `uc-prod`;
+  all have public access `None`.
+- Readiness remedy: bounded, read-only retry for new workspace registration;
+  no retry on any different authentication/context error.
+- Storage RBAC read-only check: PASS, access connector principal
+  `bc435bde-5ec3-4da6-bb00-6dca87807b91` has Storage Blob Data Contributor on
+  the demo account. HNS is enabled and anonymous blobs are disabled.
+- Exact post-deployment check found `publicNetworkAccess=Disabled`, despite
+  the Bicep setting `Enabled`. Added ownership-checked, idempotent reapplication
+  and verification of this demo-only setting; anonymous blobs stay disabled.
+- Added `--repair-network-only` to fix/check that setting without redeploying.
+- Prepared direct `az rest` current-user diagnostic using the documented SCIM
+  Me endpoint and Azure Databricks audience, avoiding SDK tenant/host discovery.
+  No bearer token is printed, stored or passed on the command line.
+- Databricks access attempts:
+  1. Explicit `ARM_TENANT_ID` and `ARM_ENVIRONMENT=PUBLIC` with Azure CLI
+     authentication: tenant-discovery error resolved, but workspace org ID
+     `7405618307807698` is still not found.
+  2. `python tools/check_databricks.py --dry-run --wait-ready 300`:
+     FAIL after bounded readiness retries with the same workspace-not-found error.
+  3. `python tools/check_databricks.py --rest --dry-run`: FAIL with the same
+     error using the documented direct REST current-user endpoint.
+- `infra/deploy.ps1 --repair-network-only --dry-run`: PASS, no writes.
+- `infra/deploy.ps1 --repair-network-only`: command completed, but exact
+  read-back still showed `publicNetworkAccess=Disabled`; check FAIL.
+  Anonymous blob access remains disabled. No policy has been disabled or bypassed.
+- Storage network check error now reports the actual observed values rather
+  than incorrectly implying anonymous blob access was enabled.
+- Stopping resource changes at the human checkpoint; no Databricks catalog,
+  schema, job, cluster, table or SQL warehouse was created by this automation.
+
+### Step 1 Check
+
+- One Premium Databricks workspace provisioned in North Europe: PASS.
+- ADLS Gen2/HNS, three private containers, managed identity and storage grant: PASS.
+- Required public storage endpoint: FAIL (still Disabled).
+- Databricks current-user/metastore access: FAIL (workspace org ID not found).
+- `SHOW GRANTS ON SCHEMA demo_dev.gold` / `EXTERNAL USE SCHEMA`: BLOCKED;
+  catalog/schema creation cannot run before workspace API access succeeds.
+- `__unitystorage` after the first managed table: BLOCKED; no table created.
+- Overall Step 1: BLOCKED, not green. Existing Fabric F4 capacity is unchanged.
+
+### Human checkpoint and continuation
+
+1. In Azure portal, open `rg-demo-databricks` -> `dbw-demo` -> Launch Workspace
+   while signed in as `admin@Caldova30465160.onmicrosoft.com`.
+2. Complete any first-launch, MFA or consent prompt. Confirm the workspace home
+   opens at `https://adb-7405618307807698.18.azuredatabricks.net`.
+3. Reply `done` once it opens; if it still fails, provide the displayed error
+   instead. Do not send passwords, tokens or screenshots containing secrets.
+
+After `done`, reverify all three contexts and Databricks access, resolve the
+storage endpoint check, finish Unity Catalog setup and Step 1 checks, then
+continue Steps 2-9 in order.
+
+### Checkpoint validation and persistence
+
+- `python -m unittest discover -s tests -p 'test_*.py' -v`: PASS (7 focused
+  context, ownership, dry-run and network read-back safety tests).
+- Python compile-check of all six automation entry/helper modules: PASS.
+- `az bicep build --file infra/databricks.bicep --stdout`: PASS.
+- `git diff --check`: PASS. Worktree contains only this step's intended changes.
+- Persist the partial step with `tools/commit_step.py --step 1 --message
+  "provision guarded Azure infrastructure and record blocked checks"`, explicit
+  changed paths, fresh context checks, co-author trailer and verified push.
+  This is a blocked checkpoint commit, not a claim that Step 1 is complete.
 - Step 1 has not started.
+
+- 2026-11-21T17:18:21+00:00: Created resource group `rg-demo-databricks` in `westeurope` with ownership tags.
+
+- 2026-11-21T17:20:24+00:00: Requested registration of `Microsoft.Databricks` for Step 1.
+
+- 2026-11-21T17:22:13+00:00: Provider `Microsoft.Databricks` registration: PASS.
+
+- 2026-11-21T17:22:15+00:00: Provider `Microsoft.Storage` registration: PASS.
+
+- 2026-11-21T17:22:20+00:00: Validating Step 1 resources in `northeurope` using `az deployment group validate`.
+
+- 2026-11-21T17:22:26+00:00: ARM provider validation: PASS for `infra/databricks.bicep`.
+
+- 2026-11-21T17:22:39+00:00: Submitted `az deployment group create --name demo-step-1 --mode Incremental --no-wait`.
+
+- 2026-11-21T17:23:16+00:00: Azure deployment FAILED: `{"additionalInfo": null, "code": "DeploymentFailed", "details": [{"additionalInfo": null, "code": "InvalidInitialCatalogName", "details": null, "message": "Currently custom initial catalog name is not supported. This capability will be added in future.", "target": null}], "message": "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details. Correlation ID: 54de96a6-97e1-474e-ae29-5a3b4b982247", "target": "/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Resources/deployments/demo-step-1"}`.
+
+- 2026-11-21T17:24:35+00:00: Provider `Microsoft.Databricks` registration: PASS.
+
+- 2026-11-21T17:24:37+00:00: Provider `Microsoft.Storage` registration: PASS.
+
+- 2026-11-21T17:24:42+00:00: Validating Step 1 resources in `northeurope` using `az deployment group validate`.
+
+- 2026-11-21T17:24:48+00:00: ARM provider validation: PASS for `infra/databricks.bicep`.
+
+- 2026-11-21T17:25:00+00:00: Submitted `az deployment group create --name demo-step-1 --mode Incremental --no-wait`.
+
+- 2026-11-21T17:28:28+00:00: `databricks_workspace_id` = `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Databricks/workspaces/dbw-demo`.
+
+- 2026-11-21T17:28:28+00:00: `databricks_workspace_url` = `https://adb-7405618307807698.18.azuredatabricks.net`.
+
+- 2026-11-21T17:28:28+00:00: `storage_account_name` = `stdemolakenzskwyvxcpeuk`.
+
+- 2026-11-21T17:28:28+00:00: `storage_account_id` = `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Storage/storageAccounts/stdemolakenzskwyvxcpeuk`.
+
+- 2026-11-21T17:28:28+00:00: `access_connector_id` = `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Databricks/accessConnectors/ac-dbw-demo`.
+
+- 2026-11-21T17:28:28+00:00: `access_connector_principal_id` = `bc435bde-5ec3-4da6-bb00-6dca87807b91`.
+
+- 2026-11-21T17:28:28+00:00: `managed_resource_group_id` = `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks-managed`.
+
+- 2026-11-21T17:28:28+00:00: Azure deployment: PASS. Unity Catalog configuration/checks still pending.
+
+- 2026-11-21T18:39:06+00:00: Re-applied the demo-only public network setting with `az storage account update`.
