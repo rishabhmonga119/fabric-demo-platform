@@ -43,8 +43,17 @@ def run(
     command: list[str], *, include_stderr: bool = False,
     env: dict[str, str] | None = None
 ) -> str:
+    execution = command
+    if os.name == "nt" and Path(command[0]).name.casefold() == "az.cmd":
+        python = Path(command[0]).parent.parent / "python.exe"
+        if not python.is_file():
+            raise ContextError("Azure CLI's bundled Python executable is missing.")
+        # Avoid cmd.exe interpreting '&' or '%' in API query strings.
+        execution = [str(python), "-IBm", "azure.cli", *command[1:]]
+        env = dict(os.environ if env is None else env)
+        env["AZ_INSTALLER"] = "MSI"
     result = subprocess.run(
-        command, cwd=ROOT, check=False, capture_output=True, text=True,
+        execution, cwd=ROOT, check=False, capture_output=True, text=True,
         encoding="utf-8", errors="replace", timeout=180, env=env
     )
     if result.returncode != 0:

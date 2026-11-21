@@ -583,3 +583,46 @@ Message: The client 'admin@caldova30465160.onmicrosoft.com' with object id '3417
 - 2026-11-21T20:07:32+00:00: Step 1 Check `prod`: explicit gold grants, one readable row and physical __unitystorage files PASS.
 
 - 2026-11-21T20:07:47+00:00: Owned bootstrap warehouse `56f680445ba7585a`: STOPPED; starter warehouse untouched.
+
+## 2026-11-21 - Step 2: Fabric tenant, workspaces and identities
+
+Status: read-only preflight complete; awaiting governance/scope approval before
+overwriting existing tenant-setting scopes or creating domains.
+
+- Step 1 completion commit `d5fdd0ba5e39b52b581da158952b7c582564bfa1` pushed
+  and remote HEAD verified.
+- Loaded `onelake-catalog-cli` admin-remediate mode and its governance roles,
+  catalog concepts, domain CRUD/roles/assignment and no-write escalation references.
+- Read `fabric-skills/common/COMMON-CORE.md` auth, REST, pagination and capacity
+  references, and the official Admin Workspaces and Tenants REST schemas.
+- Added `tools/fabric_preflight.py`: read-only, dry-run-compatible, full pagination,
+  active Workspace-only scope, same-origin continuation checks, and the mandatory
+  `x-ms-fabric-skill: onelake-catalog-cli` header on every Fabric request.
+- Initial Admin Workspaces read failed because Windows `az.cmd` interpreted `&`
+  in the query URI as a shell separator. Updated the shared runner to execute
+  Azure CLI's official bundled Python module directly, preserving `AZ_INSTALLER=MSI`.
+  This keeps arguments literal and preserves existing Azure login/configuration.
+- Current official tenant-settings list schema returns `value`, not the older
+  skill example's `tenantSettings`; updated the parser to the verified schema.
+- Context/native-CLI regression tests: PASS (5 tests).
+- `python tools/fabric_preflight.py --dry-run`: PASS, all pages exhausted, no
+  Fabric resources or tenant settings changed.
+- Existing capacity: `capacityswitzerlandnorth`, ID
+  `5332e7ad-fe3b-4c0b-a1b7-3f1975e7b2dd`, F4, Active, Switzerland North.
+  Recorded in config/environments.yml; no scaling, creation or resizing.
+- No active demo target workspaces or matching demo domains exist in the snapshot.
+- Existing enabled settings include Fabric public API service principals,
+  Azure OpenAI, AI cross-geo processing/storage, general Git integration and
+  Ontology preview. No enabled-group allowlists were reported for those settings.
+- Missing relevant settings include GitHub integration, cross-geo Git exports,
+  the Microsoft Copilot access switch, external data sharing, and Share Item preview.
+- Proposed default: preserve already-enabled settings/scopes so other users are
+  not affected, and enable only missing demo prerequisites for the requested
+  SG-Demo-Fabric-Admins / SG-Demo-Fabric-API groups after their creation.
+- Alternative requiring explicit approval: narrow the required already-enabled
+  settings to those demo groups. This overwrites existing tenant scopes.
+- Before creating domains, the skill requires explicit choices for owner,
+  description, default sensitivity label (or conscious skip), and contributor scope.
+  Proposed owner/contributor group for both domains: SG-Demo-Fabric-Admins.
+- No Entra identities, domains or workspaces have yet been created in Step 2.
+  Steps 3-9 remain pending.

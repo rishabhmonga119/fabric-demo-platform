@@ -1,5 +1,7 @@
 import copy
 import json
+import os
+import subprocess
 import unittest
 from unittest.mock import patch
 
@@ -75,6 +77,21 @@ class ContextTests(unittest.TestCase):
         ) as run:
             common.mutate(["gh", "api", "--method", "POST"], dry_run=True)
             self.assertEqual(run.call_count, 3)
+
+
+class AzureInvocationTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "nt", "Windows Azure CLI wrapper regression")
+    def test_query_metacharacters_are_passed_to_native_azure_cli(self):
+        endpoint = "https://api.fabric.microsoft.com/v1/admin/workspaces?type=Workspace&state=Active"
+        result = subprocess.CompletedProcess([], 0, "{}", "")
+        with patch.object(common.Path, "is_file", return_value=True):
+            with patch.object(common.subprocess, "run", return_value=result) as run:
+                common.run([r"C:\Azure\CLI2\wbin\az.cmd", "rest", "--url", endpoint])
+                execution = run.call_args.args[0]
+                self.assertEqual(execution[0], r"C:\Azure\CLI2\python.exe")
+                self.assertEqual(execution[1:3], ["-IBm", "azure.cli"])
+                self.assertEqual(execution[-1], endpoint)
+                self.assertEqual(run.call_args.kwargs["env"]["AZ_INSTALLER"], "MSI")
 
 
 if __name__ == "__main__":

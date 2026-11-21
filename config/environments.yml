@@ -60,8 +60,10 @@ azure:
   databricks_storage_credential_id: 551b3f50-8c79-4ba5-83df-04fe8f1a9784
   databricks_sql_warehouse_id: 56f680445ba7585a
 fabric:
-  capacity_id: null
+  capacity_id: 5332e7ad-fe3b-4c0b-a1b7-3f1975e7b2dd
   capacity_sku: F4
+  capacity_name: capacityswitzerlandnorth
+  capacity_region: Switzerland North
   domains:
     analytics:
       name: Demo Analytics

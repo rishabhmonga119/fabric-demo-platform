@@ -98,5 +98,16 @@ actual files under each container's `__unitystorage` path. Its owned serverless
 2X-Small warehouse is limited to one cluster, auto-stops after 15 minutes, and
 is explicitly stopped after verification. The starter warehouse is untouched.
 
+## Step 2 preflight
+
+```powershell
+.\.venv\Scripts\python.exe .\tools\fabric_preflight.py --dry-run
+```
+
+This reads the existing F4, active workspace/domain inventory and relevant tenant
+settings with installed Skills for Fabric references. It never creates or resizes
+a capacity, and no settings are changed until existing scopes and domain
+governance choices are explicitly approved.
+
 Do not start Step 2 until Unity Catalog, external-access grants and storage
 checks pass. An ARM deployment marked `Succeeded` alone is not a completed step.
