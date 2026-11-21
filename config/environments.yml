@@ -1,0 +1,109 @@
+tenant:
+  domain: Caldova30465160.onmicrosoft.com
+  id: 5c41223c-f1f5-4979-930f-d5f3c72353f9
+  admin_upn: admin@Caldova30465160.onmicrosoft.com
+azure:
+  subscription_id: 61ab2275-fb68-4081-ac0f-076c87caf0c1
+  resource_group: rg-demo-databricks
+  region: westeurope
+  databricks_workspace_name: dbw-demo
+  databricks_workspace_id: null
+  databricks_workspace_url: null
+  storage_account_name: null
+  access_connector_id: null
+fabric:
+  capacity_id: null
+  capacity_sku: F4
+  domains:
+    analytics:
+      name: Demo Analytics
+      id: null
+    partners:
+      name: Demo Partners
+      id: null
+  connections:
+    databricks:
+      name: conn-dbw-demo
+      id: null
+    sharepoint:
+      name: conn-sp-demodata
+      id: null
+github:
+  owner: rishabhmonga119
+  repository: fabric-demo-platform
+  branch: main
+  fabric_directory: fabric
+entra:
+  application:
+    name: sp-fabric-demo-cicd
+    client_id: null
+    object_id: null
+    service_principal_id: null
+  groups:
+    admins:
+      name: SG-Demo-Fabric-Admins
+      id: null
+    api:
+      name: SG-Demo-Fabric-API
+      id: null
+    sales_north:
+      name: SG-Demo-Sales-North
+      id: null
+    sales_south:
+      name: SG-Demo-Sales-South
+      id: null
+  users:
+    north:
+      upn: demo.north@Caldova30465160.onmicrosoft.com
+      id: null
+    south:
+      upn: demo.south@Caldova30465160.onmicrosoft.com
+      id: null
+sharepoint:
+  site_name: DemoData
+  site_id: null
+  drive_id: null
+environments:
+  dev:
+    workspace_name: DEMO-Analytics-Dev
+    workspace_id: null
+    databricks_catalog: demo_dev
+    storage_container: uc-dev
+    sharepoint_folder: Forecasts/Dev
+    admin_group: SG-Demo-Fabric-Admins
+    items: {}
+  test:
+    workspace_name: DEMO-Analytics-Test
+    workspace_id: null
+    databricks_catalog: demo_test
+    storage_container: uc-test
+    sharepoint_folder: Forecasts/Test
+    admin_group: SG-Demo-Fabric-Admins
+    items: {}
+  prod:
+    workspace_name: DEMO-Analytics-Prod
+    workspace_id: null
+    databricks_catalog: demo_prod
+    storage_container: uc-prod
+    sharepoint_folder: Forecasts/Prod
+    admin_group: SG-Demo-Fabric-Admins
+    viewer_groups:
+      - SG-Demo-Sales-North
+      - SG-Demo-Sales-South
+    items: {}
+partner:
+  workspace_name: DEMO-Partner-A
+  workspace_id: null
+  items: {}
+  tenant_b_id: null
+  tenant_b_domain: null
+  recipient_upn: null
+  inbound_workspace_name: PARTNER-Inbound
+  inbound_workspace_id: null
+cost_guardrails:
+  databricks_workspace_count: 1
+  databricks_sku: premium
+  compute: serverless_or_single_node
+  auto_termination_minutes: 15
+  fabric_sku: F4
+  paid_azure_resources: step_1_only
