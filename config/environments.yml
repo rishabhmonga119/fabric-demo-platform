@@ -165,6 +165,13 @@ environments:
       gold: 49b33b09-f39d-4344-9a0c-60ceeb6705bc
     databricks_storage_probe_id: 98c0a8e0-1569-4a0c-9aef-9a56ffb0222d
     databricks_storage_probe_location: abfss://uc-dev@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/4b8ccb34-73c8-465d-be7f-1f3486560c06/tables/1b88ccca-edb7-4eb0-9390-fffde220d51f
+    databricks_bundle_root: /Shared/fabric-demo-platform/dev
+    databricks_job_ids:
+      seed_data: 671885229488893
+      build_medallion: 177086689925060
+      reset: 366072946856549
+    databricks_last_reset_run_id: 991065013003844
+    databricks_last_reset_state: SUCCESS
   test:
     workspace_name: DEMO-Analytics-Test
     workspace_id: 0a29b70a-6bc9-4bfc-b196-61825cf9f75a
@@ -182,6 +189,13 @@ environments:
       gold: b72d5983-0cb6-4f76-bebe-16bd0d8d04f4
     databricks_storage_probe_id: db1debd8-917f-4915-a095-b17d15cfaed9
     databricks_storage_probe_location: abfss://uc-test@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/19327965-c698-4679-9f7e-79e860ed1ebc/tables/8224426b-137f-4b90-b1bf-fe5cc3c56a1d
+    databricks_bundle_root: /Shared/fabric-demo-platform/test
+    databricks_job_ids:
+      seed_data: 169955690803706
+      build_medallion: 101742214912740
+      reset: 85327181441208
+    databricks_last_reset_run_id: 373599146720507
+    databricks_last_reset_state: SUCCESS
   prod:
     workspace_name: DEMO-Analytics-Prod
     workspace_id: 4cd2247c-ab4c-441a-9637-f3c3d525f4c1
@@ -202,6 +216,13 @@ environments:
       gold: 199a9908-51fc-488e-b356-c11b635e7b0d
     databricks_storage_probe_id: 02097b02-f2b1-4861-a2a1-ba284646564d
     databricks_storage_probe_location: abfss://uc-prod@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/56c770b2-9622-4eb2-91a6-a047c665e3e3/tables/8fe283b6-4def-4f18-ad43-004fdb27c8a4
+    databricks_bundle_root: /Shared/fabric-demo-platform/prod
+    databricks_job_ids:
+      seed_data: 469401106812777
+      build_medallion: 303569236547339
+      reset: 31166941175571
+    databricks_last_reset_run_id: 974721778093552
+    databricks_last_reset_state: SUCCESS
 partner:
   workspace_name: DEMO-Partner-A
   workspace_id: f29bb81d-9fae-413e-bff4-0a1c56a78ac3

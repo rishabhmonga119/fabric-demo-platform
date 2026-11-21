@@ -41,7 +41,7 @@ def cli(name: str) -> str:
 
 def run(
     command: list[str], *, include_stderr: bool = False,
-    env: dict[str, str] | None = None
+    env: dict[str, str] | None = None, cwd: Path = ROOT
 ) -> str:
     execution = command
     if os.name == "nt" and Path(command[0]).name.casefold() == "az.cmd":
@@ -53,7 +53,7 @@ def run(
         env = dict(os.environ if env is None else env)
         env["AZ_INSTALLER"] = "MSI"
     result = subprocess.run(
-        execution, cwd=ROOT, check=False, capture_output=True, text=True,
+        execution, cwd=cwd, check=False, capture_output=True, text=True,
         encoding="utf-8", errors="replace", timeout=180, env=env
     )
     if result.returncode != 0:
@@ -106,10 +106,11 @@ def verify_context() -> None:
 
 
 def mutate(
-    command: list[str], dry_run: bool = False, *, env: dict[str, str] | None = None
+    command: list[str], dry_run: bool = False, *, env: dict[str, str] | None = None,
+    cwd: Path = ROOT
 ) -> str:
     verify_context()
     print(("DRY-RUN: " if dry_run else "RUN: ") + subprocess.list2cmdline(command))
     if dry_run:
         return ""
-    return run(command, env=env)
+    return run(command, env=env, cwd=cwd)

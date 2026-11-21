@@ -1,0 +1,85 @@
+bundle:
+  name: fabric_demo_platform
+
+workspace:
+  root_path: /Workspace/Shared/fabric-demo-platform/${bundle.target}
+
+variables:
+  catalog:
+    description: Stage-owned Unity Catalog catalog
+    default: demo_dev
+  env_marker:
+    description: Visible source-stage marker
+    default: dev
+  warehouse_id:
+    description: Owned serverless SQL warehouse with 15-minute auto-stop
+
+resources:
+  jobs:
+    seed_data:
+      name: demo_${bundle.target}_seed_data
+      max_concurrent_runs: 1
+      timeout_seconds: 1800
+      tags:
+        demoOwner: rishabhmonga119/fabric-demo-platform
+        createdBy: copilot-demo-build
+      tasks:
+        - task_key: seed
+          notebook_task:
+            notebook_path: ./src/seed_data.py
+            base_parameters:
+              catalog: ${var.catalog}
+              env_marker: ${var.env_marker}
+    build_medallion:
+      name: demo_${bundle.target}_build_medallion
+      max_concurrent_runs: 1
+      timeout_seconds: 1800
+      tags:
+        demoOwner: rishabhmonga119/fabric-demo-platform
+        createdBy: copilot-demo-build
+      tasks:
+        - task_key: bronze_to_silver
+          notebook_task:
+            notebook_path: ./src/bronze_to_silver.sql
+            warehouse_id: ${var.warehouse_id}
+            base_parameters:
+              catalog: ${var.catalog}
+        - task_key: silver_to_gold
+          depends_on:
+            - task_key: bronze_to_silver
+          notebook_task:
+            notebook_path: ./src/silver_to_gold.sql
+            warehouse_id: ${var.warehouse_id}
+            base_parameters:
+              catalog: ${var.catalog}
+    reset:
+      name: demo_${bundle.target}_reset
+      max_concurrent_runs: 1
+      timeout_seconds: 3600
+      tags:
+        demoOwner: rishabhmonga119/fabric-demo-platform
+        createdBy: copilot-demo-build
+      tasks:
+        - task_key: seed
+          run_job_task:
+            job_id: ${resources.jobs.seed_data.id}
+        - task_key: medallion
+          depends_on:
+            - task_key: seed
+          run_job_task:
+            job_id: ${resources.jobs.build_medallion.id}
+
+targets:
+  dev:
+    default: true
+    variables:
+      catalog: demo_dev
+      env_marker: dev
+  test:
+    variables:
+      catalog: demo_test
+      env_marker: test
+  prod:
+    variables:
+      catalog: demo_prod
+      env_marker: prod

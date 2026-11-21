@@ -858,3 +858,220 @@ and licensed viewer personas are verified. Commit before starting Step 3.
   GitHub OIDC SP access PASS; existing licensed viewer personas PASS.
 - Step 2 is complete; no outstanding licence allocation is required for the
   selected personas. Continue Step 3 after committing/pushing this result.
+
+## Step 3 - Deterministic Databricks bundle and medallion
+
+Status: Databricks build and all Step 3 checks COMPLETE. Step 2 was committed/pushed as
+`0e561fb18a61894ccf9fc2d774401b6045cca7b4`.
+
+- Final successful reset runs: Dev `991065013003844`, Test `373599146720507`,
+  Prod `974721778093552`. Actual job IDs and bundle roots are in configuration.
+- All 21 Gold tables passed managed Delta, correct stage storage, exact column
+  descriptions, unique grains, marker and no UC filter/mask checks.
+  Each stage has 9,856 sales rows and 6,160 delivery rows. Independent complete
+  business-row fingerprints match across stages; sales volume checksum
+  `4488091.02`, deliveries `4488094.60` (two-decimal partner-share rounding).
+- Captured `seed/expected_counts.json` only after actual data matched the seed.
+  The first verification was interrupted at 18/21 tables; reran only
+  `python tools/build_expected_counts.py --capture-baseline`, not the data jobs.
+  Recovery verification passed all 21 tables; the owned SQL warehouse confirmed
+  STOPPED. Starter compute and approved Fabric F8 were not changed.
+- Final targeted regression command:
+  `python -m unittest test_context test_databricks test_seed_model -v`
+  with `tests` on PYTHONPATH: 14 tests PASS; `git diff --check` PASS.
+- Commit/push uses `tools/commit_step.py --step 3`, explicit Step 3 paths and
+  remote-HEAD verification. No Fabric data items exist yet; those are Step 5
+  after the Step 4 forecasts, following the requested order.
+
+- Added a three-target DAB with serverless seed, SQL medallion and reset jobs.
+  SQL tasks reuse owned serverless warehouse `56f680445ba7585a`, size 2X-Small,
+  one cluster, 15-minute auto-stop, explicitly stopped after each stage.
+- Read official Databricks bundle settings/resources, serverless notebook jobs,
+  SQL notebook warehouse binding, SQL Statement Execution v1, widgets,
+  IDENTIFIER and EXECUTE IMMEDIATE references before implementation.
+- Data dictionary and deterministic business numbers live in the shared model.
+  The complete specified family/package rules give 28 combinations (16 water
+  and 12 flavoured/soft-drink), not the approximate "~16" in the sample count.
+  Kept every valid combination rather than silently omitting products/packages.
+  Expected canonical sales rows: 9,856; deliveries: 6,160. Margins are mapped
+  by product line. All stages differ only by their environment marker.
+- Ran `python -m unittest discover -s tests -p test_seed_model.py -v` and
+  `python tools/run_databricks_bundle.py --dry-run`: generator checks PASS;
+  all three live bundle validations PASS; Azure/Fabric/GitHub context PASS.
+  No deploy or business data execution had occurred at this checkpoint.
+- Added an actual Gold verifier for managed Delta, stage storage, every column
+  comment, no masks/row filters, unique grains, markers, independently generated
+  business-row fingerprints and volume checksums. Baseline capture is allowed
+  only after these actual checks pass.
+- First Dev deployment succeeded. `bundle run reset --no-wait --output json`
+  submitted reset run `923174667270674` but emitted no JSON stdout, so the
+  driver's JSON parsing failed. Read-back confirmed the reset/seed were RUNNING,
+  and the SQL warehouse was still STOPPED. Changed submission to the documented
+  `jobs run-now <deployed-reset-job-id> --no-wait --output json` command, whose
+  contract returns the run ID. The driver detects/reuses an already-active
+  reset rather than duplicating it. No authentication/capacity changes needed.
+- Local regression suite: 34 tests PASS. Added two targeted shared SQL-client
+  checks for pending-to-success polling and explicit failed-statement errors;
+  all 6 Databricks tests PASS after extraction.
+- The original Dev reset had already finished by the resume attempt, so a new
+  reset `251261354222065` was submitted via `jobs run-now`; JSON run-ID capture
+  worked. Both Dev runs completed serverless seeding and bronze-to-silver,
+  but Gold failed while setting the first column comment: the dynamic
+  `EXECUTE IMMEDIATE` literal lost its intended quotes around the description
+  (`PARSE_SYNTAX_ERROR`, `IS Product code...`). Warehouse stop was confirmed.
+- Read the official ALTER TABLE COLUMN and IDENTIFIER grammar. Replaced dynamic
+  comment SQL with `ALTER TABLE IDENTIFIER(...) ALTER COLUMN ... COMMENT '...'`,
+  eliminating nested quoting. Regeneration is limited to files carrying this
+  generator's known header; unrelated SQL is never overwritten.
+
+- 2026-11-21T22:28:44+00:00: DAB target `dev` validation: PASS.
+
+- 2026-11-21T22:29:24+00:00: Reserved verified-empty bundle path `/Shared/fabric-demo-platform/dev` for owned stage deployment.
+
+- 2026-11-21T22:30:04+00:00: DAB `dev` job `seed_data` = `671885229488893`.
+
+- 2026-11-21T22:30:13+00:00: DAB `dev` job `build_medallion` = `177086689925060`.
+
+- 2026-11-21T22:30:23+00:00: DAB `dev` job `reset` = `366072946856549`.
+
+- 2026-11-21T22:32:49+00:00: DAB target `dev` validation: PASS.
+
+- 2026-11-21T22:33:47+00:00: DAB `dev` job `seed_data` = `671885229488893`.
+
+- 2026-11-21T22:33:57+00:00: DAB `dev` job `build_medallion` = `177086689925060`.
+
+- 2026-11-21T22:34:10+00:00: DAB `dev` job `reset` = `366072946856549`.
+
+- 2026-11-21T22:34:25+00:00: Started DAB `dev` reset run `251261354222065`.
+
+- 2026-11-21T22:36:12+00:00: DAB `dev` reset FAILED: `{"life_cycle_state": "INTERNAL_ERROR", "result_state": "FAILED", "state_message": "Task medallion failed with message: Workload failed, see run output for details. This caused all downstream tasks to get skipped.", "user_cancelled_or_timedout": false}`.
+
+- 2026-11-21T22:36:34+00:00: Owned SQL warehouse confirmed STOPPED after `dev`; auto-stop remains 15 minutes.
+
+- 2026-11-21T22:39:02+00:00: DAB target `dev` validation: PASS.
+
+- 2026-11-21T22:40:19+00:00: DAB `dev` job `seed_data` = `671885229488893`.
+
+- 2026-11-21T22:40:29+00:00: DAB `dev` job `build_medallion` = `177086689925060`.
+
+- 2026-11-21T22:40:38+00:00: DAB `dev` job `reset` = `366072946856549`.
+
+- 2026-11-21T22:40:56+00:00: Started DAB `dev` reset run `991065013003844`.
+
+- 2026-11-21T22:43:44+00:00: DAB `dev` reset run `991065013003844`: SUCCESS.
+
+- 2026-11-21T22:44:06+00:00: Owned SQL warehouse confirmed STOPPED after `dev`; auto-stop remains 15 minutes.
+
+- 2026-11-21T22:44:12+00:00: DAB target `test` validation: PASS.
+
+- 2026-11-21T22:44:50+00:00: Reserved verified-empty bundle path `/Shared/fabric-demo-platform/test` for owned stage deployment.
+
+- 2026-11-21T22:45:17+00:00: DAB `test` job `seed_data` = `169955690803706`.
+
+- 2026-11-21T22:45:27+00:00: DAB `test` job `build_medallion` = `101742214912740`.
+
+- 2026-11-21T22:45:38+00:00: DAB `test` job `reset` = `85327181441208`.
+
+- 2026-11-21T22:45:54+00:00: Started DAB `test` reset run `373599146720507`.
+
+- 2026-11-21T22:48:43+00:00: DAB `test` reset run `373599146720507`: SUCCESS.
+
+- 2026-11-21T22:49:05+00:00: Owned SQL warehouse confirmed STOPPED after `test`; auto-stop remains 15 minutes.
+
+- 2026-11-21T22:49:10+00:00: DAB target `prod` validation: PASS.
+
+- 2026-11-21T22:49:50+00:00: Reserved verified-empty bundle path `/Shared/fabric-demo-platform/prod` for owned stage deployment.
+
+- 2026-11-21T22:50:38+00:00: DAB `prod` job `seed_data` = `469401106812777`.
+
+- 2026-11-21T22:50:48+00:00: DAB `prod` job `build_medallion` = `303569236547339`.
+
+- 2026-11-21T22:50:58+00:00: DAB `prod` job `reset` = `31166941175571`.
+
+- 2026-11-21T22:51:14+00:00: Started DAB `prod` reset run `974721778093552`.
+
+- 2026-11-21T22:55:06+00:00: DAB `prod` reset run `974721778093552`: SUCCESS.
+
+- 2026-11-21T22:55:42+00:00: Owned SQL warehouse confirmed STOPPED after `prod`; auto-stop remains 15 minutes.
+
+- 2026-11-21T22:56:15+00:00: Step 3 Check `demo_dev.gold.dim_product`: `{"rows": 8, "business_checksums": ["3066695588948966823", "5605987114479527784"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:56:31+00:00: Step 3 Check `demo_dev.gold.dim_package`: `{"rows": 5, "business_checksums": ["3141947863916145291", "3403105532562997435"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:56:45+00:00: Step 3 Check `demo_dev.gold.dim_channel`: `{"rows": 4, "business_checksums": ["1271150728838377667", "4171335430674441764"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:57:00+00:00: Step 3 Check `demo_dev.gold.dim_region`: `{"rows": 4, "business_checksums": ["1727677313948116024", "822969283677105475"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:57:17+00:00: Step 3 Check `demo_dev.gold.dim_partner`: `{"rows": 3, "business_checksums": ["1963812245698801643", "1531370492326189302"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:57:33+00:00: Step 3 Check `demo_dev.gold.fact_sales_monthly`: `{"rows": 9856, "business_checksums": ["5689566022483012007569", "5693480528515962777561"], "checksum": "4488091.02"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:57:47+00:00: Step 3 Check `demo_dev.gold.fact_deliveries`: `{"rows": 6160, "business_checksums": ["3548235867544143132291", "3542565841620475078838"], "checksum": "4488094.60"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:58:03+00:00: Step 3 Check `demo_test.gold.dim_product`: `{"rows": 8, "business_checksums": ["3066695588948966823", "5605987114479527784"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:58:20+00:00: Step 3 Check `demo_test.gold.dim_package`: `{"rows": 5, "business_checksums": ["3141947863916145291", "3403105532562997435"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:58:37+00:00: Step 3 Check `demo_test.gold.dim_channel`: `{"rows": 4, "business_checksums": ["1271150728838377667", "4171335430674441764"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:58:53+00:00: Step 3 Check `demo_test.gold.dim_region`: `{"rows": 4, "business_checksums": ["1727677313948116024", "822969283677105475"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:59:13+00:00: Step 3 Check `demo_test.gold.dim_partner`: `{"rows": 3, "business_checksums": ["1963812245698801643", "1531370492326189302"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:59:29+00:00: Step 3 Check `demo_test.gold.fact_sales_monthly`: `{"rows": 9856, "business_checksums": ["5689566022483012007569", "5693480528515962777561"], "checksum": "4488091.02"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T22:59:48+00:00: Step 3 Check `demo_test.gold.fact_deliveries`: `{"rows": 6160, "business_checksums": ["3548235867544143132291", "3542565841620475078838"], "checksum": "4488094.60"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:00:05+00:00: Step 3 Check `demo_prod.gold.dim_product`: `{"rows": 8, "business_checksums": ["3066695588948966823", "5605987114479527784"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:00:24+00:00: Step 3 Check `demo_prod.gold.dim_package`: `{"rows": 5, "business_checksums": ["3141947863916145291", "3403105532562997435"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:00:41+00:00: Step 3 Check `demo_prod.gold.dim_channel`: `{"rows": 4, "business_checksums": ["1271150728838377667", "4171335430674441764"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:00:56+00:00: Step 3 Check `demo_prod.gold.dim_region`: `{"rows": 4, "business_checksums": ["1727677313948116024", "822969283677105475"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:03:24+00:00: Step 3 Check `demo_dev.gold.dim_product`: `{"rows": 8, "business_checksums": ["3066695588948966823", "5605987114479527784"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:03:44+00:00: Step 3 Check `demo_dev.gold.dim_package`: `{"rows": 5, "business_checksums": ["3141947863916145291", "3403105532562997435"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:03:58+00:00: Step 3 Check `demo_dev.gold.dim_channel`: `{"rows": 4, "business_checksums": ["1271150728838377667", "4171335430674441764"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:04:15+00:00: Step 3 Check `demo_dev.gold.dim_region`: `{"rows": 4, "business_checksums": ["1727677313948116024", "822969283677105475"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:04:28+00:00: Step 3 Check `demo_dev.gold.dim_partner`: `{"rows": 3, "business_checksums": ["1963812245698801643", "1531370492326189302"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:04:45+00:00: Step 3 Check `demo_dev.gold.fact_sales_monthly`: `{"rows": 9856, "business_checksums": ["5689566022483012007569", "5693480528515962777561"], "checksum": "4488091.02"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:04:59+00:00: Step 3 Check `demo_dev.gold.fact_deliveries`: `{"rows": 6160, "business_checksums": ["3548235867544143132291", "3542565841620475078838"], "checksum": "4488094.60"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:05:14+00:00: Step 3 Check `demo_test.gold.dim_product`: `{"rows": 8, "business_checksums": ["3066695588948966823", "5605987114479527784"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:05:28+00:00: Step 3 Check `demo_test.gold.dim_package`: `{"rows": 5, "business_checksums": ["3141947863916145291", "3403105532562997435"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:05:42+00:00: Step 3 Check `demo_test.gold.dim_channel`: `{"rows": 4, "business_checksums": ["1271150728838377667", "4171335430674441764"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:05:56+00:00: Step 3 Check `demo_test.gold.dim_region`: `{"rows": 4, "business_checksums": ["1727677313948116024", "822969283677105475"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:06:11+00:00: Step 3 Check `demo_test.gold.dim_partner`: `{"rows": 3, "business_checksums": ["1963812245698801643", "1531370492326189302"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:06:26+00:00: Step 3 Check `demo_test.gold.fact_sales_monthly`: `{"rows": 9856, "business_checksums": ["5689566022483012007569", "5693480528515962777561"], "checksum": "4488091.02"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:06:40+00:00: Step 3 Check `demo_test.gold.fact_deliveries`: `{"rows": 6160, "business_checksums": ["3548235867544143132291", "3542565841620475078838"], "checksum": "4488094.60"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:06:54+00:00: Step 3 Check `demo_prod.gold.dim_product`: `{"rows": 8, "business_checksums": ["3066695588948966823", "5605987114479527784"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:07:08+00:00: Step 3 Check `demo_prod.gold.dim_package`: `{"rows": 5, "business_checksums": ["3141947863916145291", "3403105532562997435"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:07:25+00:00: Step 3 Check `demo_prod.gold.dim_channel`: `{"rows": 4, "business_checksums": ["1271150728838377667", "4171335430674441764"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:07:38+00:00: Step 3 Check `demo_prod.gold.dim_region`: `{"rows": 4, "business_checksums": ["1727677313948116024", "822969283677105475"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:07:53+00:00: Step 3 Check `demo_prod.gold.dim_partner`: `{"rows": 3, "business_checksums": ["1963812245698801643", "1531370492326189302"]}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:08:08+00:00: Step 3 Check `demo_prod.gold.fact_sales_monthly`: `{"rows": 9856, "business_checksums": ["5689566022483012007569", "5693480528515962777561"], "checksum": "4488091.02"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:08:24+00:00: Step 3 Check `demo_prod.gold.fact_deliveries`: `{"rows": 6160, "business_checksums": ["3548235867544143132291", "3542565841620475078838"], "checksum": "4488094.60"}`; unique grain, stage, comments and no UC filters/masks PASS.
+
+- 2026-11-21T23:08:24+00:00: Captured verified actual counts/checksums in seed/expected_counts.json.
+
+- 2026-11-21T23:08:42+00:00: Owned verification warehouse confirmed STOPPED after Step 3 checks.

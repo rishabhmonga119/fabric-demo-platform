@@ -6,7 +6,7 @@ Illustrative beverage data (mineral water / soft drinks). **Not customer data.**
 - Same numbers in all three stages. Every table carries `env_marker` (`dev` / `test` / `prod`) so the audience can see which source a stage reads.
 - Units: volume in hectolitres (hl), money in EUR, months as first-of-month `DATE`.
 - Actuals: **2025-01 to 2026-10**. Forecasts: **2026-01 to 2026-11** (baseline) + **2026-12** (live file in Act 1).
-- Expected row counts and checksums are **computed** by `tools/build_expected_counts.py` after the first run and stored in `seed/expected_counts.json` — don't hard-code them.
+- Expected row counts and checksums are **computed** by `tools/build_expected_counts.py --capture-baseline` after the first run and stored in `seed/expected_counts.json`. Actual Gold data must match the independently generated seed before capture; don't hard-code checks.
 
 ---
 
@@ -34,7 +34,7 @@ Products (sku → name): `SKU-STL-075` Spring Still, `SKU-SPK-100` Spring Sparkl
 | PET-050 | PET | 0.5 | false |
 | PET-150 | PET | 1.5 | false |
 
-Valid SKU × package combinations: ~16 (waters in all glass + PET-100/150; soft drinks in PET-050/100 + GL-025). Generator defines the list explicitly.
+Valid SKU × package combinations: 28 (four waters in both glass packages + PET-100/150; four flavoured/soft drinks in PET-050/100 + GL-025). The complete family rules give 16 + 12 combinations. The generator defines the list explicitly; monthly sales therefore have 22 × 28 × 4 regions × 4 channels = 9,856 canonical rows.
 
 ### `dim_channel` (4 rows)
 `RETAIL` (food retail), `HORECA` (gastronomy), `WHOLESALE` (beverage wholesale), `ECOM` (online).

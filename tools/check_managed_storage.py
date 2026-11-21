@@ -6,10 +6,10 @@ from pathlib import Path
 import re
 import sys
 import tempfile
-import time
 
 from check_databricks import workspace_environment
 from common import ContextError, ROOT, cli, load_config, mutate, run, verify_context
+from databricks_sql import DatabricksSql
 
 sys.path.insert(0, str(ROOT))
 from infra.deploy import record, save_config
@@ -95,30 +95,12 @@ def main() -> None:
         print(f"DRY-RUN: use owned warehouse {warehouse_id} for stage probes and stop it afterwards.")
         return
 
+    client = DatabricksSql(config, warehouse_id)
+
     def sql(statement: str) -> dict:
-        # GA API works with PRO/serverless; v2 currently supports Lakehouse//RT only.
-        # https://docs.databricks.com/api/statement-execution/v1/execute-statement
-        response = post("/api/2.0/sql/statements", {
-            "warehouse_id": warehouse_id, "statement": statement,
-            "format": "JSON_ARRAY", "disposition": "INLINE",
-            "wait_timeout": "30s", "on_wait_timeout": "CONTINUE", "row_limit": 50,
-        })
+        response = client.execute(statement)
         record(f"SQL statement submitted: `{statement}`.")
-        deadline = time.monotonic() + 600
-        while True:
-            state = response["status"]["state"]
-            if state == "SUCCEEDED":
-                return response
-            if state not in ("PENDING", "RUNNING"):
-                raise RuntimeError(f"SQL verification failed: {json.dumps(response['status'])}")
-            if time.monotonic() >= deadline:
-                mutate([executable, "api", "post",
-                        f"/api/2.0/sql/statements/{response['statement_id']}/cancel"],
-                       env=environment)
-                raise TimeoutError("SQL probe exceeded the 10-minute execution limit.")
-            time.sleep(5)
-            # https://docs.databricks.com/api/statement-execution/v1/get-statement-result
-            response = read("api", "get", f"/api/2.0/sql/statements/{response['statement_id']}")
+        return response
 
     try:
         check_warehouse(read("warehouses", "get", warehouse_id), owner)
@@ -157,16 +139,8 @@ def main() -> None:
         print("Step 1 managed-storage and SHOW GRANTS checks: PASS for dev, test and prod.")
     finally:
         # https://docs.databricks.com/api/warehouses/v1/stop-warehouse
-        mutate([executable, "api", "post", f"/api/2.0/sql/warehouses/{warehouse_id}/stop"],
-               env=environment)
-        deadline = time.monotonic() + 300
-        while time.monotonic() < deadline:
-            if read("warehouses", "get", warehouse_id)["state"] == "STOPPED":
-                record(f"Owned bootstrap warehouse `{warehouse_id}`: STOPPED; starter warehouse untouched.")
-                break
-            time.sleep(5)
-        else:
-            raise TimeoutError("Bootstrap warehouse did not confirm STOPPED within five minutes.")
+        client.stop()
+        record(f"Owned bootstrap warehouse `{warehouse_id}`: STOPPED; starter warehouse untouched.")
 
 
 if __name__ == "__main__":

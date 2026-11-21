@@ -1,0 +1,161 @@
+{
+  "dev": {
+    "dim_product": {
+      "rows": 8,
+      "business_checksums": [
+        "3066695588948966823",
+        "5605987114479527784"
+      ]
+    },
+    "dim_package": {
+      "rows": 5,
+      "business_checksums": [
+        "3141947863916145291",
+        "3403105532562997435"
+      ]
+    },
+    "dim_channel": {
+      "rows": 4,
+      "business_checksums": [
+        "1271150728838377667",
+        "4171335430674441764"
+      ]
+    },
+    "dim_region": {
+      "rows": 4,
+      "business_checksums": [
+        "1727677313948116024",
+        "822969283677105475"
+      ]
+    },
+    "dim_partner": {
+      "rows": 3,
+      "business_checksums": [
+        "1963812245698801643",
+        "1531370492326189302"
+      ]
+    },
+    "fact_sales_monthly": {
+      "rows": 9856,
+      "business_checksums": [
+        "5689566022483012007569",
+        "5693480528515962777561"
+      ],
+      "checksum": "4488091.02"
+    },
+    "fact_deliveries": {
+      "rows": 6160,
+      "business_checksums": [
+        "3548235867544143132291",
+        "3542565841620475078838"
+      ],
+      "checksum": "4488094.60"
+    }
+  },
+  "test": {
+    "dim_product": {
+      "rows": 8,
+      "business_checksums": [
+        "3066695588948966823",
+        "5605987114479527784"
+      ]
+    },
+    "dim_package": {
+      "rows": 5,
+      "business_checksums": [
+        "3141947863916145291",
+        "3403105532562997435"
+      ]
+    },
+    "dim_channel": {
+      "rows": 4,
+      "business_checksums": [
+        "1271150728838377667",
+        "4171335430674441764"
+      ]
+    },
+    "dim_region": {
+      "rows": 4,
+      "business_checksums": [
+        "1727677313948116024",
+        "822969283677105475"
+      ]
+    },
+    "dim_partner": {
+      "rows": 3,
+      "business_checksums": [
+        "1963812245698801643",
+        "1531370492326189302"
+      ]
+    },
+    "fact_sales_monthly": {
+      "rows": 9856,
+      "business_checksums": [
+        "5689566022483012007569",
+        "5693480528515962777561"
+      ],
+      "checksum": "4488091.02"
+    },
+    "fact_deliveries": {
+      "rows": 6160,
+      "business_checksums": [
+        "3548235867544143132291",
+        "3542565841620475078838"
+      ],
+      "checksum": "4488094.60"
+    }
+  },
+  "prod": {
+    "dim_product": {
+      "rows": 8,
+      "business_checksums": [
+        "3066695588948966823",
+        "5605987114479527784"
+      ]
+    },
+    "dim_package": {
+      "rows": 5,
+      "business_checksums": [
+        "3141947863916145291",
+        "3403105532562997435"
+      ]
+    },
+    "dim_channel": {
+      "rows": 4,
+      "business_checksums": [
+        "1271150728838377667",
+        "4171335430674441764"
+      ]
+    },
+    "dim_region": {
+      "rows": 4,
+      "business_checksums": [
+        "1727677313948116024",
+        "822969283677105475"
+      ]
+    },
+    "dim_partner": {
+      "rows": 3,
+      "business_checksums": [
+        "1963812245698801643",
+        "1531370492326189302"
+      ]
+    },
+    "fact_sales_monthly": {
+      "rows": 9856,
+      "business_checksums": [
+        "5689566022483012007569",
+        "5693480528515962777561"
+      ],
+      "checksum": "4488091.02"
+    },
+    "fact_deliveries": {
+      "rows": 6160,
+      "business_checksums": [
+        "3548235867544143132291",
+        "3542565841620475078838"
+      ],
+      "checksum": "4488094.60"
+    }
+  }
+}

@@ -164,12 +164,16 @@ Follow the current Databricks Asset Bundles docs; don't invent keys.
 
 **Run**
 ```
-databricks bundle deploy -t dev  && databricks bundle run reset -t dev
-databricks bundle deploy -t test && databricks bundle run reset -t test
-databricks bundle deploy -t prod && databricks bundle run reset -t prod
+python tools/run_databricks_bundle.py --dry-run
+python tools/run_databricks_bundle.py --stages dev,test,prod
+python tools/build_expected_counts.py --capture-baseline
 ```
 
-**Check:** `SELECT COUNT(*) FROM demo_prod.gold.fact_sales_monthly` matches the expected count in `04-sample-data.md`. Dev/test/prod differ only by the `env_marker` column (makes stage binding visible in the demo).
+The driver supplies the recorded owned warehouse ID, validates each bundle,
+checks ownership and serverless limits, runs targets sequentially and confirms
+the warehouse is stopped after every run.
+
+**Check:** `SELECT COUNT(*) FROM demo_prod.gold.fact_sales_monthly` matches the computed count in `seed/expected_counts.json`. The verifier also compares independent business-row fingerprints, volume checksums, unique grains, managed Delta locations, column comments and absence of UC masks/filters. Dev/test/prod differ only by `env_marker` (makes stage binding visible in the demo).
 
 ---
 

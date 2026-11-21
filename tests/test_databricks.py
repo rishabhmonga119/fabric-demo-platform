@@ -1,10 +1,13 @@
+import json
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 from bootstrap_databricks import explicit_privileges
 from check_managed_storage import check_warehouse, result_rows
+from databricks_sql import DatabricksSql
 
 
 class ExplicitGrantTests(unittest.TestCase):
@@ -51,6 +54,30 @@ class ManagedStorageCheckTests(unittest.TestCase):
             result_rows({**response, "manifest": {**response["manifest"], "truncated": True}})
         with self.assertRaises(RuntimeError):
             result_rows({**response, "result": {"data_array": [["1", "unexpected"]]}})
+
+
+class StatementExecutionTests(unittest.TestCase):
+    def client(self):
+        with patch("databricks_sql.cli", return_value="databricks"), \
+             patch("databricks_sql.workspace_environment", return_value={}):
+            return DatabricksSql({}, "owned-warehouse")
+
+    def test_pending_statement_is_polled_until_actual_success(self):
+        client = self.client()
+        pending = {"statement_id": "statement-1", "status": {"state": "PENDING"}}
+        succeeded = {"status": {"state": "SUCCEEDED"}, "result": {"data_array": [["7"]]}}
+        with patch("databricks_sql.mutate", return_value=json.dumps(pending)), \
+             patch.object(client, "read", return_value=succeeded) as read, \
+             patch("databricks_sql.time.sleep"):
+            self.assertEqual(client.execute("SELECT COUNT(*) FROM demo_dev.gold.dim_product"), succeeded)
+            read.assert_called_once_with("api", "get", "/api/2.0/sql/statements/statement-1")
+
+    def test_failed_statement_is_never_returned_as_successful_data(self):
+        client = self.client()
+        failed = {"status": {"state": "FAILED", "error": {"message": "permission denied"}}}
+        with patch("databricks_sql.mutate", return_value=json.dumps(failed)):
+            with self.assertRaisesRegex(RuntimeError, "permission denied"):
+                client.execute("SELECT * FROM demo_dev.gold.dim_product")
 
 
 if __name__ == "__main__":
