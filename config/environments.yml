@@ -23,6 +23,10 @@ azure:
     assignment_id: /providers/Microsoft.Management/managementGroups/5c41223c-f1f5-4979-930f-d5f3c72353f9/providers/Microsoft.Authorization/policyAssignments/MCAPSGovDeployPolicies
     definition_id: /providers/Microsoft.Management/managementGroups/5c41223c-f1f5-4979-930f-d5f3c72353f9/providers/Microsoft.Authorization/policyDefinitions/StorageAccount_PublicNetwork_Modify
     definition_reference_id: StorageAccountPublicNetworkModify
+    exclude_platform_denied: true
+    excluded_accounts:
+      ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/managed-rg-kiwamfn/providers/Microsoft.Storage/storageAccounts/scaneastus2jqfxsge
+      : DenyAssignmentAuthorizationFailed
     target_resource_ids:
     - /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demoaas-n0dv-1901/providers/Microsoft.Storage/storageAccounts/demoaasn0dv1901
     - /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/managed-rg-kiwamfn/providers/Microsoft.Storage/storageAccounts/scaneastus2jqfxsge
@@ -37,6 +41,22 @@ azure:
     created_exemptions:
       ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demoaas-n0dv-1901/providers/Microsoft.Storage/storageAccounts/demoaasn0dv1901
       : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demoaas-n0dv-1901/providers/Microsoft.Storage/storageAccounts/demoaasn0dv1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
+      ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks-managed/providers/Microsoft.Storage/storageAccounts/dbstoraget6ajpmi4ehdl2
+      : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks-managed/providers/Microsoft.Storage/storageAccounts/dbstoraget6ajpmi4ehdl2/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
+      ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Storage/storageAccounts/stdemolakenzskwyvxcpeuk
+      : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Storage/storageAccounts/stdemolakenzskwyvxcpeuk/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
+      ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-alz-mgmt-state-westus2-001/providers/Microsoft.Storage/storageAccounts/udshyd1901
+      : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-alz-mgmt-state-westus2-001/providers/Microsoft.Storage/storageAccounts/udshyd1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
+      ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-waypoint-agents-qurvrwwr/providers/Microsoft.Storage/storageAccounts/styctih56h2ong2
+      : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-waypoint-agents-qurvrwwr/providers/Microsoft.Storage/storageAccounts/styctih56h2ong2/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
+      ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/modernwork-rg-n0dv-1901/providers/Microsoft.Storage/storageAccounts/internalpaymentsn0dv1901
+      : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/modernwork-rg-n0dv-1901/providers/Microsoft.Storage/storageAccounts/internalpaymentsn0dv1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
+      ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-agent365-complexagent/providers/Microsoft.Storage/storageAccounts/sta365cplxkopcvi
+      : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-agent365-complexagent/providers/Microsoft.Storage/storageAccounts/sta365cplxkopcvi/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
+      ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-a365-foundry-agent/providers/Microsoft.Storage/storageAccounts/stfoundrybfc74u3drvzlw
+      : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-a365-foundry-agent/providers/Microsoft.Storage/storageAccounts/stfoundrybfc74u3drvzlw/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
+      ? /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-customimages/providers/Microsoft.Storage/storageAccounts/udsimggl1901
+      : /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-customimages/providers/Microsoft.Storage/storageAccounts/udsimggl1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network
 fabric:
   capacity_id: null
   capacity_sku: F4

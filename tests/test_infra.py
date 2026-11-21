@@ -65,6 +65,46 @@ class NetworkGuardTests(unittest.TestCase):
 
 
 class ExemptionGuardTests(unittest.TestCase):
+    def test_only_explicitly_approved_platform_denials_can_be_excluded(self):
+        account = "/subscriptions/demo/resourceGroups/demo/providers/Microsoft.Storage/storageAccounts/demo"
+        for approved, message in (
+            (True, "DenyAssignmentAuthorizationFailed"),
+            (False, "DenyAssignmentAuthorizationFailed"),
+            (True, "AuthorizationFailed"),
+        ):
+            config = {
+                "azure": {"subscription_id": "demo", "storage_policy_exemption": {
+                    "name": "demo", "assignment_id": "/policyAssignments/demo",
+                    "definition_reference_id": "public-network",
+                    "target_resource_ids": [account], "created_exemptions": {},
+                    "excluded_accounts": {}, "exclude_platform_denied": approved,
+                }},
+                "github": {"owner": "demo-owner", "repository": "demo-repo"},
+            }
+            with self.subTest(approved=approved, message=message):
+                with patch.object(exempt_storage_policy, "load_config", return_value=config), \
+                     patch.object(exempt_storage_policy, "verify_context"), \
+                     patch.object(exempt_storage_policy, "cli", return_value="az"), \
+                     patch.object(exempt_storage_policy, "run",
+                                  side_effect=[json.dumps([{"id": account}]), "[]"]), \
+                     patch.object(exempt_storage_policy, "mutate",
+                                  side_effect=ContextError(message)), \
+                     patch.object(exempt_storage_policy, "save_config"), \
+                     patch.object(exempt_storage_policy, "record"), \
+                     patch("sys.argv", ["exempt_storage_policy.py"]):
+                    if approved and message == "DenyAssignmentAuthorizationFailed":
+                        exempt_storage_policy.main()
+                        self.assertEqual(
+                            config["azure"]["storage_policy_exemption"]["excluded_accounts"],
+                            {account: message},
+                        )
+                    else:
+                        with self.assertRaises(ContextError):
+                            exempt_storage_policy.main()
+                        self.assertEqual(
+                            config["azure"]["storage_policy_exemption"]["excluded_accounts"], {}
+                        )
+
     def test_unowned_or_broader_exemption_is_rejected(self):
         account = "/subscriptions/demo/resourceGroups/demo/providers/Microsoft.Storage/storageAccounts/demo"
         rule = {"name": "demo-exemption", "assignment_id": "/policyAssignments/demo",

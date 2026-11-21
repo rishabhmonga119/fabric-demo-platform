@@ -334,7 +334,26 @@ continue Steps 2-9 in order.
   subscription-wide exemption that would cover unapproved future accounts.
 - Existing-account snapshots and partial exemption IDs are durable, so rerunning
   can reuse the verified first exemption without duplicating it.
-- Step 1 has not started.
+- User explicitly selected `exclude-protected`: exclude storage accounts
+  protected by platform deny assignments and apply the single-rule exemption to
+  all remaining accounts in the existing snapshot.
+- Added a narrowly gated exclusion for only `DenyAssignmentAuthorizationFailed`.
+  Every excluded account is logged and persisted; any other error still stops.
+  Completion reports exemptions and exclusions separately, never "10 applied".
+- Completed approved scope: 9 resource-scoped exemptions verified; 1 explicitly
+  excluded protected account (`scaneastus2jqfxsge`). Databricks-managed storage
+  accepted its exemption and did not require exclusion.
+- Subscription-wide descendant-inclusive read verified all 9 exemptions and
+  their single reference `StorageAccountPublicNetworkModify`; no future scope.
+- Corrected existence lookup to use that descendant-inclusive listing:
+  account-scoped CLI listing omitted extension-resource exemptions. Exact IDs
+  and ownership are still checked before any create/update.
+- Idempotency dry-run: PASS, reuses all 9 existing exemptions with no create
+  commands and reports the 1 explicitly approved protected exclusion.
+- Demo account network reapplication via ARM PATCH: PASS,
+  `publicNetworkAccess=Enabled`; anonymous blob access remains disabled.
+  No other account's network configuration was changed.
+- Storage exception subtask is complete. Continue Unity Catalog setup in Step 1.
 
 - 2026-11-21T17:18:21+00:00: Created resource group `rg-demo-databricks` in `westeurope` with ownership tags.
 
@@ -389,3 +408,27 @@ continue Steps 2-9 in order.
 - 2026-11-21T19:20:25+00:00: Storage exemption blocked: az.CMD policy exemption create --name demo-storage-public-network --scope /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/managed-rg-kiwamfn/providers/Microsoft.Storage/storageAccounts/scaneastus2jqfxsge --policy-assignment /providers/Microsoft.Management/managementGroups/5c41223c-f1f5-4979-930f-d5f3c72353f9/providers/Microsoft.Authorization/policyAssignments/MCAPSGovDeployPolicies --exemption-category Waiver --display-name Demo storage public-network exception --description Approved existing-storage-account waiver for public network access only. --only-show-errors --output json --policy-definition-reference-ids @C:\Users\RISHAB~1\AppData\Local\Temp\demo-exemption-m8ofezu2\references.json --metadata @C:\Users\RISHAB~1\AppData\Local\Temp\demo-exemption-m8ofezu2\metadata.json failed (exit 1): ERROR: (DenyAssignmentAuthorizationFailed) The client 'admin@caldova30465160.onmicrosoft.com' with object id '341769a6-9b1d-422e-8080-a666d62dc21d' has permission to perform action 'Microsoft.Authorization/policyExemptions/write' on scope '/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/managed-rg-kiwamfn/providers/Microsoft.Storage/storageAccounts/scaneastus2jqfxsge/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network'; however, the access is denied because of the deny assignment with name 'e28e75fa-25df-413e-8a75-bdb2ee4a02fd' and Id 'e28e75fa25df413e8a75bdb2ee4a02fd' at scope '/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourcegroups/managed-rg-kiwamfn'.
 Code: DenyAssignmentAuthorizationFailed
 Message: The client 'admin@caldova30465160.onmicrosoft.com' with object id '341769a6-9b1d-422e-8080-a666d62dc21d' has permission to perform action 'Microsoft.Authorization/policyExemptions/write' on scope '/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/managed-rg-kiwamfn/providers/Microsoft.Storage/storageAccounts/scaneastus2jqfxsge/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network'; however, the access is denied because of the deny assignment with name 'e28e75fa-25df-413e-8a75-bdb2ee4a02fd' and Id 'e28e75fa25df413e8a75bdb2ee4a02fd' at scope '/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourcegroups/managed-rg-kiwamfn'.
+
+- 2026-11-21T19:26:00+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demoaas-n0dv-1901/providers/Microsoft.Storage/storageAccounts/demoaasn0dv1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:26:09+00:00: Explicitly approved protected-account exclusion: `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/managed-rg-kiwamfn/providers/Microsoft.Storage/storageAccounts/scaneastus2jqfxsge` (platform deny assignment).
+
+- 2026-11-21T19:26:19+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks-managed/providers/Microsoft.Storage/storageAccounts/dbstoraget6ajpmi4ehdl2/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:26:31+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-demo-databricks/providers/Microsoft.Storage/storageAccounts/stdemolakenzskwyvxcpeuk/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:26:43+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-alz-mgmt-state-westus2-001/providers/Microsoft.Storage/storageAccounts/udshyd1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:26:54+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-waypoint-agents-qurvrwwr/providers/Microsoft.Storage/storageAccounts/styctih56h2ong2/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:27:06+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/modernwork-rg-n0dv-1901/providers/Microsoft.Storage/storageAccounts/internalpaymentsn0dv1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:27:19+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-agent365-complexagent/providers/Microsoft.Storage/storageAccounts/sta365cplxkopcvi/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:27:29+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-a365-foundry-agent/providers/Microsoft.Storage/storageAccounts/stfoundrybfc74u3drvzlw/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:27:41+00:00: Verified exemption `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/rg-customimages/providers/Microsoft.Storage/storageAccounts/udsimggl1901/providers/Microsoft.Authorization/policyExemptions/demo-storage-public-network` for only `StorageAccountPublicNetworkModify`.
+
+- 2026-11-21T19:28:33+00:00: Re-applied the demo-only public network setting with method `arm`.
+
+- 2026-11-21T19:28:33+00:00: Storage network verification: PASS (public endpoint enabled; anonymous blobs disabled).
