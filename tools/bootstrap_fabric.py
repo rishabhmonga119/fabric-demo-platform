@@ -32,6 +32,18 @@ def setting_proposal(current: dict, groups: list[dict]) -> dict:
     return proposed
 
 
+def domain_role_plan(domain: dict, groups: dict) -> list[tuple[str, str, dict]]:
+    administrator = unique(list(groups.values()), "name", domain["administrator_group"])
+    contributor = unique(list(groups.values()), "name", domain["contributor_group"])
+    if administrator is None or contributor is None:
+        raise ContextError("Approved domain group is not present in Entra configuration.")
+    desired = [("Admin", "Admins", administrator)]
+    # A principal has one domain role; Admin already includes assignment rights.
+    if contributor["id"] != administrator["id"]:
+        desired.append(("Contributor", "Contributors", contributor))
+    return desired
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
@@ -51,11 +63,14 @@ def main() -> None:
     api = Api("https://api.fabric.microsoft.com", config["tenant"]["id"],
               skill="onelake-catalog-cli")
     capacity_id = config["fabric"]["capacity_id"]
+    expected_sku = config["cost_guardrails"]["fabric_sku"]
+    if config["fabric"]["capacity_sku"] != expected_sku:
+        raise ContextError("Configured capacity SKU differs from the explicitly approved guardrail.")
     # Skills for Fabric: common/COMMON-CORE.md, Capacity Management.
     capacities = api.list("/v1/capacities")
-    if not any(capacity["id"] == capacity_id and capacity["sku"] == "F4"
+    if not any(capacity["id"] == capacity_id and capacity["sku"] == expected_sku
                and capacity["state"] == "Active" for capacity in capacities):
-        raise ContextError("Configured F4 capacity is not visible and Active; never substitute or resize.")
+        raise ContextError(f"Configured {expected_sku} capacity is not visible and Active; never substitute or resize.")
     allowed = [{"graphId": groups[key]["id"], "name": groups[key]["name"]}
                for key in ("admins", "api")]
     # Skill: onelake-catalog-cli/references/admin-remediate/trust-curate.md.
@@ -104,12 +119,8 @@ def main() -> None:
             save_config(config)
         # Skill: onelake-catalog-cli/references/admin-remediate/domain-roles.md.
         roles = api.list(f"/v1/admin/domains/{domain_id}/roleAssignments")
-        for role, request_type, group_field in (
-            ("Admin", "Admins", "administrator_group"),
-            ("Contributor", "Contributors", "contributor_group"),
-        ):
-            selected = next(group for group in groups.values()
-                            if group["name"] == domain_config[group_field])
+        desired_roles = domain_role_plan(domain_config, groups)
+        for role, request_type, selected in desired_roles:
             if not any(assignment["role"] == role and assignment["principal"].get("id") == selected["id"]
                        for assignment in roles):
                 api.request("POST", f"/v1/admin/domains/{domain_id}/roleAssignments/bulkAssign",
@@ -124,10 +135,7 @@ def main() -> None:
                                 {"type": "Contributors",
                                  "principals": [{key: principal[key] for key in ("id", "type")}]})
             roles = api.list(f"/v1/admin/domains/{domain_id}/roleAssignments")
-            for role_name, group_field in (("Admin", "administrator_group"),
-                                           ("Contributor", "contributor_group")):
-                selected = next(group for group in groups.values()
-                                if group["name"] == domain_config[group_field])
+            for role_name, _, selected in desired_roles:
                 if not any(role["role"] == role_name and role["principal"].get("id") == selected["id"]
                            and role["principal"]["type"] == "Group" for role in roles):
                     raise ApiError(f"Domain {role_name} group read-back failed.")
@@ -145,14 +153,14 @@ def main() -> None:
                 raise ContextError(f"STOP: existing workspace {workspace_config['workspace_name']} is not recorded as ours.")
             workspace_id = existing["id"]
         elif args.dry_run:
-            print(f"DRY-RUN: create {workspace_config['workspace_name']} on existing F4 with its new domain, then assign approved roles.")
+            print(f"DRY-RUN: create {workspace_config['workspace_name']} on existing {expected_sku} with its new domain, then assign approved roles.")
             continue
         else:
             # Skill: fabric-skills/common/COMMON-CORE.md, Create Workspace.
             workspace = api.request("POST", "/v1/workspaces", {
                 "displayName": workspace_config["workspace_name"],
                 "description": f"Demo workspace owned by {owner}",
-                "capacityId": capacity_id, "domainId": domain_id,
+                "capacityId": capacity_id,
             })
             if workspace is None:
                 raise ApiError("Create Workspace did not return its resource ID.")
@@ -160,11 +168,22 @@ def main() -> None:
             workspace_config["workspace_id"] = workspace_id
             save_config(config)
         if not args.dry_run:
+            info = api.request("GET", f"/v1/workspaces/{workspace_id}")
+            if info is None or info.get("domainId") not in (None, domain_id):
+                raise ContextError("STOP: workspace already belongs to another domain; no overwrite attempted.")
+            if info.get("domainId") is None:
+                active = api.list("/v1/admin/workspaces?type=Workspace&state=Active", "workspaces")
+                if not any(workspace["id"] == workspace_id for workspace in active):
+                    raise ApiError("New workspace is not confirmed Active before domain assignment.")
+                # Skill: onelake-catalog-cli/references/admin-remediate/domain-assign-workspaces.md.
+                # Tenant-admin by-ID assignment is the documented, synchronous route.
+                api.request("POST", f"/v1/admin/domains/{domain_id}/assignWorkspaces",
+                            {"workspacesIds": [workspace_id]})
             deadline = time.monotonic() + 300
             while True:
                 info = api.request("GET", f"/v1/workspaces/{workspace_id}")
                 if info is None or info.get("capacityId") != capacity_id or info.get("domainId") != domain_id:
-                    raise ApiError("Workspace F4/domain read-back differs; no reassignment attempted.")
+                    raise ApiError("Workspace capacity/domain read-back differs; no reassignment attempted.")
                 if info["capacityAssignmentProgress"] == "Completed":
                     break
                 if info["capacityAssignmentProgress"] == "Failed" or time.monotonic() >= deadline:
@@ -193,9 +212,9 @@ def main() -> None:
             if not all(any(item["principal"].get("id") == principal_id and item["role"] == role
                            for item in checked) for principal_id, _, role in desired):
                 raise ApiError("Workspace role read-back failed.")
-            record(f"Verified workspace `{workspace_config['workspace_name']}`: `{workspace_id}`; F4, domain and exact required roles PASS.")
+            record(f"Verified workspace `{workspace_config['workspace_name']}`: `{workspace_id}`; {expected_sku}, domain and exact required roles PASS.")
     print("DRY-RUN: Fabric plan complete; no resources/settings changed." if args.dry_run
-          else "Fabric bootstrap checks: PASS (four workspaces on existing F4; domains and roles verified).")
+          else f"Fabric bootstrap checks: PASS (four workspaces on existing {expected_sku}; domains and roles verified).")
 
 
 if __name__ == "__main__":

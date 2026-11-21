@@ -53,15 +53,18 @@ def main() -> None:
     # Skill reference: fabric-skills/common/COMMON-CORE.md, Capacity Management.
     capacities = fabric_list("/v1/capacities", "value")
     configured = config["fabric"]["capacity_id"]
+    expected_sku = config["cost_guardrails"]["fabric_sku"]
+    if config["fabric"]["capacity_sku"] != expected_sku:
+        raise ContextError("Capacity configuration and approved SKU guardrail differ.")
     candidates = [
         capacity for capacity in capacities
-        if capacity["sku"] == "F4" and capacity["state"] == "Active"
+        if capacity["sku"] == expected_sku and capacity["state"] == "Active"
         and (configured is None or capacity["id"] == configured)
     ]
-    print("Visible active F4 capacities: " + json.dumps(candidates), flush=True)
+    print(f"Visible active approved {expected_sku} capacities: " + json.dumps(candidates), flush=True)
     if len(candidates) != 1:
         raise ContextError(
-            "Exactly one visible active F4 capacity must match configuration. "
+            f"Exactly one visible active {expected_sku} capacity must match configuration. "
             "Do not create, resize or substitute a capacity."
         )
     # Skill reference: onelake-catalog-cli/references/admin-remediate/domain-crud.md.

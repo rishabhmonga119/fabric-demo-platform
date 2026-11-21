@@ -42,7 +42,8 @@ Fabric CLI installation and authentication follow the
 
 ## Cost and safety
 
-Keep the existing Fabric F4 capacity unchanged. Provision only Step 1's storage,
+Use the existing Fabric capacity at its explicitly approved configured SKU
+(currently F8); automation must not resize it. Provision only Step 1's storage,
 access connector and one Premium Databricks workspace. Use serverless or
 single-node compute; persistent compute must auto-terminate after 15 minutes.
 Never delete or overwrite pre-existing resources without explicit permission.
@@ -121,7 +122,17 @@ After approval, run the idempotent identity and Fabric bootstraps:
 OIDC uses federated credentials, not a client secret. Test-user passwords are
 generated only in memory and must be reset in Entra before use; never store them.
 The Fabric bootstrap preserves existing enabled tenant scopes, verifies exact
-domain/workspace roles, and stops if the selected capacity is no longer F4.
+domain/workspace roles, and stops if the selected capacity differs from its
+explicitly approved configured SKU.
+
+The read-only OIDC proof is provisioned with `tools/setup_oidc_check.py` and
+dispatched with `tools/run_oidc_check.py`; both support `--dry-run`. The workflow
+uses GitHub OIDC and verifies the configured SP can list Test items, without
+granting Azure subscription roles or using a client secret.
+
+`tools/check_demo_licenses.py --dry-run` checks actual service-plan capabilities
+for the presenter and demo users. Licence purchases/reallocation and initial
+password resets remain human checkpoints; secrets must never be saved here.
 
 Do not start Step 2 until Unity Catalog, external-access grants and storage
 checks pass. An ARM deployment marked `Succeeded` alone is not a completed step.

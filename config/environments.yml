@@ -61,7 +61,7 @@ azure:
   databricks_sql_warehouse_id: 56f680445ba7585a
 fabric:
   capacity_id: 5332e7ad-fe3b-4c0b-a1b7-3f1975e7b2dd
-  capacity_sku: F4
+  capacity_sku: F8
   capacity_name: capacityswitzerlandnorth
   capacity_region: Switzerland North
   governance_approved: true
@@ -70,13 +70,13 @@ fabric:
   domains:
     analytics:
       name: Demo Analytics
-      id: null
+      id: 93e8c278-af0e-4133-9ed2-a8d91a81df4c
       description: Synthetic beverage analytics across Dev, Test and Prod.
       administrator_group: SG-Demo-Fabric-Admins
       contributor_group: SG-Demo-Fabric-Admins
     partners:
       name: Demo Partners
-      id: null
+      id: 0cfb34eb-d336-4308-b4af-a9cc49827577
       description: Partner-specific datasets and demo cross-tenant sharing.
       administrator_group: SG-Demo-Fabric-Admins
       contributor_group: SG-Demo-Fabric-Admins
@@ -92,6 +92,10 @@ github:
   repository: fabric-demo-platform
   branch: main
   fabric_directory: fabric
+  environments:
+    test:
+      id: 28115104729
+      name: test
 entra:
   application:
     name: sp-fabric-demo-cicd
@@ -129,7 +133,7 @@ sharepoint:
 environments:
   dev:
     workspace_name: DEMO-Analytics-Dev
-    workspace_id: null
+    workspace_id: 3fa9b173-f000-4529-a4f7-00d0d6a8d136
     databricks_catalog: demo_dev
     storage_container: uc-dev
     sharepoint_folder: Forecasts/Dev
@@ -146,7 +150,7 @@ environments:
     databricks_storage_probe_location: abfss://uc-dev@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/4b8ccb34-73c8-465d-be7f-1f3486560c06/tables/1b88ccca-edb7-4eb0-9390-fffde220d51f
   test:
     workspace_name: DEMO-Analytics-Test
-    workspace_id: null
+    workspace_id: 0a29b70a-6bc9-4bfc-b196-61825cf9f75a
     databricks_catalog: demo_test
     storage_container: uc-test
     sharepoint_folder: Forecasts/Test
@@ -163,7 +167,7 @@ environments:
     databricks_storage_probe_location: abfss://uc-test@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/19327965-c698-4679-9f7e-79e860ed1ebc/tables/8224426b-137f-4b90-b1bf-fe5cc3c56a1d
   prod:
     workspace_name: DEMO-Analytics-Prod
-    workspace_id: null
+    workspace_id: 4cd2247c-ab4c-441a-9637-f3c3d525f4c1
     databricks_catalog: demo_prod
     storage_container: uc-prod
     sharepoint_folder: Forecasts/Prod
@@ -183,7 +187,7 @@ environments:
     databricks_storage_probe_location: abfss://uc-prod@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/56c770b2-9622-4eb2-91a6-a047c665e3e3/tables/8fe283b6-4def-4f18-ad43-004fdb27c8a4
 partner:
   workspace_name: DEMO-Partner-A
-  workspace_id: null
+  workspace_id: f29bb81d-9fae-413e-bff4-0a1c56a78ac3
   items: {}
   tenant_b_id: null
   tenant_b_domain: null
@@ -195,5 +199,5 @@ cost_guardrails:
   databricks_sku: premium
   compute: serverless_or_single_node
   auto_termination_minutes: 15
-  fabric_sku: F4
+  fabric_sku: F8
   paid_azure_resources: step_1_only

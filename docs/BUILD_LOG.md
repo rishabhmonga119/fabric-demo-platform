@@ -586,8 +586,8 @@ Message: The client 'admin@caldova30465160.onmicrosoft.com' with object id '3417
 
 ## 2026-11-21 - Step 2: Fabric tenant, workspaces and identities
 
-Status: BLOCKED by capacity SKU mismatch. Entra identities/OIDC are complete;
-configured existing capacity now reports F8, but the approved guardrail remains F4.
+Status: infrastructure bootstrap complete on approved F8; completing OIDC access
+proof, then awaiting test-user licence allocation. Steps 3-9 have not started.
 
 - Step 1 completion commit `d5fdd0ba5e39b52b581da158952b7c582564bfa1` pushed
   and remote HEAD verified.
@@ -700,3 +700,87 @@ configured existing capacity now reports F8, but the approved guardrail remains 
 - Human decision required: restore the selected shared capacity to F4, or
   explicitly revise the cost guardrail to allow the already-existing F8.
   Do not overwrite the capacity's externally changed SKU without approval.
+
+### Explicit F8 approval
+
+- User confirmed the manual resize and said: "i have resized it. you can continue with f8 now".
+- Rechecked all three identities and the selected capacity: ID
+  `5332e7ad-fe3b-4c0b-a1b7-3f1975e7b2dd`, `capacityswitzerlandnorth`, F8, Active.
+- Updated the configured SKU and matching cost guardrail to F8 for this existing
+  capacity. Automation does not resize it, create another capacity or substitute
+  the inactive Sweden capacity.
+- One Premium Databricks workspace, serverless/single-node compute, 15-minute
+  auto-termination, and no other paid Azure resources remain unchanged.
+- Updated dependent preflight/bootstrap guards to require the approved configured
+  SKU and reject inconsistent configuration rather than silently accepting changes.
+- Resuming the already-approved Fabric domain/workspace/tenant-setting bootstrap.
+
+- 2026-11-21T21:17:31+00:00: Verified tenant setting `GitHubTenantSettings` enabled for only the two demo admin/API groups; existing enabled scopes preserved.
+
+- 2026-11-21T21:17:39+00:00: Verified tenant setting `GitIntegrationCrossGeoTenantSwitch` enabled for only the two demo admin/API groups; existing enabled scopes preserved.
+
+- 2026-11-21T21:17:48+00:00: Verified tenant setting `CatalystTenantAdminSwitch` enabled for only the two demo admin/API groups; existing enabled scopes preserved.
+
+- 2026-11-21T21:17:56+00:00: Verified tenant setting `AllowExternalDataSharingSwitch` enabled for only the two demo admin/API groups; existing enabled scopes preserved.
+
+- 2026-11-21T21:18:05+00:00: Verified tenant setting `ArtifactIQSharePreview` enabled for only the two demo admin/API groups; existing enabled scopes preserved.
+
+- 2026-11-21T21:18:38+00:00: Fabric bootstrap blocked: Domain Admin group read-back failed.
+
+- 2026-11-21T21:21:03+00:00: Verified domain `Demo Analytics`: `93e8c278-af0e-4133-9ed2-a8d91a81df4c`; approved group owner/contributors; default label explicitly skipped.
+
+- 2026-11-21T21:21:26+00:00: Verified domain `Demo Partners`: `0cfb34eb-d336-4308-b4af-a9cc49827577`; approved group owner/contributors; default label explicitly skipped.
+
+- 2026-11-21T21:21:40+00:00: Fabric bootstrap blocked: POST /v1/workspaces: HTTP 401, InsufficientPermissionsToDomain
+
+- 2026-11-21T21:24:06+00:00: Verified domain `Demo Analytics`: `93e8c278-af0e-4133-9ed2-a8d91a81df4c`; approved group owner/contributors; default label explicitly skipped.
+
+- 2026-11-21T21:24:12+00:00: Verified domain `Demo Partners`: `0cfb34eb-d336-4308-b4af-a9cc49827577`; approved group owner/contributors; default label explicitly skipped.
+
+- 2026-11-21T21:24:54+00:00: Verified workspace `DEMO-Analytics-Dev`: `3fa9b173-f000-4529-a4f7-00d0d6a8d136`; F8, domain and exact required roles PASS.
+
+- 2026-11-21T21:25:34+00:00: Verified workspace `DEMO-Analytics-Test`: `0a29b70a-6bc9-4bfc-b196-61825cf9f75a`; F8, domain and exact required roles PASS.
+
+- 2026-11-21T21:26:30+00:00: Verified workspace `DEMO-Analytics-Prod`: `4cd2247c-ab4c-441a-9637-f3c3d525f4c1`; F8, domain and exact required roles PASS.
+
+- 2026-11-21T21:27:05+00:00: Verified workspace `DEMO-Partner-A`: `f29bb81d-9fae-413e-bff4-0a1c56a78ac3`; F8, domain and exact required roles PASS.
+
+- 2026-11-21T21:34:25+00:00: Verified GitHub test environment and three non-secret OIDC variables; no client secret.
+
+### Fabric bootstrap completion and licence checkpoint
+
+- Applied the five approved missing tenant settings, each scoped to only
+  SG-Demo-Fabric-Admins / SG-Demo-Fabric-API and read back successfully.
+  All already-enabled tenant settings/scopes were preserved.
+- Created both domains with approved descriptions and group ownership.
+  Default sensitivity labels were explicitly skipped as approved.
+- A contributor assignment to the same group replaced its Admin role in the
+  live service. Fixed the plan to retain Admin when owner/contributor are the
+  same group, because Admin already grants workspace-assignment rights.
+- Restored and verified the group Admin role. Explicit EntireTenant contributor
+  entries were removed; no existing domain administrators were removed.
+- Core Create Workspace with domainId returned InsufficientPermissionsToDomain.
+  Used the documented tenant-admin by-ID assignment route instead: create the
+  workspace on the selected capacity, verify Active and unassigned, assign only
+  that ID, then read back domain/capacity/roles. No other-domain override attempted.
+- Four workspaces now pass exact F8/domain/role checks:
+  DEMO-Analytics-Dev, DEMO-Analytics-Test, DEMO-Analytics-Prod, DEMO-Partner-A.
+- `fab ls --json --skill onelake-catalog-cli` filtered to DEMO- names returned
+  exactly those four workspaces. All IDs are in config/environments.yml.
+- Added a read-only GitHub OIDC check workflow and scripts. Test environment and
+  non-secret AZURE_CLIENT_ID, AZURE_TENANT_ID, FABRIC_CAPACITY_ID variables
+  created/verified through gh; no client secret or new Azure role assigned.
+- Licence check: admin has active Power BI Pro and M365 Copilot service plans
+  through MICROSOFT_365_E7. Both demo users have no assigned licences.
+- Updated detection to use actual service-plan capabilities rather than older
+  E5/Copilot product-name assumptions. The E7 pool has 53 enabled, 53 consumed,
+  0 free seats. No licence purchase, reassignment or reclamation was performed.
+- Human action after access proof: provide and assign suitable licences to
+  demo.north and demo.south (E7 includes both required capabilities, or equivalent
+  base/Power BI Pro plus M365 Copilot), and reset their generated initial passwords
+  in Entra. Do not send passwords to the repository or chat.
+- New licence, domain-role, tenant-scope, membership and API guard tests passed.
+- Step 2 Check: four workspace/F8/domain/roles PASS; actual OIDC proof pending;
+  end-user licence prerequisites BLOCKED until allocation.
+
+- 2026-11-21T21:42:08+00:00: Verified GitHub test environment and three non-secret OIDC variables; no client secret.

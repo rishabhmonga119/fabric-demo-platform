@@ -9,7 +9,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import fabric_preflight
 import http_api
 from bootstrap_entra import has_membership
-from bootstrap_fabric import setting_proposal
+from bootstrap_fabric import domain_role_plan, setting_proposal
+from check_demo_licenses import license_features
 
 
 class FabricPaginationTests(unittest.TestCase):
@@ -113,6 +114,35 @@ class TenantSettingProposalTests(unittest.TestCase):
     def test_unscopable_setting_is_not_enabled_tenant_wide(self):
         with self.assertRaises(RuntimeError):
             setting_proposal({"enabled": False, "canSpecifySecurityGroups": False}, [])
+
+
+class DomainRolePlanTests(unittest.TestCase):
+    def test_same_owner_and_contributor_group_is_not_downgraded(self):
+        group = {"id": "admins", "name": "Demo admins"}
+        domain = {"administrator_group": "Demo admins", "contributor_group": "Demo admins"}
+        self.assertEqual(domain_role_plan(domain, {"admins": group}), [("Admin", "Admins", group)])
+
+    def test_separate_contributor_group_keeps_its_narrower_role(self):
+        admin = {"id": "admins", "name": "Demo admins"}
+        contributor = {"id": "contributors", "name": "Demo contributors"}
+        domain = {"administrator_group": "Demo admins", "contributor_group": "Demo contributors"}
+        self.assertEqual(
+            domain_role_plan(domain, {"admins": admin, "contributors": contributor}),
+            [("Admin", "Admins", admin), ("Contributor", "Contributors", contributor)]
+        )
+
+
+class LicenseFeatureTests(unittest.TestCase):
+    def test_new_sku_names_are_supported_by_their_actual_service_plans(self):
+        features = license_features({
+            "BI_AZURE_P2", "M365_COPILOT_APPS", "M365_COPILOT_TEAMS",
+            "M365_COPILOT_BUSINESS_CHAT", "OTHER_SERVICE"
+        })
+        self.assertEqual(features, {"power_bi_pro": True, "m365_copilot": True})
+        self.assertEqual(
+            license_features({"COPILOT_CREDIT_FOR_D365_PREMIUM"}),
+            {"power_bi_pro": False, "m365_copilot": False}
+        )
 
 
 if __name__ == "__main__":

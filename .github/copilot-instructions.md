@@ -22,7 +22,8 @@
 - Keep company branding generic in config/demo_profile.yml.
 - Every automation script must be idempotent, support `--dry-run`, report
   failures explicitly and stop on the first unrecovered failure.
-- Prefer Python notebooks without Spark for small data; keep Fabric capacity F4.
+- Prefer Python notebooks without Spark for small data; use the explicitly
+  approved existing capacity/SKU in config/environments.yml (currently F8).
 - Create at most one Premium Databricks workspace. Use serverless or single-node
   compute only; require 15-minute auto-termination for persistent compute.
   No paid Azure resources outside Step 1; do not resize Fabric capacity.
