@@ -1210,3 +1210,404 @@ file-protection and delegated-login checkpoints were resolved as recorded below.
 - 2026-11-21T23:55:10+00:00: Step 4 Check `test`: exactly six expected SharePoint workbooks PASS; live file absent.
 
 - 2026-11-21T23:55:18+00:00: Step 4 Check `prod`: exactly six expected SharePoint workbooks PASS; live file absent.
+
+- 2026-11-22T00:02:57+00:00: Created/verified owned Dev `LH_Landing`: `fd2d2f87-dff9-4974-b943-1d45cc2fcd90`; skill references: fabric-skills/common/COMMON-CORE.md; COMMON-CLI.md; SPARK-AUTHORING-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md.
+
+- 2026-11-22T00:03:25+00:00: Dev `LH_Landing` Check: schema-enabled dbo, OneLake paths and SQL endpoint Success PASS.
+
+- 2026-11-22T00:03:38+00:00: Created/verified owned Dev `LH_Curated`: `a8a49dc0-330e-4a63-8280-dccb057b4cde`; skill references: fabric-skills/common/COMMON-CORE.md; COMMON-CLI.md; SPARK-AUTHORING-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md.
+
+- 2026-11-22T00:03:53+00:00: Dev `LH_Curated` Check: schema-enabled dbo, OneLake paths and SQL endpoint Success PASS.
+
+- 2026-11-22T00:03:57+00:00: Live Databricks/SharePoint supportedConnectionTypes inspected. Organizational OAuth2 connections require interactive Fabric portal authoring; not attempted through the unsupported Create Connection credential union.
+
+- 2026-11-22T00:03:57+00:00: Step 5 human prerequisite: create organizational connections conn-dbw-demo, conn-sp-demodata.
+
+## Step 5 - Dev Fabric items
+
+Status: IN PROGRESS. Source connections, Gold mirror and raw/Gold shortcuts are
+verified; Excel preview transformation requires UI configuration.
+Step 4 commit `8591cd6e6117ff30181814e903e9b224d83ea9fa` pushed and remote HEAD verified.
+
+- Created schema-enabled LH_Landing (`fd2d2f87-dff9-4974-b943-1d45cc2fcd90`)
+  and LH_Curated (`a8a49dc0-330e-4a63-8280-dccb057b4cde`) in DEMO-Analytics-Dev.
+  Both report dbo default schema and SQL endpoint provisioning Success.
+  Lakehouses are not yet populated; mirrors, shortcuts, notebooks and BI items
+  still require the source connections. IDs/SQL endpoint IDs are in config.
+- Loaded e2e-medallion-architecture and read COMMON-CORE, COMMON-CLI,
+  SPARK-AUTHORING-CORE and infrastructure-orchestration references. All Fabric
+  control-plane calls carry x-ms-fabric-skill: e2e-medallion-architecture.
+  Read current Create/Get Lakehouse REST contracts before forming payloads.
+- Added bootstrap_fabric_items.py with active-F8/workspace/ownership guards,
+  schema-enabled creation, bounded Retry-After-aware LRO polling and readback.
+  Dry-run, actual provisioning, and no-write ownership/schema rerun PASS.
+  Six targeted JSON-API tests PASS, including optional response-info handling
+  without changing existing callers' return shapes.
+- Live supportedConnectionTypes confirms AzureDatabricksWorkspace uses
+  AzureDatabricksWorkspace.Actions with required Text parameter url.
+  This is not the Databricks SQL connector requiring host/httpPath.
+  SharePoint exposes SharePointList with required Text sharePointSiteUrl.
+- Both requested connections are missing. The requested organizational-account
+  authentication is OAuth2. Skills reference
+  skills/dataflows-cli/references/authoring/connection-management.md confirms
+  OAuth2 is not in the Create Connection API credential union and must be
+  authored interactively. No unsupported credential payload or PAT/secret
+  substitute was attempted.
+- Required human checkpoint: create conn-dbw-demo and conn-sp-demodata in
+  Fabric using the DEMO admin organizational account. Then automate sharing,
+  mirrored-catalog and shortcut binding, notebook execution and downstream BI.
+  Step 5 is not complete and has not been committed as complete.
+- User-created connections verified: conn-dbw-demo
+  `9430fa8c-03d8-476b-aa2e-167b0fb804f6` (AzureDatabricksWorkspace, correct
+  workspace URL) and conn-sp-demodata `5bb73026-8d9d-4ba1-9c44-91b68ac0bc95`
+  (SharePoint, correct DemoData URL). Both ShareableCloud with OAuth2.
+- Mirror dry-run stopped on the capacity guard before real sharing/create
+  writes. User stated "i scaled down to f4". Read-back verified the same
+  capacity `5332e7ad-fe3b-4c0b-a1b7-3f1975e7b2dd` is Active F4 and Dev retains
+  the same completed assignment. Updated approved/current SKU to F4 only;
+  automation did not resize or substitute capacity. Historical F8 checks above
+  reflect the SKU at those earlier times.
+- User requested skipping tests after every step to reduce elapsed time.
+  Stop routine unit/regression reruns and exhaustive unchanged-artifact checks.
+  Retain mandatory context/cost/ownership guards and minimal live success/source
+  binding checks. Most earlier time was cloud execution/API verification rather
+  than the sub-second unit suites.
+- Accepted mirror creation returned no usable Location to the client. Added the
+  documented x-ms-operation-id GUID fallback to the canonical Fabric operation
+  endpoint; do not forward credentials to other origins.
+- Read-only reconciliation found MIR_UC_Gold and its same-named automatic SQL
+  endpoint. Corrected lookup to filter by item type, not display name alone.
+  No second create or overwrite was attempted. Recorded discovered item and
+  endpoint IDs during subsequent binding verification.
+- MIR_UC_Gold created and definition read-back verified: item
+  `6e1a3d67-2ba7-4580-ae56-4c811846d217`, SQL endpoint
+  `e95c7d52-7aaf-4e61-a648-3d4d64dcf2ac`. Binding is demo_dev, Partial catalog
+  mirroring with only gold/Full, and autoSync Enabled.
+- Live SQL Endpoint MCP smoke check returned exactly seven gold tables.
+  fact_sales_monthly has 9,856 rows, fact_deliveries 6,160; both show only
+  env_marker=dev. These are actual Fabric query results, not Databricks job
+  status. Connection IDs and verified CI/CD User role assignments are recorded.
+- Created/read back LH_Landing Files/raw_forecasts to the actual SharePoint
+  Dev/raw folder and LH_Curated Tables/gold schema shortcut to MIR_UC_Gold.
+  Defaults use Abort conflict policy; no existing targets were overwritten.
+- Current public Create Shortcut request/transform schema documents CSV only,
+  not the Excel preview input shape. Do not invent Excel transformation fields.
+  Official shortcut-transformations documentation describes the UI workflow.
+  Public labels remain on local workbooks; inspected uploaded standard packages
+  had no legacy MSIP_Label Name/Enabled custom properties. Actual Excel preview
+  ingestion still needs its live UI configuration/readback; if labeling blocks
+  it, request an approved approach rather than stripping protection.
+- 2026-11-22 morning: user confirmed Excel shortcut creation. GET Shortcut
+  verified excelToDelta, first-row headers, sheet Forecast, combineAllSheets,
+  dynamic schema and mirror refresh. The shortcut exists, but SQL Endpoint
+  reports no Landing base tables and OneLake output has no Delta files.
+- Raw shortcut resolution returned all three WEST source workbooks. Inspection
+  of an uploaded standard workbook found active Purview metadata in
+  docMetadata/LabelInfo.xml (new format, not legacy MSIP custom properties).
+  No label IDs or tenant-policy identifiers are logged here.
+- Microsoft shortcut-transformations documentation explicitly excludes
+  workbooks with Purview sensitivity labels; Public labeling is insufficient
+  for this preview reader even though Python can read the unencrypted XLSX.
+  Request a decision: approved unlabeled standard inputs, or retain Public
+  labels and replace the empty Excel transformation with Python ingestion.
+  Do not strip protection or silently remove the Excel demo feature.
+- Correction: the user's current screenshot shows actual forecast_standard
+  preview rows with the expected columns and values. Earlier SQL catalog/path
+  checks did not prove transformation failure, and the sensitivity-label
+  explanation was an unconfirmed diagnosis, not an observed refresh error.
+  Preserve the automatic transformation. Investigate SQL visibility separately
+  with a scoped metadata refresh, recreateTables=false; no shortcut replacement,
+  source deletion or relabeling is authorized or performed.
+- Resolved: scoped SQL metadata refresh returned Success. A subsequent live
+  SQL query found forecast.forecast_standard with 3,696 rows, spanning
+  January-November 2026. This proves the automatic transformation works in the
+  current environment. The earlier label-based failure inference was wrong.
+  Root issue was stale SQL metadata; the automatic shortcut and source labels
+  remain unchanged. Resume Python cleaning/integration.
+- Generated schema-validated pure-Python NB_Clean_Forecast and NB_Integrate
+  Git sources. Parsing includes German headers/decimals/months, dimensional
+  validation, rejects and full channel-grain deduplication. Integration uses
+  an outer join at month/product/package/region/channel grain; partner_id is
+  nullable to avoid multiplying sales by the separate delivery-partner grain.
+- Deployed NB_Clean_Forecast (`f561f6f6-ebce-4c34-99c8-1457da45a9d8`) and
+  captured run `7e5096d8-d7d8-4172-a77f-7a77dba9630a`. It failed with generic
+  System_Cancelled_Session_Statements_Failed. No retry was submitted.
+- Saved notebook metadata confirms jupyter/python3.11; execution session
+  jobType=JupyterSession, runtimeVersion=jupyter1.0, so this is not an accidental
+  Spark-kernel deployment despite the generic failure text.
+- Spark Advisor and driver-log metadata endpoints returned 404 for this
+  session; source-level metadata inspection had no retained cell outputs.
+  Opened the documented notebook snapshot in VS Code's browser, which requires
+  DEMO-admin sign-in. Need that login or the snapshot's exact failed-cell error
+  before making a targeted fix; do not speculate or blindly rerun.
+- User changed NB_Integrate to PySpark: Spark SQL for the join and PySpark for
+  the Delta write, default Starter Pool, no custom Environment. Reason:
+  "show Spark compatibility for a Databricks audience".
+  NB_Clean_Forecast remains a pure Python notebook. Inputs and the
+  LH_Curated.sales_vs_forecast output/schema remain unchanged, including the
+  full channel grain, Decimal precisions and nullable partner_id.
+- User snapshot identified the Python reader error: DeltaProtocolError for
+  unsupported source reader features (vacuumProtocolCheck, deletionVectors,
+  v2Checkpoint, catalogManaged). Do not downgrade source tables. Changed only
+  NB_Clean_Forecast reads to the installed notebookutils.data SQL connector;
+  its exact signature/query example was inspected in the Python runtime.
+  Python-owned Delta writes remain delta-rs. NB_Integrate uses native Spark.
+- Read-back of workspace Spark settings confirms defaultPool.name=Starter Pool,
+  default runtime 2.0 and no named custom environment.
+- NB_Clean_Forecast completed after switching its source reads to the inspected
+  SQL connector. Live SQL shows forecast_clean=4,928 rows and
+  forecast_rejects=1 row. Its pure-Python kernel is retained.
+- NB_Integrate deployed with synapse_pyspark kernel, Spark SQL join and PySpark
+  managed Delta write. Default Starter Pool/no custom environment verified.
+  Output execution/readback follows; no test-suite rerun.
+- Metadata refresh for Python outputs returned NotRun with a prior successful
+  sync timestamp; live SQL verified both output tables. Treat that as an
+  explicitly skipped already-synced operation, not a failed data write.
+- First native Spark integration run failed before the join: driver stdout
+  reported IllegalStateException "Couldn't locate commit coordinator" while
+  reading the catalogManaged Gold source through its direct Delta shortcut.
+  Spark Advisor was empty. No source protocol or table was changed.
+- Use the preinstalled Fabric SQL-endpoint Spark connector to load the same
+  Gold/clean-forecast inputs into Spark temporary views. The requested join
+  remains Spark SQL and the output remains a PySpark managed Delta write, using
+  default Starter Pool/no custom environment and the same output schema.
+  This connector's documented Entra-user-only limitation must be considered
+  when finalizing unattended CI/CD execution; it is not claimed as SP-compatible.
+- NB_Integrate now completed successfully as PySpark on the verified default
+  Starter Pool/runtime 2.0, without a custom environment. Live SQL read-back of
+  LH_Curated.dbo.sales_vs_forecast returned 10,304 rows, January 2025 through
+  November 2026, all env_marker=dev. All 14 columns match the prior output
+  contract, including nullable fields, Date month, DECIMAL(12,2) volumes and
+  DECIMAL(14,2) revenue/margin. Requested decision/reason is implemented.
+
+- 2026-11-22T00:20:24+00:00: Mirror bootstrap blocked: Dev mirror workspace/capacity differs from approved Active F8.
+
+- 2026-11-22T00:25:02+00:00: Verified user-created `conn-dbw-demo` connection `9430fa8c-03d8-476b-aa2e-167b0fb804f6` and CI/CD User access; credentials untouched. Skills: common/COMMON-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md; official connections roleAssignments contract.
+
+- 2026-11-22T00:25:12+00:00: Verified user-created `conn-sp-demodata` connection `5bb73026-8d9d-4ba1-9c44-91b68ac0bc95` and CI/CD User access; credentials untouched. Skills: common/COMMON-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md; official connections roleAssignments contract.
+
+- 2026-11-22T00:25:32+00:00: Mirror bootstrap blocked: Accepted operation requires a same-origin Location header.
+
+- 2026-11-22T00:28:08+00:00: Verified user-created `conn-dbw-demo` connection `9430fa8c-03d8-476b-aa2e-167b0fb804f6` and CI/CD User access; credentials untouched. Skills: common/COMMON-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md; official connections roleAssignments contract.
+
+- 2026-11-22T00:28:11+00:00: Verified user-created `conn-sp-demodata` connection `5bb73026-8d9d-4ba1-9c44-91b68ac0bc95` and CI/CD User access; credentials untouched. Skills: common/COMMON-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md; official connections roleAssignments contract.
+
+- 2026-11-22T00:28:19+00:00: Mirror bootstrap blocked: Existing mirror is unowned/conflicting; no overwrite.
+
+- 2026-11-22T00:29:45+00:00: Verified user-created `conn-dbw-demo` connection `9430fa8c-03d8-476b-aa2e-167b0fb804f6` and CI/CD User access; credentials untouched. Skills: common/COMMON-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md; official connections roleAssignments contract.
+
+- 2026-11-22T00:29:48+00:00: Verified user-created `conn-sp-demodata` connection `5bb73026-8d9d-4ba1-9c44-91b68ac0bc95` and CI/CD User access; credentials untouched. Skills: common/COMMON-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md; official connections roleAssignments contract.
+
+- 2026-11-22T00:30:32+00:00: Created/verified `MIR_UC_Gold`: `6e1a3d67-2ba7-4580-ae56-4c811846d217`, catalog `demo_dev`, gold only, autoSync Enabled. Skill: common/ITEM-DEFINITIONS-CORE.md Other Item Types and its mirrored Azure Databricks definition spec. Data-table verification pending.
+
+- 2026-11-22T06:39:52+00:00: Dev `LH_Landing/Files/raw_forecasts` shortcut target read-back PASS. Skill: common/COMMON-CORE.md OneLake Shortcuts and Create Shortcut REST spec.
+
+- 2026-11-22T06:40:10+00:00: Dev `LH_Curated/Tables/gold` shortcut target read-back PASS. Skill: common/COMMON-CORE.md OneLake Shortcuts and Create Shortcut REST spec.
+
+- 2026-11-22T07:15:04+00:00: Scoped forecast.forecast_standard SQL metadata refresh Success; recreateTables=false; automatic Excel shortcut untouched.
+
+- 2026-11-22T07:31:13+00:00: Deployed owned pure-Python `NB_Clean_Forecast`: `f561f6f6-ebce-4c34-99c8-1457da45a9d8`. Skill: spark-cli authoring/notebook-api-operations.md; SPARK-NOTEBOOK-AUTHORING-CORE.md. No redundant definition readback.
+
+- 2026-11-22T07:31:22+00:00: Started/monitoring `NB_Clean_Forecast` run `7e5096d8-d7d8-4172-a77f-7a77dba9630a`.
+
+- 2026-11-22T07:32:23+00:00: `NB_Clean_Forecast` run failed: `{"requestId": "e1f59699-78f4-490e-bdc8-4d6809574676", "errorCode": "System_Cancelled_Session_Statements_Failed", "message": "System cancelled the Spark session due to statement execution failures", "isRetriable": false}`.
+
+- 2026-11-22T07:32:23+00:00: Forecast notebook bootstrap blocked: NB_Clean_Forecast: {"requestId": "e1f59699-78f4-490e-bdc8-4d6809574676", "errorCode": "System_Cancelled_Session_Statements_Failed", "message": "System cancelled the Spark session due to statement execution failures", "isRetriable": false}
+
+- 2026-11-22T07:49:55+00:00: Deployed owned pure-Python `NB_Clean_Forecast`: `f561f6f6-ebce-4c34-99c8-1457da45a9d8`. Skill: spark-cli authoring/notebook-api-operations.md; SPARK-NOTEBOOK-AUTHORING-CORE.md. No redundant definition readback.
+
+- 2026-11-22T07:50:05+00:00: Started/monitoring `NB_Clean_Forecast` run `3d65b53c-a3b5-4879-99e9-00557778fc81`.
+
+- 2026-11-22T07:51:07+00:00: `NB_Clean_Forecast` run Completed; data smoke check next.
+
+- 2026-11-22T07:56:21+00:00: Scoped LH_Curated.gold SQL metadata refresh Success for dim_package; recreateTables=false; source tables unchanged.
+
+- 2026-11-22T07:57:14+00:00: Deployed owned `NB_Clean_Forecast`: `f561f6f6-ebce-4c34-99c8-1457da45a9d8`, kernel `jupyter`. Skill: spark-cli authoring/notebook-api-operations.md; SPARK-NOTEBOOK-AUTHORING-CORE.md. No redundant definition readback.
+
+- 2026-11-22T07:57:24+00:00: Started/monitoring `NB_Clean_Forecast` run `fbdaa315-9e7b-435c-af7b-c78ab76c04cd`.
+
+- 2026-11-22T07:58:29+00:00: `NB_Clean_Forecast` run Completed; data smoke check next.
+
+- 2026-11-22T07:59:05+00:00: Deployed owned `NB_Integrate`: `a1fcd41e-f5b3-4f06-9f05-dd91004eed34`, kernel `synapse_pyspark`. Skill: spark-cli authoring/notebook-api-operations.md; SPARK-NOTEBOOK-AUTHORING-CORE.md. No redundant definition readback.
+
+- 2026-11-22T08:00:17+00:00: Scoped SQL metadata refresh did not succeed: `[{"tableName": "forecast.forecast_clean", "status": "NotRun", "startDateTime": "2026-11-22T08:00:14.7229297Z", "endDateTime": "2026-11-22T08:00:14.7698098Z", "lastSuccessfulSyncDateTime": "2026-11-22T07:58:10.2538196Z"}, {"tableName": "forecast.forecast_rejects", "status": "NotRun", "startDateTime": "2026-11-22T08:00:14.7229297Z", "endDateTime": "2026-11-22T08:00:14.7698098Z", "lastSuccessfulSyncDateTime": "2026-11-22T07:58:10.2538196Z"}]`; source tables unchanged.
+
+- 2026-11-22T08:00:17+00:00: Forecast metadata refresh blocked: Scoped SQL metadata refresh returned a non-success table status.
+
+- 2026-11-22T08:05:08+00:00: Dev `LH_Landing/Files/raw_forecasts` shortcut target read-back PASS. Skill: common/COMMON-CORE.md OneLake Shortcuts and Create Shortcut REST spec.
+
+- 2026-11-22T08:05:15+00:00: Dev `LH_Curated/Tables/gold` shortcut target read-back PASS. Skill: common/COMMON-CORE.md OneLake Shortcuts and Create Shortcut REST spec.
+
+- 2026-11-22T08:05:31+00:00: Dev `LH_Curated/Tables/dbo/forecast_clean` shortcut target read-back PASS. Skill: common/COMMON-CORE.md OneLake Shortcuts and Create Shortcut REST spec.
+
+- 2026-11-22T08:05:48+00:00: Deployed owned `NB_Clean_Forecast`: `f561f6f6-ebce-4c34-99c8-1457da45a9d8`, kernel `jupyter`. Skill: spark-cli authoring/notebook-api-operations.md; SPARK-NOTEBOOK-AUTHORING-CORE.md. No redundant definition readback.
+
+- 2026-11-22T08:05:51+00:00: Deployed owned `NB_Integrate`: `a1fcd41e-f5b3-4f06-9f05-dd91004eed34`, kernel `synapse_pyspark`. Skill: spark-cli authoring/notebook-api-operations.md; SPARK-NOTEBOOK-AUTHORING-CORE.md. No redundant definition readback.
+
+- 2026-11-22T08:06:00+00:00: Started/monitoring `NB_Integrate` run `e7961ad5-6169-4922-a08f-1ab92558213a`.
+
+- 2026-11-22T08:07:02+00:00: `NB_Integrate` run failed: `{"requestId": "ee6f6597-5996-4267-b940-1f16174a454d", "errorCode": "System_Cancelled_Session_Statements_Failed", "message": "System cancelled the Spark session due to statement execution failures", "isRetriable": false}`.
+
+- 2026-11-22T08:07:02+00:00: Forecast notebook bootstrap blocked: NB_Integrate: {"requestId": "ee6f6597-5996-4267-b940-1f16174a454d", "errorCode": "System_Cancelled_Session_Statements_Failed", "message": "System cancelled the Spark session due to statement execution failures", "isRetriable": false}
+
+- 2026-11-22T08:15:30+00:00: Deployed owned `NB_Clean_Forecast`: `f561f6f6-ebce-4c34-99c8-1457da45a9d8`, kernel `jupyter`. Skill: spark-cli authoring/notebook-api-operations.md; SPARK-NOTEBOOK-AUTHORING-CORE.md. No redundant definition readback.
+
+- 2026-11-22T08:16:03+00:00: Deployed owned `NB_Integrate`: `a1fcd41e-f5b3-4f06-9f05-dd91004eed34`, kernel `synapse_pyspark`. Skill: spark-cli authoring/notebook-api-operations.md; SPARK-NOTEBOOK-AUTHORING-CORE.md. No redundant definition readback.
+
+- 2026-11-22T08:16:12+00:00: Started/monitoring `NB_Integrate` run `e7641dce-a129-4b61-85c7-974d0312bd9e`.
+
+- 2026-11-22T08:19:29+00:00: `NB_Integrate` run Completed; data smoke check next.
+
+- 2026-11-22T08:40:55+00:00: Created/updated owned PL_Refresh `923dd7b0-871f-4fde-8737-e11eca0e481e`; Python cleaning then PySpark integration, no pool/environment overrides. Skill: pipeline-migration/resources/notebook-activity-migration.md; common/ITEM-DEFINITIONS-CORE.md DataPipeline.
+
+- 2026-11-22T08:41:04+00:00: Started/monitoring PL_Refresh `4d23e629-664f-4579-9cd9-30082193e14b`.
+
+- 2026-11-22T08:48:47+00:00: PL_Refresh Completed; both notebook dependencies honored.
+
+- 2026-11-22T09:07:57+00:00: Created complete MCP-authored SM_Sales `f3dd4c43-1c47-408c-92af-af5bea6fd78c` from exported TMDL; seven tables, seven measures, six relationships. Skill references: powerbi-authoring/skills/semantic-model-authoring/references/semantic-model-rest-api.md; connection-binding.md; direct-lake-guidelines.md; https://learn.microsoft.com/rest/api/power-bi/datasets/execute-queries-in-group.
+
+- 2026-11-22T09:07:59+00:00: SM_Sales Automatic end-user SSO binding verified; no fixed-identity connection.
+
+- 2026-11-22T09:08:09+00:00: Sales model bootstrap blocked: Accepted operation requires a same-origin Location header (received scheme='https', host='wabi-us-central-b-primary-redirect.analysis.windows.net', path='/v1.0/myorg/groups/3fa9b173-f000-4529-a4f7-00d0d6a8d136/datasets/f3dd4c43-1c47-408c-92af-af5bea6fd78c/refreshes/e97dcbb5-2d8e-4b01-b1e0-1ad98d186839').
+
+- 2026-11-22T09:10:38+00:00: SM_Sales Automatic end-user SSO binding verified; no fixed-identity connection.
+
+- 2026-11-22T09:10:40+00:00: Reconciled existing SM_Sales refresh `e97dcbb5-2d8e-4b01-b1e0-1ad98d186839`: Completed; no new refresh submission.
+
+- 2026-11-22T09:10:49+00:00: SM_Sales initial refresh and seven-measure live check PASS: `{"[Actual hl]": 4488091.02, "[Forecast hl]": 2286058.24, "[Deviation hl]": -188035.14, "[Deviation %]": -0.0822529963191139, "[Revenue EUR]": 288517979.92, "[Margin EUR]": 76975278.66, "[Margin %]": 0.26679543050087773, "[Rows]": 10304, "[Calendar days]": 730, "[Stage]": "dev"}`.
+
+### Step 5 semantic-model checkpoint - 2026-11-22
+
+### Step 5 report publication - 2026-11-22
+
+### Step 5 complete - workspace capture and source handoff
+
+- All 11 requested Dev items are captured in Git at
+  `1f6056d485fe57ad7f10c5b849e464be9ff954d6`. Workspace and remote heads match,
+  with zero pending changes. GitHub credential write authorization was fixed
+  by the user; no branch-protection or Fabric-item issue existed.
+- The Data Agent definition contains
+  `Files/Config/draft/ontologies/ONT_Business/ontology.json` with the expected
+  ontology ID. It has no independently configured semantic-model source.
+- Imported the exact workspace capture, including V2 ontology TMDL,
+  user-authored model AI metadata, Data Agent ontology context, lakehouse
+  shortcut metadata and actual portable logical IDs.
+- Windows `core.autocrlf=true` changed line endings during archive extraction/
+  staging and initially blocked fast-forward. Re-created the archive with
+  `core.autocrlf=false`, retained mixed service line endings, and fast-forwarded
+  successfully without discarding unrelated changes.
+- Step 5 Check PASS: one source folder per requested item, initial workspace
+  commit present, approved F4 unchanged. Repository is the source writer from
+  this handoff onward; Dev becomes a downstream Git-update target.
+- Next: Step 6 stage parameterization and Test deployment, followed by gated
+  Prod deployment. No repeated data resets or full regression suite are needed.
+
+- User changed the Data Agent source decision: ONT_Business only, without an
+  independently added SM_Sales source. This applies to DA_Sales, not the report.
+  Updated bootstrap defaults and added `tools/set_data_agent_ontology_only.py`
+  with `--dry-run`. The real update succeeded and definition readback verified
+  removal of the standalone model source and persistence of ontology-only
+  routing. Other parts and published state were retained.
+- The integrated browser could not complete Fabric SSO. The remaining
+  supported setup is the authenticated UI action DA_Sales -> Sources ->
+  Add sources -> Add an ontology -> ONT_Business. No legacy graph/GQL payload
+  or undocumented experimental metadata was invented.
+
+- Resumed after the user identified the unintended pause after report approval.
+  Created `RPT_Sales` in Dev as `34ae3a5d-4c6a-4c8b-8504-bd47bf6d5f0f`.
+  Actual publication, model binding and the two ordered pages were verified.
+- Commands: `tools/generate_sales_report.py --spec <approved session spec>
+  --dry-run`, generator execution, `powerbi-report-author validate`,
+  service-host status/open and screenshots of both pages, then
+  `tools/bootstrap_sales_report.py --dry-run` and `--render-reviewed`.
+  A post-publication dry-run confirmed no new submission.
+- Render review passed: populated monthly actual/forecast lines,
+  product-by-package matrix, region/channel dropdowns, margin-by-channel bars
+  and a complete 26.7% Margin % card. Initial page-transition captures were
+  faded/incomplete; warm active-page captures verified settled rendering.
+  No PBIR change was needed for that transient loading effect.
+- Adapted the skill's base theme to the installed CLI's card-property metadata.
+  Staging only the 21 validated files avoids copying locked/private `.pbi`
+  browser caches. `.pbi/` and local settings are ignored by Git.
+- Shared LRO extraction was checked with the single focused existing test;
+  it passed in 0.004 seconds. No routine full suite was run.
+- The reviewed temporary screenshot child was deleted. The completed headless
+  validation host was closed; the verified detached visible preview remains
+  open for the user.
+- Next human prerequisite: new-experience V2 `ONT_Business` creation and
+  configuration through the Fabric UI/Ontology agent. The installed ontology
+  skill cannot author V2. Do not fake V2 definitions or fall back to V1.
+  Step 5 remains incomplete; no Step 5 completion commit/push has been made.
+
+- User confirmed terminology was added; the provided screenshot shows
+  Prep data for AI -> Add AI instructions. Record this as user-authored
+  terminology guidance, not verified dedicated field synonyms. Preserve it
+  unchanged during Git capture and subsequent model deployment.
+- User clarified that the demo's synonyms belong in the ontology. The earlier
+  instruction conflated that requirement with Power BI AI instructions.
+  Corrected the setup guidance; ontology synonyms remain pending Step 5.8.
+  Loaded `ontology-cli/SKILL.md`: its automated authoring supports legacy V1
+  only, not new-experience V2 creation. Do not invent a V2 payload.
+- The report skill's required planning gate is complete: the user explicitly
+  approved the two-page `RPT_Sales` spec and Dev publication. The canonical
+  spec is in the session workspace, not the repository. No report has been
+  authored or published yet; implementation is the next phase.
+
+- `SM_Sales` was created once as `f3dd4c43-1c47-408c-92af-af5bea6fd78c`;
+  the complete MCP-authored model is persisted as TMDL. Its six business tables
+  use Direct Lake on OneLake; its contiguous calendar is an imported M table.
+- The initial enhanced refresh succeeded. Its regional Location was rejected
+  without forwarding credentials; canonical public-API history reconciled that
+  same completed run. No duplicate refresh was submitted. The API now derives
+  only the exact same-resource refresh GUID on the public Power BI origin.
+- Lightweight validation: Python syntax and deployment dry-run passed; eight
+  focused API-guard cases passed in 0.059 seconds. No routine regression suite
+  or repeated Databricks/SharePoint checks were run.
+- Human prerequisite at Step 5.7: configure the requested synonyms in
+  `SM_Sales` -> Prep data for AI: actual volume = hl/hectolitre/volume,
+  Package = Gebinde/package, Channel = Kanal/channel. The loaded
+  `powerbi-authoring/skills/semantic-model-authoring/references/semantic-model-ai-readiness.md`
+  requires user configuration in that UI; no opaque AI metadata was fabricated.
+- The report folder is a PBIP scaffold only, not a deployed report. Ontology,
+  data agent, Variable Library and Git capture remain pending. Step 5 is still
+  incomplete and has not been committed or pushed as complete.
+
+- 2026-11-22T09:14:03+00:00: LH_Curated OneLake baseline verified: only DefaultReader, Read on *, virtual ReadAll membership. Current OneLake documentation supplies this role by default; no extra enable payload or role overwrite. Skill: e2e-medallion-architecture; https://learn.microsoft.com/fabric/onelake/security/get-started-security; https://learn.microsoft.com/rest/api/fabric/core/onelake-data-access-security/list-data-access-roles.
+
+- 2026-11-22T09:14:07+00:00: SM_Sales Automatic end-user SSO binding verified; no fixed-identity connection.
+
+- 2026-11-22T09:39:59+00:00: Generated RPT_Sales from the approved report spec and official CLI shell: 2 FHD pages, 12 visuals, stable IDs, bound to existing SM_Sales. References: powerbi-report-cli/references/authoring-part-02.md; authoring/authoring-workflows.md; cartesian.md; table.md; slicers.md; card.md; card-part-02.md; textbox.md; theming.md.
+
+- 2026-11-22T09:40:01+00:00: Sales report generation blocked: powerbi-report-author.CMD validate C:\Users\rishabhmonga\OneDrive - Microsoft\Customer\Retail - T8 - Eva\gerolsteiner\fabric-demo-platform\fabric\RPT_Sales.Report failed (exit 1): {"data":{"result":"failed","errorCount":6,"warningCount":0,"reportPath":"C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report","diagnostics":{"PBIR_THEME_VISUAL_PROP_UNKNOWN":{"severity":"error","items":[{"message":"Unknown theme property \"border.radius\" for \"cardVisual\": C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","file":"C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","path":"border.radius"},{"message":"Unknown theme property \"spacing.customizeSpacing\" for \"cardVisual\": C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","file":"C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","path":"spacing.customizeSpacing"},{"message":"Unknown theme property \"padding.top\" for \"cardVisual\": C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","file":"C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","path":"padding.top"},{"message":"Unknown theme property \"padding.bottom\" for \"cardVisual\": C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","file":"C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","path":"padding.bottom"},{"message":"Unknown theme property \"padding.left\" for \"cardVisual\": C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","file":"C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","path":"padding.left"},{"message":"Unknown theme property \"padding.right\" for \"cardVisual\": C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","file":"C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\StaticResources\\RegisteredResources\\SalesAnalytics-278371a8609b.json","path":"padding.right"}]}}}}
+
+- 2026-11-22T09:40:36+00:00: Generated RPT_Sales from the approved report spec and official CLI shell: 2 FHD pages, 12 visuals, stable IDs, bound to existing SM_Sales. References: powerbi-report-cli/references/authoring-part-02.md; authoring/authoring-workflows.md; cartesian.md; table.md; slicers.md; card.md; card-part-02.md; textbox.md; theming.md.
+
+- 2026-11-22T09:53:51+00:00: Sales report publication blocked: [('C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\.pbi\\preview\\profile-1380d6f71126b5c1-92c5d9bd-76b2-48c9-9cd1-c4906a8ec969\\Default\\Network\\Cookies', 'C:\\Users\\RISHAB~1\\AppData\\Local\\Temp\\fabric-publish-sales-_uk7j4bs\\RPT_Sales.Report\\.pbi\\preview\\profile-1380d6f71126b5c1-92c5d9bd-76b2-48c9-9cd1-c4906a8ec969\\Default\\Network\\Cookies', '[WinError 32] The process cannot access the file because it is being used by another process'), ('C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\.pbi\\preview\\profile-1380d6f71126b5c1-92c5d9bd-76b2-48c9-9cd1-c4906a8ec969\\Default\\Network\\Cookies-journal', 'C:\\Users\\RISHAB~1\\AppData\\Local\\Temp\\fabric-publish-sales-_uk7j4bs\\RPT_Sales.Report\\.pbi\\preview\\profile-1380d6f71126b5c1-92c5d9bd-76b2-48c9-9cd1-c4906a8ec969\\Default\\Network\\Cookies-journal', '[WinError 32] The process cannot access the file because it is being used by another process'), ('C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\.pbi\\preview\\profile-1380d6f71126b5c1-92c5d9bd-76b2-48c9-9cd1-c4906a8ec969\\Default\\Sessions\\Session_13439814559864639', 'C:\\Users\\RISHAB~1\\AppData\\Local\\Temp\\fabric-publish-sales-_uk7j4bs\\RPT_Sales.Report\\.pbi\\preview\\profile-1380d6f71126b5c1-92c5d9bd-76b2-48c9-9cd1-c4906a8ec969\\Default\\Sessions\\Session_13439814559864639', '[WinError 32] The process cannot access the file because it is being used by another process'), ('C:\\Users\\rishabhmonga\\OneDrive - Microsoft\\Customer\\Retail - T8 - Eva\\gerolsteiner\\fabric-demo-platform\\fabric\\RPT_Sales.Report\\.pbi\\preview\\profile-1380d6f71126b5c1-92c5d9bd-76b2-48c9-9cd1-c4906a8ec969\\Default\\Sessions_Encrypted\\Session_13439814559865837', 'C:\\Users\\RISHAB~1\\AppData\\Local\\Temp\\fabric-publish-sales-_uk7j4bs\\RPT_Sales.Report\\.pbi\\preview\\profile-1380d6f71126b5c1-92c5d9bd-76b2-48c9-9cd1-c4906a8ec969\\Default\\Sessions_Encrypted\\Session_13439814559865837', '[WinError 32] The process cannot access the file because it is being used by another process')]
+
+- 2026-11-22T09:56:03+00:00: Accepted RPT_Sales creation: `https://api.fabric.microsoft.com/v1/operations/00e5d518-4b3e-402c-8498-17ffe8ebfdf6`; polling, never resubmitting.
+
+- 2026-11-22T09:56:32+00:00: RPT_Sales `34ae3a5d-4c6a-4c8b-8504-bd47bf6d5f0f` publication PASS: correct SM_Sales binding, two ordered pages; live-data screenshot review passed before publication, including Margin %=26.7. URL: https://app.powerbi.com/groups/3fa9b173-f000-4529-a4f7-00d0d6a8d136/reports/34ae3a5d-4c6a-4c8b-8504-bd47bf6d5f0f. References: powerbi-report-cli/references/management.md; management-part-02.md; management-part-04.md; authoring/powerbi-report-author-cli.md; https://learn.microsoft.com/rest/api/power-bi/reports/get-report-in-group; https://learn.microsoft.com/rest/api/power-bi/reports/get-pages-in-group.
+
+- 2026-11-22T10:20:45+00:00: Captured user-created V2 ONT_Business `2cf382af-fb83-45e5-8940-f3af5d85a6c7` metadata; entity/binding configuration confirmed by user, not inspected through a V1 API.
+
+- 2026-11-22T10:21:20+00:00: Created/verified DA_Sales `a28d4922-889e-4330-b343-a8a90d0224c2` with owned definition; no unowned overwrite.
+
+- 2026-11-22T10:21:50+00:00: Dev context bootstrap blocked: Data Agent instructions or semantic model binding did not persist.
+
+- 2026-11-22T10:24:21+00:00: Captured user-created V2 ONT_Business `2cf382af-fb83-45e5-8940-f3af5d85a6c7` metadata; entity/binding configuration confirmed by user, not inspected through a V1 API.
+
+- 2026-11-22T10:24:23+00:00: Created/verified DA_Sales `a28d4922-889e-4330-b343-a8a90d0224c2` with owned definition; no unowned overwrite.
+
+- 2026-11-22T10:24:54+00:00: DA_Sales draft instructions and SM_Sales binding readback PASS. V2 Ontology context must be attached in the supported UI, not as graph/GQL. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/create-data-agent; https://learn.microsoft.com/rest/api/fabric/articles/item-management/definitions/data-agent-definition.
+
+- 2026-11-22T10:25:31+00:00: Created/verified VL_Config `3ea7efa7-860b-4c2c-99ad-47625ad6c497` with owned definition; no unowned overwrite.
+
+- 2026-11-22T10:26:16+00:00: VL_Config definition/readback and active dev value set PASS; no redundant dev overrides. Skill: variable-library-cli/references/authoring.md; operations.md.
+
+- 2026-11-22T10:38:37+00:00: DA_Sales standalone SM_Sales source removed and verified. Ontology-only agent routing persisted; other definition parts and published state preserved. RPT_Sales/SM_Sales were not changed. Reference: common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/update-data-agent-definition.
+
+- 2026-11-22T11:07:42+00:00: Dev Git capture PASS: all known items synced, no changes, workspace/remote head `1f6056d485fe57ad7f10c5b849e464be9ff954d6`. Skill: git-integration-operations-cli/SKILL.md, Commit to Git / Check Sync Status. Initial workspace capture is complete; subsequent source writer is the repository.
+
+- 2026-11-22T11:15:23+00:00: Step 5 source capture integrated: all 11 item folders from Git commit `1f6056d485fe57ad7f10c5b849e464be9ff954d6`, actual logical IDs and opaque user-authored model/ontology/agent state preserved. No unrelated paths or preview caches touched.
+
+- 2026-11-22T11:46:49+00:00: Step 5 source capture integrated: all 11 item folders from Git commit `1f6056d485fe57ad7f10c5b849e464be9ff954d6`, actual logical IDs and opaque user-authored model/ontology/agent state preserved. No unrelated paths or preview caches touched.

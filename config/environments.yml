@@ -2,6 +2,7 @@ tenant:
   domain: Caldova30465160.onmicrosoft.com
   id: 5c41223c-f1f5-4979-930f-d5f3c72353f9
   admin_upn: admin@Caldova30465160.onmicrosoft.com
+  admin_object_id: 341769a6-9b1d-422e-8080-a666d62dc21d
 azure:
   subscription_id: 61ab2275-fb68-4081-ac0f-076c87caf0c1
   resource_group: rg-demo-databricks
@@ -61,7 +62,7 @@ azure:
   databricks_sql_warehouse_id: 56f680445ba7585a
 fabric:
   capacity_id: 5332e7ad-fe3b-4c0b-a1b7-3f1975e7b2dd
-  capacity_sku: F8
+  capacity_sku: F4
   capacity_name: capacityswitzerlandnorth
   capacity_region: Switzerland North
   governance_approved: true
@@ -83,10 +84,10 @@ fabric:
   connections:
     databricks:
       name: conn-dbw-demo
-      id: null
+      id: 9430fa8c-03d8-476b-aa2e-167b0fb804f6
     sharepoint:
       name: conn-sp-demodata
-      id: null
+      id: 5bb73026-8d9d-4ba1-9c44-91b68ac0bc95
 github:
   owner: rishabhmonga119
   repository: fabric-demo-platform
@@ -104,6 +105,7 @@ github:
     url: https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/44954014294
     commit: 9d8d7c3a5781e1ccf1adc36f0b4989dae288dd15
     result: success
+  fabric_connection_id: 9a69d679-cb80-4a4d-ba43-b30660a09347
 entra:
   application:
     name: sp-fabric-demo-cicd
@@ -165,7 +167,237 @@ environments:
     storage_container: uc-dev
     sharepoint_folder: Forecasts/Dev
     admin_group: SG-Demo-Fabric-Admins
-    items: {}
+    items:
+      LH_Landing:
+        id: fd2d2f87-dff9-4974-b943-1d45cc2fcd90
+        type: Lakehouse
+        sql_endpoint_id: 8c1fa7a6-4ee5-4cd4-bd49-a0826f64843a
+        shortcuts:
+          Files/raw_forecasts:
+            name: raw_forecasts
+            path: /Files
+            target:
+              type: OneDriveSharePoint
+              oneDriveSharePoint:
+                driveId: b!fl7D45miBEi-DN8YNgdCVLYZkNTPBsZKkNc3zApyYUs2ryRWykplRKoRpOUJJg1w
+                updateFabricItemSensitivity: false
+                siteId: null
+                siteUrl: null
+                subpath: /sites/DemoData/Shared Documents/Forecasts/Dev/raw
+                connectionId: 5bb73026-8d9d-4ba1-9c44-91b68ac0bc95
+                location: https://caldova30465160.sharepoint.com
+        logical_id: cc2fcd90-1d45-b943-4974-dff9fd2d2f87
+        local_files:
+          .platform: b6be3c7d6cf6a1b120537761fd75ec8bbb72d21aef1805965d57d1380f5cafa1
+          alm.settings.json: df05ec60968ffb09de5d8e7729864ce6e8f55c9ee8618135b1c3666a2b5bce3c
+          lakehouse.metadata.json: cd0de1c2fee529717b747e259e9cd68b86ed23608965004542f52bc220eb81a4
+          shortcuts.metadata.json: 3036151cdec9440b80ec111e580c187001bbc0176f8ca623358b7472e823612a
+      LH_Curated:
+        id: a8a49dc0-330e-4a63-8280-dccb057b4cde
+        type: Lakehouse
+        sql_endpoint_id: fbae8831-c2bd-4ab3-aa2a-4c132e79e1fd
+        shortcuts:
+          Tables/gold:
+            name: gold
+            path: /Tables
+            target:
+              type: OneLake
+              oneLake:
+                workspaceId: 3fa9b173-f000-4529-a4f7-00d0d6a8d136
+                itemId: 6e1a3d67-2ba7-4580-ae56-4c811846d217
+                path: Tables/gold
+          Tables/dbo/forecast_clean:
+            name: forecast_clean
+            path: /Tables/dbo
+            target:
+              type: OneLake
+              oneLake:
+                workspaceId: 3fa9b173-f000-4529-a4f7-00d0d6a8d136
+                itemId: fd2d2f87-dff9-4974-b943-1d45cc2fcd90
+                path: Tables/forecast/forecast_clean
+        onelake_security:
+          default_reader_id: 63fff0eb-edf2-46f2-a4dd-d8eee893c2d4
+          baseline_verified: true
+        logical_id: 057b4cde-dccb-8280-4a63-330ea8a49dc0
+        local_files:
+          .platform: 9640a664e7ed055b76af818ae10c950047e5a695c37a1498e4ea66e595009363
+          alm.settings.json: df05ec60968ffb09de5d8e7729864ce6e8f55c9ee8618135b1c3666a2b5bce3c
+          lakehouse.metadata.json: cd0de1c2fee529717b747e259e9cd68b86ed23608965004542f52bc220eb81a4
+          shortcuts.metadata.json: a93e8c78e31374149088dfaba66a0aeb46aa2775eeefbdc796f4a3084c09deca
+      MIR_UC_Gold:
+        id: 6e1a3d67-2ba7-4580-ae56-4c811846d217
+        type: MirroredAzureDatabricksCatalog
+        sql_endpoint_id: e95c7d52-7aaf-4e61-a648-3d4d64dcf2ac
+        logical_id: 1846d217-4c81-ae56-4580-2ba76e1a3d67
+        local_files:
+          .platform: 9f3ff462fb8fe91becb166e4d42afb2abb3caa2f70367245f480fc0d200fb9a8
+          definition.json: b53b842ae7299e21a1985484cc8d7be6ebd980888485898124532d58b1d3cd6f
+      NB_Clean_Forecast:
+        id: f561f6f6-ebce-4c34-99c8-1457da45a9d8
+        type: Notebook
+        definition_sha256: 0ff5335273753d90640105077965c84de563dde4392790b57888483d4ec3824d
+        last_run_uri: https://api.fabric.microsoft.com/v1/workspaces/3fa9b173-f000-4529-a4f7-00d0d6a8d136/items/f561f6f6-ebce-4c34-99c8-1457da45a9d8/jobs/instances/fbdaa315-9e7b-435c-af7b-c78ab76c04cd
+        last_run_id: fbdaa315-9e7b-435c-af7b-c78ab76c04cd
+        last_run_definition_sha256: 0ff5335273753d90640105077965c84de563dde4392790b57888483d4ec3824d
+        last_run_state: Completed
+        logical_id: da45a9d8-1457-99c8-4c34-ebcef561f6f6
+        local_files:
+          .platform: cd56e28b29412a28973c633719d4daab7b7971eed662fd0759a20df545717ea5
+          notebook-content.py: 2414302685394fb0608cd4d7ec704c5bdcd2d162e21af484e07330ee183dbfff
+      NB_Integrate:
+        id: a1fcd41e-f5b3-4f06-9f05-dd91004eed34
+        type: Notebook
+        definition_sha256: 510898ae9c44af6d278a44360a7f75a7d21741dc4c155bfac7b4974ad87c78e4
+        last_run_uri: https://api.fabric.microsoft.com/v1/workspaces/3fa9b173-f000-4529-a4f7-00d0d6a8d136/items/a1fcd41e-f5b3-4f06-9f05-dd91004eed34/jobs/instances/e7641dce-a129-4b61-85c7-974d0312bd9e
+        last_run_id: e7641dce-a129-4b61-85c7-974d0312bd9e
+        last_run_definition_sha256: 510898ae9c44af6d278a44360a7f75a7d21741dc4c155bfac7b4974ad87c78e4
+        last_run_state: Completed
+        logical_id: 004eed34-dd91-9f05-4f06-f5b3a1fcd41e
+        local_files:
+          .platform: 32bcc0ba3b93bad09aac206ba01b3c82cd17af942324e677d6f4607909c60f33
+          notebook-content.py: 7ba1825bb53c792bc7204b50a5c702de09982f6982330d763c84873c8077a1ac
+      PL_Refresh:
+        id: 923dd7b0-871f-4fde-8737-e11eca0e481e
+        type: DataPipeline
+        definition_sha256: 07971b3ec6506b1202c1dcb11e07fe4787b51440aadba869b1c853c24d425aeb
+        last_run_id: 4d23e629-664f-4579-9cd9-30082193e14b
+        last_run_uri: https://api.fabric.microsoft.com/v1/workspaces/3fa9b173-f000-4529-a4f7-00d0d6a8d136/items/923dd7b0-871f-4fde-8737-e11eca0e481e/jobs/instances/4d23e629-664f-4579-9cd9-30082193e14b
+        last_run_state: Completed
+        logical_id: ca0e481e-e11e-8737-4fde-871f923dd7b0
+        local_files:
+          .platform: 681b9c39e8f362f3726cb3cba402cb8a7cf6e6989d6db4b1fa0da69b4114c47a
+          pipeline-content.json: 89617e3ca4010a120ba322d3325ae4de0c63ce01aa3a83c90f6f3f752e3dc1c4
+      SM_Sales:
+        id: f3dd4c43-1c47-408c-92af-af5bea6fd78c
+        type: SemanticModel
+        definition_sha256: 4cc0e591287c190c4d3a1b8b562522e96c1c0ee00d471b95e2d9350a8e71ecaa
+        connection_binding:
+          connectivityType: Automatic
+          connectionDetails:
+            path: https://onelake.dfs.fabric.microsoft.com/3fa9b173-f000-4529-a4f7-00d0d6a8d136/a8a49dc0-330e-4a63-8280-dccb057b4cde/
+            type: AzureDataLakeStorage
+        last_refresh_id: e97dcbb5-2d8e-4b01-b1e0-1ad98d186839
+        last_refresh_state: Completed
+        baseline_query:
+          '[Actual hl]': 4488091.02
+          '[Forecast hl]': 2286058.24
+          '[Deviation hl]': -188035.14
+          '[Deviation %]': -0.0822529963191139
+          '[Revenue EUR]': 288517979.92
+          '[Margin EUR]': 76975278.66
+          '[Margin %]': 0.26679543050087773
+          '[Rows]': 10304
+          '[Calendar days]': 730
+          '[Stage]': dev
+        logical_id: ea6fd78c-af5b-92af-408c-1c47f3dd4c43
+        local_files:
+          .platform: e8987cdd8a9b86918f4824cc5e6879a5709568b3ee6e73024c15952cb8d5d47d
+          definition.pbism: 5b62997d296baecd930bb75446d8cd89abdc60be0d4e7a1a1325e6c4833e1459
+          definition/database.tmdl: 1592bf3bc1fbe5f27ec689ba528ef99b9e04515057d22a060a1c40018fdcbd9e
+          definition/expressions.tmdl: f77cb1975e0519c34899a532cd93405b54febaf18269068d249dc5225941ecd0
+          definition/model.tmdl: f6a803517475ac6af4a5dfee92d6778fd3fe2758cd9d5d9a4136cc97bc95a422
+          definition/relationships.tmdl: 3bc39d0eb12e177a25b47500d684ab93b76e8f51589534ca13b623d094715390
+          definition/cultures/en-US.tmdl: 59e50bc89ece28a998d94c454d7e728615dd5f1edd7d61bbf813380dfd3fa1a9
+          definition/tables/Channel.tmdl: bb53ede184132a8feab93ce884b786aa77351385072434a17fc6f1b3405a7fc1
+          definition/tables/Date.tmdl: 6954fbab823d69641aecb79762d13872ba4ed4d5139ea77d67c0235b1b2babf1
+          definition/tables/Package.tmdl: c2958b9f07a14b8539cd1943d0b4d8d9258ef208be5501d604fdbadbd5ade756
+          definition/tables/Partner.tmdl: 5104708bb15a6f502881c61dcabfeccbc6f8430f4edaa3c2561e529028306dcd
+          definition/tables/Product.tmdl: 15ea5bec1f295e15195b9a728fbff9fa09e2f94591172c47f0d7e133d1925aaf
+          definition/tables/Region.tmdl: 45b101c0ab1ce7da111263999ef32d945812cbe2ce94cad3e159a799ae429fa3
+          definition/tables/Sales vs Forecast.tmdl: 433140c23ddb7f3eeaaecd3822e89202f852f1cbdd5f55bc61ef2d7053cc4c0a
+      RPT_Sales:
+        type: Report
+        local_files:
+          .platform: 233d44c40bd326449a7c8da8fb0632fdc329cb2e3126468cc7b0f4c7d12a0d10
+          definition.pbir: e3fc7e93273d410dfe0e8f39dadc41bd94d6ca0a8e4bd8ffd09cc6a4fe60d17a
+          definition/report.json: 070e07bf6e2702838d0b5bf6e7c59e895e5905a9bc933fdb9e5fb529465477b1
+          definition/version.json: 32bc72b8e7996a054f96e655c8dd8fda82e5f502532610b45bc21a18cffe30b6
+          StaticResources/RegisteredResources/SalesAnalytics-8a4067cf409d.json: a3d92ee2d5e7f46247de1e70bdd7b4a641195601598e2531d87f015ace9b8a36
+          StaticResources/SharedResources/BaseThemes/Fluent2-CY26SU10.json: 6088479c0b7350d0fbe36b6da6f3d0eecf472c95da235ce4ac0e15c1f2290357
+          definition/pages/pages.json: 03923ca0b03b6e03919b7914218f17d027aff338e4edd150a82a0768ee4af283
+          definition/pages/8e62372e55ad391bc0c1/page.json: eee290b71daeb15c5ef7d72edb345c0d3390f3b1efec75699ae782ced9581f9d
+          definition/pages/b9ed323a6d3c7ad487cd/page.json: d63a2ce22fddb446eae11cd01550c6897e90372af359ee4d61a613793252f4a7
+          definition/pages/b9ed323a6d3c7ad487cd/visuals/77889969142988f6ec34/visual.json: 7ae2c6daf1ee5340352ecc754c91383ac225a9b0fea82dfb2c280ebdf6ccf4e4
+          definition/pages/b9ed323a6d3c7ad487cd/visuals/7c289c326c39288d8b31/visual.json: b22ff61cd8f38c24688ea78246ea2890b748579c073055948a2b54db213ba862
+          definition/pages/b9ed323a6d3c7ad487cd/visuals/84429455cfc991fee2e8/visual.json: 766e04e9fb1b38fbe0ba9125eb23c729955f0b57564a9e6f15461a1ab80f664c
+          definition/pages/b9ed323a6d3c7ad487cd/visuals/c52404ff8167c4d43a43/visual.json: 921fc1890f4505b90cd6db7482d070737124da3ead3167d08f4eebf315e62952
+          definition/pages/b9ed323a6d3c7ad487cd/visuals/d08e3d626d98917869d7/visual.json: ab9757b4a9442f9d5d997bd7ef394f0484a1c567353e11431f0d9538bc7a4219
+          definition/pages/b9ed323a6d3c7ad487cd/visuals/d9da1e355660fea43bd6/visual.json: 2bc38c2cf8410b4d9e6254d71f4ba937cf904aae1083dea4b261ed0a8c6a05c3
+          definition/pages/8e62372e55ad391bc0c1/visuals/5a05d007696c7c67dbb3/visual.json: 307ad6d469e2ad6ea786ed26e05d35aaad330c0b5d26787bb3df9ec1030767d6
+          definition/pages/8e62372e55ad391bc0c1/visuals/5aef7c037eb21550ef4a/visual.json: ec2ccf79fe02408daf4c2a5deda52d27bb1b7a402b7e1056d9b41e319f7e3767
+          definition/pages/8e62372e55ad391bc0c1/visuals/73aab22112f85c8c76c2/visual.json: 7234ff0a7d5206ca74cda83e22c44548ab6dace12954aa3791e5f2333d46627f
+          definition/pages/8e62372e55ad391bc0c1/visuals/78339ccc793176c629ba/visual.json: 660e135058c2b7de720b6efcfc41d626529ff3e406c1e663988cf63b8e613ebc
+          definition/pages/8e62372e55ad391bc0c1/visuals/7c6ac1f5f084155cdb18/visual.json: cecbf3701916fad3ff4a2dae40de3ad94db9c6309bb0e63f630305f47212497b
+          definition/pages/8e62372e55ad391bc0c1/visuals/ae967089dee524273ea5/visual.json: 23a36d2174c6badf2c8169da3fc1f3082eabbb0a3500e8774e87ddd1e78ad161
+        render_reviewed_definition_sha256: 9765c2e0959434a3bf4db26f3804331c4de3f7398384409d68f907a169778854
+        id: 34ae3a5d-4c6a-4c8b-8504-bd47bf6d5f0f
+        definition_sha256: 9765c2e0959434a3bf4db26f3804331c4de3f7398384409d68f907a169778854
+        semantic_model_id: f3dd4c43-1c47-408c-92af-af5bea6fd78c
+        web_url: https://app.powerbi.com/groups/3fa9b173-f000-4529-a4f7-00d0d6a8d136/reports/34ae3a5d-4c6a-4c8b-8504-bd47bf6d5f0f
+        pages:
+        - name: 8e62372e55ad391bc0c1
+          displayName: Actual vs Forecast
+          order: 0
+        - name: b9ed323a6d3c7ad487cd
+          displayName: Margin
+          order: 1
+        publish_verified: true
+        logical_id: bf6d5f0f-bd47-8504-4c8b-4c6a34ae3a5d
+      ONT_Business:
+        id: 2cf382af-fb83-45e5-8940-f3af5d85a6c7
+        type: Ontology
+        user_created: true
+        v2_configuration_user_confirmed: true
+        logical_id: 5d85a6c7-f3af-8940-45e5-fb832cf382af
+        local_files:
+          .platform: 65022d13bedee4819085752ac0a9928242c3d3e064ccdc4e5fe4b80692bf4da2
+          database.tmdl: 108e3a087aa008d051691b35b7c000be1f6e67d7dabf86db21ee730137df81da
+          entityRelationships.tmdl: 38b0a5d1e9e29bb60c68d940c8f1475bbaa5d86c62d2f8b70dd08011797a392d
+          expressions.tmdl: 378ef11c0583cb860e19ca0a71655b5312abab7e1a498766ef0c0347db5f8a72
+          model.tmdl: d349af46637751768c7a82fa94e2a9b604870b03414fd7de19bc6e71a9a85fac
+          relationships.tmdl: 52dac8a77cdc4e06c0c065684aafe7ead702c08507a9356fce4be3a95dd07446
+          entities/Channel.tmdl: 53e10848dd1fdf26669d61bdfc0e6d570d87496388753c21f2bfc1b988d86d21
+          entities/Delivery.tmdl: 064285727874cefb29fdc305eee83125fb9f2d1a30f9984af6b731c237bcaa66
+          entities/Package.tmdl: 489bbae3bfbe6ca48b3ca6aabacd39aed5876513cc58e06e0ab89965e105802b
+          entities/Partner.tmdl: 63f04e131c98023fa0fe6646fdce50d05e2d545509c261862f03d63ce02daf7b
+          entities/Product.tmdl: 476f82fa510f6e8ba2e7729a018c9f2e814fe96584c7469a6689307a6fa0af23
+          entities/Region.tmdl: d51581cdbfaece3a41749ab8b2e69c70496b2ab46e64d7edbca109b896323368
+          entities/SalesPeriod.tmdl: ac281bffbb837a0343c711cd2ad4afbf704cb3b2c3fb8b7d05248defc36b0416
+          namespaces/default.tmdl: 8b8c218721d8403ea8f2b504ae984dbc038a87e764cc448db4332cb10f33cb7e
+          tables/Channel.tmdl: d86060242dde866de7d8998e6cee89f02f9821fa720a5423d7f4cf893ef8b023
+          tables/Date.tmdl: 41538a1771ef22df61165d07e7d80f1dc5ee03bed7429d5acea966cc8bdd0fad
+          tables/Delivery.tmdl: 693ae9ecf2ebae2ea3dc9a9f41339792ee69239cbbb79f3080268d0a53ce3b68
+          tables/Package.tmdl: ba503a03d72489bfbeff3ba1aa2790d6a10c8dd51b07dd7882a10dd2ca5db56b
+          tables/Partner.tmdl: 5b4bff97c8dc54f83c0f15c23298e7e263ef6c1c62592c42c9a2cf932a61ffaa
+          tables/Product.tmdl: 5604bae375ab508913c9bfdb68b15f5669c28f73f53dac2f712179dc82913429
+          tables/Region.tmdl: d3c85234320680f13fc8eb27f96eb362ae8661691f34255eeea60ef9f03a2562
+          tables/SalesPeriod.tmdl: 00dc032dd96b1024803f55d69ba32cc361f1616bad736b5f951c14537784e590
+      DA_Sales:
+        id: a28d4922-889e-4330-b343-a8a90d0224c2
+        type: DataAgent
+        definition_sha256: 23bb736aa1d72f0271817770b0785860950001b54d3da63ee71500ee26d7c36e
+        local_files:
+          .platform: 2986888c14b35917c687aa71199fcff68621e4d4e15db5fda368970b3ecbea8f
+          Files/Config/data_agent.json: 05ac6b0e9f013a3029f86ea934daffaf001bc14872093910cb62011aa9d1a59e
+          Files/Config/draft/stage_config.json: 120fc86b6f768015167d02d6290f8fcdcc4c8697d7ee267785e87bedd1dd476e
+          Files/Config/draft/ontologies/ONT_Business/ontology.json: 023f0b5a771952cebe6e745101dd112e8c1926413f2b7a79e95b5258b383a8be
+        ontology_context_pending: false
+        source_policy: ontology-only
+        logical_id: 0d0224c2-a8a9-b343-4330-889ea28d4922
+        ontology_context_user_confirmed: true
+      VL_Config:
+        id: 3ea7efa7-860b-4c2c-99ad-47625ad6c497
+        type: VariableLibrary
+        definition_sha256: 9239577c18629eac6e5cee7f799fa960cf267fd62440efe73792ed55242349b0
+        local_files:
+          .platform: d3ce4842303d5ec6856414bfbc039501760396f362992f8bb896e72d7be4248f
+          settings.json: ab15e070d7f1bbd7c4ab994edd55c05177fd890cdf41ce496cdfc9c847ea2f50
+          variables.json: fd4dbe616d7f73c4417e2b1800a8b8123577610f9931957cb59323b4e160f744
+          valueSets/dev.json: 51872240854507e5db77e3deaf82cd68064b51b380c73244c00bbf5f75c16ed7
+          valueSets/prod.json: c6d3ce89fa4ba6123982c17d19ba24b5e1c9dc6026dc36a17e8858b97bf200fc
+          valueSets/test.json: 5f157ead6dada50770b271dc3b332f8b231298bfa8965311aa0572112015e82f
+        active_value_set: dev
+        logical_id: 5ad6c497-4762-99ad-4c2c-860b3ea7efa7
     databricks_managed_location: abfss://uc-dev@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/
     databricks_catalog_storage_location: abfss://uc-dev@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/4b8ccb34-73c8-465d-be7f-1f3486560c06
     databricks_external_location: el_uc_dev
@@ -213,6 +445,7 @@ environments:
         etag: '"{E2901CCD-AED9-4643-A7D8-0F723351265A},1"'
         sha256: 624ef661c46d2c62b6e527af2d6a8b93070647289fb5a1e5df821020403625e0
         verified: true
+    git_capture_commit: 1f6056d485fe57ad7f10c5b849e464be9ff954d6
   test:
     workspace_name: DEMO-Analytics-Test
     workspace_id: 0a29b70a-6bc9-4bfc-b196-61825cf9f75a
@@ -340,5 +573,5 @@ cost_guardrails:
   databricks_sku: premium
   compute: serverless_or_single_node
   auto_termination_minutes: 15
-  fabric_sku: F8
+  fabric_sku: F4
   paid_azure_resources: step_1_only

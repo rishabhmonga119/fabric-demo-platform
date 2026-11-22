@@ -37,6 +37,18 @@ def workbook_values(content: bytes) -> dict:
         book.close()
 
 
+def graph_credential(config: dict, prompt) -> DeviceCodeCredential:
+    authentication_path = ROOT / ".venv" / "sharepoint-authentication-record.json"
+    authentication = AuthenticationRecord.deserialize(authentication_path.read_text(encoding="utf-8")) \
+        if authentication_path.exists() else None
+    return DeviceCodeCredential(
+        tenant_id=config["tenant"]["id"], client_id=config["sharepoint"]["application"]["client_id"],
+        prompt_callback=prompt, authentication_record=authentication,
+        cache_persistence_options=TokenCachePersistenceOptions(
+            name="fabric-demo-sharepoint", allow_unencrypted_storage=False),
+    )
+
+
 def verify_uploaded_workbook(item: dict, content: bytes, site_host: str, filename: str) -> None:
     if item["name"] != filename or "file" not in item or item["size"] <= 0:
         raise ApiError(f"Uploaded workbook identity/type/size is invalid: {filename}")
@@ -85,14 +97,7 @@ def main() -> None:
             raise ContextError("Human consent/device sign-in required: run upload_sharepoint.py --authenticate.")
         print(f"HUMAN ACTION: open {uri} and enter {code}; sign in as {config['tenant']['admin_upn']} and consent only to the displayed demo upload permissions.", flush=True)
 
-    authentication_record = AuthenticationRecord.deserialize(auth_path.read_text(encoding="utf-8")) \
-        if auth_path.exists() else None
-    credential = DeviceCodeCredential(
-        tenant_id=config["tenant"]["id"], client_id=application["client_id"],
-        prompt_callback=prompt, authentication_record=authentication_record,
-        cache_persistence_options=TokenCachePersistenceOptions(
-            name="fabric-demo-sharepoint", allow_unencrypted_storage=False),
-    )
+    credential = graph_credential(config, prompt)
     scopes = [f"https://graph.microsoft.com/{scope}" for scope in SCOPES]
     if args.authenticate:
         authenticated = credential.authenticate(scopes=scopes)

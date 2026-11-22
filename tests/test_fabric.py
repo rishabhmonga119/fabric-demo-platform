@@ -12,6 +12,7 @@ from bootstrap_entra import federation_subjects, has_membership
 from bootstrap_fabric import domain_role_plan, setting_proposal
 from check_demo_licenses import license_features
 from select_test_users import assert_viewer_eligible
+from bootstrap_fabric_items import create_lakehouse
 
 
 class FabricPaginationTests(unittest.TestCase):
@@ -44,6 +45,42 @@ class FabricPaginationTests(unittest.TestCase):
 
 
 class JsonApiGuardTests(unittest.TestCase):
+    def test_powerbi_regional_refresh_location_uses_public_origin_and_correct_audience(self):
+        response = MagicMock()
+        response.status = 202
+        response.read.return_value = b""
+        path = "/v1.0/myorg/groups/workspace/datasets/model/refreshes"
+        refresh_id = "e97dcbb5-2d8e-4b01-b1e0-1ad98d186839"
+        response.headers.get.side_effect = lambda name: {
+            "Location": "https://regional.example" + path + "/" + refresh_id
+        }.get(name)
+        with patch.object(http_api, "AzureCliCredential") as credential, \
+             patch.object(http_api, "build_opener") as opener, \
+             patch.object(http_api, "verify_context"):
+            opener.return_value.open.return_value.__enter__.return_value = response
+            api = http_api.Api("https://api.powerbi.com", "demo")
+            self.assertEqual(api.request("POST", path, {}, accept_operation=True),
+                             {"operation_uri": "https://api.powerbi.com" + path + "/" + refresh_id})
+            credential.return_value.get_token.assert_called_once_with(
+                "https://analysis.windows.net/powerbi/api/.default")
+            self.assertEqual(opener.return_value.open.call_count, 1)
+
+    def test_powerbi_refresh_location_cannot_switch_resources(self):
+        response = MagicMock()
+        response.status = 202
+        response.read.return_value = b""
+        response.headers.get.return_value = (
+            "https://regional.example/v1.0/myorg/groups/other/datasets/model/refreshes/"
+            "e97dcbb5-2d8e-4b01-b1e0-1ad98d186839")
+        with patch.object(http_api, "AzureCliCredential"), \
+             patch.object(http_api, "build_opener") as opener, \
+             patch.object(http_api, "verify_context"):
+            opener.return_value.open.return_value.__enter__.return_value = response
+            api = http_api.Api("https://api.powerbi.com", "demo")
+            with self.assertRaisesRegex(http_api.ApiError, "same-origin Location"):
+                api.request("POST", "/v1.0/myorg/groups/workspace/datasets/model/refreshes",
+                            {}, accept_operation=True)
+
     def test_dry_run_never_acquires_credentials_or_sends_secret_payload(self):
         with patch.object(http_api, "AzureCliCredential") as credential, \
              patch.object(http_api, "build_opener") as opener, \
@@ -107,6 +144,35 @@ class JsonApiGuardTests(unittest.TestCase):
             api.request("PUT", "/v1.0/drives/demo/items/new/content", b"PK\x00\x01",
                         content_type="application/octet-stream")
             self.assertEqual(opener.return_value.open.call_args.args[0].data, b"PK\x00\x01")
+
+    def test_lro_response_info_preserves_retry_after_without_changing_default_body(self):
+        response = MagicMock()
+        response.status = 200
+        response.read.return_value = b'{"status":"Running"}'
+        response.headers.get.return_value = "30"
+        with patch.object(http_api, "AzureCliCredential"), \
+             patch.object(http_api, "build_opener") as opener:
+            opener.return_value.open.return_value.__enter__.return_value = response
+            api = http_api.Api("https://api.fabric.microsoft.com", "demo", skill="e2e-medallion-architecture")
+            self.assertEqual(api.request("GET", "/v1/operations/op"), {"status": "Running"})
+            self.assertEqual(api.request("GET", "/v1/operations/op", with_response_info=True),
+                             {"status_code": 200, "retry_after": "30", "body": {"status": "Running"}})
+
+
+class LakehouseLroTests(unittest.TestCase):
+    def test_create_waits_for_terminal_success_and_honors_each_retry_after(self):
+        api = MagicMock()
+        api.request.side_effect = [
+            {"status_code": 202, "retry_after": "30", "body": {"operation_uri": "https://api.fabric.microsoft.com/v1/operations/op"}},
+            {"status_code": 200, "retry_after": "10", "body": {"status": "Running"}},
+            {"status_code": 200, "retry_after": None, "body": {"status": "Succeeded"}},
+            {"id": "created-lakehouse"},
+        ]
+        with patch("bootstrap_fabric_items.time.sleep") as sleep:
+            self.assertEqual(create_lakehouse(api, "workspace", "LH_Landing", "owned", False),
+                             {"id": "created-lakehouse"})
+            self.assertEqual([call.args[0] for call in sleep.call_args_list], [30, 10])
+            api.request.assert_called_with("GET", "https://api.fabric.microsoft.com/v1/operations/op/result")
 
 
 class GroupMembershipTests(unittest.TestCase):

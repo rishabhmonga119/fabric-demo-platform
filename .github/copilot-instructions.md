@@ -23,7 +23,7 @@
 - Every automation script must be idempotent, support `--dry-run`, report
   failures explicitly and stop on the first unrecovered failure.
 - Prefer Python notebooks without Spark for small data; use the explicitly
-  approved existing capacity/SKU in config/environments.yml (currently F8).
+  approved existing capacity/SKU in config/environments.yml (currently F4).
 - Create at most one Premium Databricks workspace. Use serverless or single-node
   compute only; require 15-minute auto-termination for persistent compute.
   No paid Azure resources outside Step 1; do not resize Fabric capacity.
@@ -33,5 +33,8 @@
   explicit permission if a conflict requires either action.
 - Record commands, resource names/IDs, checks, problems and decisions in
   docs/BUILD_LOG.md. Store discovered IDs in config/environments.yml.
+- For this demo build, skip routine unit/regression test reruns after each step.
+  Keep required identity/cost/ownership guards and minimal live deployment-success
+  checks; do not repeat exhaustive verification of unchanged data or artifacts.
 - After each successful step, commit only its changes as `step N: ...`, include
   the Copilot co-author trailer, and push. Do not label blocked steps complete.

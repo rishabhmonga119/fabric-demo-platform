@@ -237,9 +237,17 @@ the recorded site/files; the December live workbook stays outside upload roots.
 Build in **DEMO-Analytics-Dev** first. Mirrored catalogs, shortcuts, ontology and data agents are most reliable when created through the UI or the documented API, then captured in Git. Copilot helps with notebooks, TMDL and scripts.
 
 ### 5.1 Connections (created once, shared by all stages)
-- Azure Databricks connection `conn-dbw-demo` (organizational account for the demo; share with `sp-fabric-demo-cicd`).
+- **Azure Databricks workspace** connection `conn-dbw-demo` (organizational account/OAuth2 for the demo; workspace URL, not a Databricks SQL host/httpPath connection; share with `sp-fabric-demo-cicd`).
 - SharePoint connection `conn-sp-demodata` (organizational account or workspace identity; service principal requires a **certificate**, not a secret).
 - Record both connection IDs in `config/environments.yml`.
+
+Organizational-account connections require interactive Fabric portal authoring:
+OAuth2 is not accepted in the public Create Connection REST credential union.
+Use Settings → Manage connections and gateways → New → Cloud for the Databricks
+workspace connection. For SharePoint, use the SharePoint connection or the
+SharePoint Folder shortcut's New connection sign-in flow. Do not substitute
+PATs/client secrets. Once authenticated connections exist, automate their
+sharing and item binding through the supported APIs.
 
 ### 5.2 Mirrored catalog — `MIR_UC_Gold`
 Workspace → New item → **Mirrored Azure Databricks catalog** → `conn-dbw-demo` → catalog `demo_dev`, schema `gold` only → keep "automatically sync future catalog changes" → name `MIR_UC_Gold`.
@@ -248,6 +256,10 @@ Workspace → New item → **Mirrored Azure Databricks catalog** → `conn-dbw-d
 ### 5.3 `LH_Landing` (schemas enabled)
 1. New **table shortcut** in schema `forecast` → OneDrive/SharePoint → `conn-sp-demodata` → folder `Forecasts/Dev/standard` → **Transform**: Excel, first row as headers, sheet `Forecast` → name `forecast_standard`. *(Excel transformation = preview)*
 2. New **shortcut** under `Files` → `Forecasts/Dev/raw` → name `raw_forecasts` (no transformation).
+The raw-file and mirrored Gold schema shortcuts can be created through the
+documented REST API. The current public shortcut transform request schema does
+not document Excel preview configuration; author that transformation in the UI
+instead of guessing a payload, then capture its service definition.
 **Check:** table `forecast.forecast_standard` populated; transformation polls about every 2 minutes.
 
 ### 5.4 Notebooks (Copilot writes them)
@@ -265,13 +277,15 @@ NB_Clean_Forecast (Python notebook, no Spark – capacity is F4):
 - Union with forecast.forecast_standard; write LH_Landing table forecast.forecast_clean (overwrite).
 - All parsing in pure functions at the top (testable).
 
-NB_Integrate (Python or PySpark – choose Python if data < 1 GB):
-- Join gold.fact_sales_monthly with forecast_clean on sku, package_code, region_code, month.
+NB_Integrate (PySpark, default Starter Pool, no custom Environment):
+- Use Spark SQL to join gold.fact_sales_monthly with forecast_clean on
+  sku, package_code, region_code, channel_code, month; use PySpark for the Delta write.
 - Output LH_Curated table sales_vs_forecast: month, sku, product_name, package_code,
   package_type, channel_code, region_code, partner_id, actual_hl, forecast_hl,
   deviation_hl, revenue_eur, margin_eur, env_marker.
 - Lakehouse references must use logical names/IDs that fabric-cicd can re-point
   (document required parameter.yml entries).
+Decision reason: "show Spark compatibility for a Databricks audience".
 Also add tests in /tests for the pure parsing functions (pytest).
 ```
 
@@ -280,6 +294,11 @@ Also add tests in /tests for the pure parsing functions (pytest).
 - Table shortcut `forecast_clean` → `LH_Landing`.
 - Run `NB_Integrate` once → table `sales_vs_forecast`.
 - **Enable OneLake security** on `LH_Curated`; keep only the default reader role for now (Act 6 adds roles live).
+  Current OneLake documentation provides `DefaultReader` on lakehouses by default.
+  Verify its actual policy through `dataAccessRoles`: Read on all data, with virtual
+  `ReadAll` membership. Do not invent an enable-setting payload or overwrite a
+  customized role. Before the later restricted-role demo, remove unrestricted
+  access paths explicitly so additive roles cannot bypass the restrictions.
 
 ### 5.6 `PL_Refresh`
 Pipeline: `NB_Clean_Forecast` → `NB_Integrate`. (Direct Lake picks up new Delta versions automatically; add a semantic model refresh activity only if automatic updates are off.)
@@ -303,22 +322,89 @@ product × package, slicers region/channel), page 2 "Margin" (bar by channel, ca
 ```
 **Manual:** open in Fabric, confirm the model loads; set the connection once if prompted.
 
+The complete model is authored in modeling MCP and exported to TMDL. Deploy the
+exported source using `python tools/bootstrap_sales_model.py --dry-run --refresh`,
+then `python tools/bootstrap_sales_model.py --refresh`. The script checks the
+F4 capacity and OneLake baseline, preserves existing model/AI state, verifies
+Automatic end-user SSO, and resumes recorded refreshes instead of resubmitting.
+The calendar is a small imported Power Query table; all business tables use
+Direct Lake on OneLake. Deviation sums the grain-level differences where a
+forecast exists rather than treating missing forecasts as zero.
+
+Report automation: `tools/generate_sales_report.py --spec <approved-report-spec>`
+supports `--dry-run` and generates the two FHD pages using the official report
+CLI shell. Validate and review both rendered pages before
+`python tools/bootstrap_sales_report.py --render-reviewed`; use `--dry-run`
+first. Publication stages only the validated source files, changes the temporary
+binding to the existing model's API `byConnection` form, and uses CLI `pack`.
+The durable source retains its local `byPath` binding. Accepted report creates
+are recorded and resumed rather than submitted again. Preview browser profiles
+and local settings are ignored by Git and never included in publication.
+
+**Terminology clarification:** the user places the demo's business synonyms
+in `ONT_Business` (Step 5.8). The terminology added in Power BI's Prep data for
+AI -> Add AI instructions is useful Copilot guidance, but does not create
+ontology synonyms. Preserve that user-authored guidance; do not fabricate
+linguistic metadata or modify opaque AI state through TMDL. See the semantic-model
+skill's `semantic-model-ai-readiness.md` and the owning `ontology-cli` skill.
+
 ### 5.8 `ONT_Business` (Fabric IQ ontology)
 Create in UI (ontology skill can script it if supported): entity types **Product, Package, Channel, Region, Partner, SalesPeriod**; bind to gold dims and `sales_vs_forecast`; relationships Product–Package (sold in), Sales–Region, Sales–Channel, Partner–Deliveries; business descriptions for each entity and property. Optionally add a few rules (e.g. "Deviation above 10% = critical").
 
+The installed `ontology-cli` scripts legacy V1 definitions only. Use the
+new-experience V2 UI for this demo; do not substitute a V1 item or invent a V2
+definition. The supported UI flow is New item -> Ontology (preview), then
+Home -> Ontology agent: review the plan and explicitly switch to Act to apply
+it. Existing `SM_Sales` tables and measures can be bound through that agent.
+Keep partner delivery connections on `LH_Curated.gold.fact_deliveries`,
+separate from the sales fact. Add the business synonyms to the ontology;
+Power BI AI instructions are not a substitute for these ontology terms.
+See the [current ontology tutorial](https://learn.microsoft.com/fabric/iq/ontology/tutorial-1-create-ontology).
+
 ### 5.9 `DA_Sales` (data agent)
-Sources: `ONT_Business` and `SM_Sales`. Instructions (store in Git with the item):
+Source: `ONT_Business` as ontology context only. Do not independently add
+`SM_Sales` as a Data Agent source. The report still uses `SM_Sales`; the ontology
+uses its own bound underlying sources to execute queries. Instructions (store
+in Git with the item):
 ```
 You answer sales and forecast questions for a beverage company.
 Volumes are in hectolitres (hl), money in EUR. Months are first-of-month dates.
-Use SM_Sales measures for actuals, forecast, deviation, revenue and margin.
-Use ONT_Business for business terms (package/Gebinde, channel, region, partner).
+Use ONT_Business as the only configured agent context source.
+Resolve business terms, metrics and query bindings through the ontology.
+Query its eligible underlying sources; do not add SM_Sales independently.
 Always state the period and filters you used. Never estimate missing values.
 ```
 Add 5 example questions (see `02`, Act 5).
 
+`python tools/bootstrap_dev_context.py --dry-run`, then run without `--dry-run`,
+captures the user-created ontology identity and creates the owned Data Agent
+draft using the public definition API. It stores global instructions and five
+rehearsal questions without changing the model or ontology.
+`tools/set_data_agent_ontology_only.py --dry-run`, then run without `--dry-run`,
+removes the previously added standalone semantic-model source from the draft
+and updates routing while preserving other definition parts and published state.
+
+**Manual - V2 ontology context:** in DA_Sales, Sources -> Add sources ->
+Add an ontology -> ONT_Business. Expand it to review the associated sources.
+This is context, not a `graph`/GQL query source; do not substitute that legacy
+public-definition type or guess an experimental metadata property. Use the
+preview runtime for the best documented experience. Sharing the agent does
+not grant its source permissions.
+
+The current Ontology integration does not support supplemental context for
+Power BI semantic-model sources. Retain the questions in global instructions
+and [agent_questions.md](agent_questions.md); do not claim unsupported native
+few-shot configuration or pre-tested agent answers.
+See [Ontology context in a Data Agent](https://learn.microsoft.com/fabric/data-science/data-agent-ontology-sources).
+
 ### 5.10 `VL_Config`
 Variables: `catalog` (demo_dev/test/prod), `sp_folder` (Forecasts/Dev|Test|Prod), `env_label`. Value sets: `dev`, `test`, `prod`.
+
+The same bootstrap script creates the public Variable Library definition.
+Dev inherits the defaults (no redundant overrides); Test and Prod override
+only different values. The active Dev value set is separate workspace item
+state, selected through the documented PATCH and checked through the typed
+Variable Library GET. Definition requests omit `format`.
 
 ### 5.11 Connect Dev to Git
 Workspace settings → Git integration → GitHub → repo `fabric-demo-platform`, branch `main`, folder `/fabric` → commit all.

@@ -1,10 +1,11 @@
-"""Authenticated Graph/Fabric JSON requests with context and origin guards."""
+"""Authenticated Graph/Fabric/Power BI JSON requests with context and origin guards."""
 
 import json
 import time
 from urllib.error import HTTPError
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
+from uuid import UUID
 
 from azure.identity import AzureCliCredential
 from azure.core.credentials import TokenCredential
@@ -28,18 +29,20 @@ class NoRedirects(HTTPRedirectHandler):
 class Api:
     def __init__(self, base: str, tenant_id: str, *, skill: str | None = None,
                  credential: TokenCredential | None = None):
-        if base not in ("https://graph.microsoft.com", "https://api.fabric.microsoft.com"):
+        if base not in ("https://graph.microsoft.com", "https://api.fabric.microsoft.com",
+                        "https://api.powerbi.com"):
             raise ContextError("Unsupported authenticated API origin.")
         if base == "https://api.fabric.microsoft.com" and not skill:
             raise ContextError("Fabric requests require an installed skill attribution.")
         self.base = base
         self.skill = skill
-        self.credential = credential if credential is not None else AzureCliCredential(tenant_id=tenant_id)
+        self.credential = credential if credential is not None else \
+            AzureCliCredential(tenant_id=tenant_id, process_timeout=30)
         self.opener = build_opener(NoRedirects())
 
     def request(self, method: str, endpoint: str, payload: dict | bytes | None = None,
                 *, dry_run: bool = False, content_type: str = "application/json",
-                accept_operation: bool = False) -> dict | None:
+                accept_operation: bool = False, with_response_info: bool = False) -> dict | None:
         url = endpoint if endpoint.startswith("https://") else self.base + endpoint
         parsed = urlparse(url)
         if parsed.scheme != "https" or parsed.netloc != urlparse(self.base).netloc:
@@ -51,7 +54,9 @@ class Api:
             if dry_run and mutation:
                 print(f"DRY-RUN: {method} {url}")
                 return None
-            token = self.credential.get_token(self.base + "/.default")
+            audience = "https://analysis.windows.net/powerbi/api" \
+                if self.base == "https://api.powerbi.com" else self.base
+            token = self.credential.get_token(audience + "/.default")
             headers = {"Authorization": "Bearer " + token.token, "Content-Type": content_type}
             # Skills for Fabric: fabric-skills/common/COMMON-CORE.md, auth/REST/rate limits.
             if self.skill:
@@ -61,26 +66,61 @@ class Api:
             try:
                 with self.opener.open(Request(url, data=body, headers=headers, method=method),
                                       timeout=120) as response:
+                    def result_with_info(data):
+                        if with_response_info:
+                            return {"status_code": response.status, "retry_after": response.headers.get("Retry-After"),
+                                    "body": data}
+                        return data
+
                     content = response.read()
                     if response.status == 202:
                         if accept_operation:
                             location = response.headers.get("Location")
                             resolved = urljoin(url, location) if location else ""
                             operation = urlparse(resolved)
-                            if operation.scheme != "https" or operation.netloc != urlparse(self.base).netloc:
-                                raise AcceptedWithoutGraphLocation("Accepted operation requires a same-origin Location header.")
-                            return {"operation_uri": resolved}
+                            origin = urlparse(self.base)
+                            trusted = operation.scheme == "https" and \
+                                operation.hostname == origin.hostname and operation.port in (None, 443)
+                            if not trusted and self.base == "https://api.fabric.microsoft.com":
+                                operation_id = response.headers.get("x-ms-operation-id")
+                                if operation_id:
+                                    try:
+                                        validated_id = str(UUID(operation_id))
+                                    except (ValueError, AttributeError) as error:
+                                        raise ApiError("Accepted Fabric operation has an invalid operation ID.") from error
+                                    # COMMON-CORE.md LRO: canonical poll URI from the documented GUID header.
+                                    resolved = self.base + "/v1/operations/" + validated_id
+                                    trusted = True
+                            if not trusted and self.base == "https://api.powerbi.com" and \
+                                    parsed.path.endswith("/refreshes") and \
+                                    operation.scheme == "https" and operation.port in (None, 443) and \
+                                    not operation.query and not operation.fragment:
+                                candidate = operation.path.removeprefix(parsed.path + "/")
+                                try:
+                                    refresh_id = str(UUID(candidate))
+                                except ValueError:
+                                    refresh_id = None
+                                if refresh_id and operation.path == parsed.path + "/" + refresh_id:
+                                    # Public refresh-detail endpoint; never authenticate to a regional Location host.
+                                    resolved = self.base + operation.path
+                                    trusted = True
+                            if not trusted:
+                                raise AcceptedWithoutGraphLocation(
+                                    f"Accepted operation requires a same-origin Location header "
+                                    f"(received scheme={operation.scheme!r}, host={operation.hostname!r}, path={operation.path!r})."
+                                )
+                            return result_with_info({"operation_uri": resolved})
                         raise ApiError(
                             f"{method} {parsed.path}: asynchronous response requires documented LRO polling."
                         )
                     if not 200 <= response.status < 300:
                         raise ApiError(f"{method} {parsed.path}: HTTP {response.status}")
                     if not content:
-                        return None
+                        return result_with_info(None)
                     result = json.loads(content)
                     if not isinstance(result, dict):
                         raise ApiError(f"{method} {parsed.path}: expected a JSON object.")
-                    return result
+                    return result_with_info(result)
             except HTTPError as error:
                 if error.code in (429, 500, 502, 503, 504) and attempt < 2:
                     delay = error.headers.get("Retry-After", "")
