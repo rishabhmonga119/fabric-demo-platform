@@ -1,0 +1,45 @@
+table Product
+	lineageTag: 347d1c7b-dcbb-4d54-a759-639ab0c255a3
+
+	column 'Product Code'
+		dataType: string
+		lineageTag: 117ea75a-db97-4ada-9a5d-c33df1cae8ff
+		sourceColumn: Product Code
+
+	column 'Product Name'
+		dataType: string
+		lineageTag: 0a247d56-0342-4e7a-95b0-10c5168749ce
+		sourceColumn: Product Name
+
+	column 'Product Line'
+		dataType: string
+		lineageTag: fbafa9d5-20b6-4442-85d2-2b8ef44b4a81
+		sourceColumn: Product Line
+
+	column 'Launch Year'
+		dataType: int64
+		lineageTag: a7b7d535-a66e-4d65-bb6c-35666b759eb8
+		sourceColumn: Launch Year
+
+	partition Product = entity
+		mode: directQuery
+		source
+			entityName: Product
+			expressionSource: 'DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c'
+
+		annotation ONT_WorkspaceId = 00000000-0000-0000-0000-000000000000
+
+		annotation ONT_ItemId = ea6fd78c-af5b-92af-408c-1c47f3dd4c43
+
+		annotation ONT_ItemKind = SemanticModel
+
+		annotation ONT_ItemName = ONT_ALM_ITEM_NAME
+
+		annotation ONT_WorkspaceName = WORKSPACE_NAME_PLACEHOLDER
+
+		annotation ONT_SemanticModelServer = powerbi://api.powerbi.com/v1.0/3fa9b173-f000-4529-a4f7-00d0d6a8d136
+
+		annotation ONT_SemanticModelDatabase = SM_Sales
+
+		annotation ONT_PinnedAtUtc = 2026-11-22T10:10:56Z
+

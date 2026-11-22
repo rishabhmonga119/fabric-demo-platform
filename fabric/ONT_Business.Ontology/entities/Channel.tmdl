@@ -1,0 +1,42 @@
+/// Sales channels, also called Kanal.
+entity Channel
+	lineageTag: d6ade0cf-fb23-4cb1-8a9c-d0bc1a13c03e
+	backingTable: Channel
+	keyProperty: 'Channel Code'
+
+	/// Unique sales channel key.
+	property 'Channel Code'
+		dataType: string
+		lineageTag: 7bb2cf60-6988-4c5f-8a69-fe5da3c8f238
+
+		backingConfiguration
+			valueColumn: Channel.'Channel Code'
+
+		synonym 'channel code'
+
+		synonym Kanal
+
+		synonym 'sales channel code'
+
+	/// Food retail, gastronomy, beverage wholesale or online.
+	property 'Channel Name'
+		dataType: string
+		lineageTag: befb3f4f-a329-4f31-8b02-a769cec556b4
+
+		backingConfiguration
+			valueColumn: Channel.'Channel Name'
+
+		synonym 'channel name'
+
+		synonym 'sales channel name'
+
+	synonym channel
+
+	synonym Kanal
+
+	synonym 'sales channel'
+
+	synonym 'distribution channel'
+
+	annotation semanticModelEntity = Channel
+

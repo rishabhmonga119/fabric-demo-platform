@@ -1,0 +1,28 @@
+[
+  {
+    "name": "gold",
+    "path": "/Tables",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/gold",
+        "itemId": "1846d217-4c81-ae56-4580-2ba76e1a3d67",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "DatabricksCatalog"
+      }
+    }
+  },
+  {
+    "name": "forecast_clean",
+    "path": "/Tables/dbo",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/forecast/forecast_clean",
+        "itemId": "cc2fcd90-1d45-b943-4974-dff9fd2d2f87",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "Lakehouse"
+      }
+    }
+  }
+]

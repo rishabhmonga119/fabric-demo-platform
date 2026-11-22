@@ -1,0 +1,70 @@
+/// Package types, sizes and returnability; Gebinde.
+entity Package
+	lineageTag: ec51a772-2f57-4d00-9f72-14d1695c4078
+	backingTable: Package
+	keyProperty: 'Package Code'
+
+	/// Unique package identifier.
+	property 'Package Code'
+		dataType: string
+		lineageTag: c839c264-362b-49fd-a6d0-7f63fbf2039c
+
+		backingConfiguration
+			valueColumn: Package.'Package Code'
+
+		synonym 'package code'
+
+		synonym Gebinde
+
+		synonym package
+
+	/// Glass or PET package material.
+	property 'Package Type'
+		dataType: string
+		lineageTag: 79e8a49a-3b94-462e-9a9a-134fe13628f9
+
+		backingConfiguration
+			valueColumn: Package.'Package Type'
+
+		synonym 'package type'
+
+		synonym material
+
+	/// Individual package volume in litres; not sold volume in hectolitres.
+	property 'Volume Litres'
+		dataType: double
+		lineageTag: de598234-d9f4-470d-a20f-07e442dd8ed2
+
+		backingConfiguration
+			valueColumn: Package.'Volume Litres'
+
+		synonym litres
+
+		synonym 'package volume'
+
+		synonym 'volume per package'
+
+	/// Whether the package is returnable.
+	property Returnable
+		dataType: boolean
+		lineageTag: c1d516ea-961f-4a4f-8549-b3295280dc49
+
+		backingConfiguration
+			valueColumn: Package.Returnable
+
+		synonym returnable
+
+		synonym reusable
+
+	synonym package
+
+	synonym packaging
+
+	synonym container
+
+	synonym Gebinde
+
+	synonym 'package type'
+
+	annotation semanticModelEntity = Package
+

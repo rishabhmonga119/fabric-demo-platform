@@ -1,0 +1,21 @@
+model Model
+
+ref table Product
+ref table Package
+ref table Channel
+ref table Region
+ref table Partner
+ref table SalesPeriod
+ref table Date
+ref table Delivery
+
+ref entity Product
+ref entity Package
+ref entity Channel
+ref entity Region
+ref entity Partner
+ref entity SalesPeriod
+ref entity Delivery
+
+ref namespace default
+

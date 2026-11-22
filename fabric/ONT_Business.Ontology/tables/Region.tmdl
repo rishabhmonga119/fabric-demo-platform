@@ -1,0 +1,40 @@
+table Region
+	lineageTag: 94b656a6-740d-470a-acd3-fde3bb2d0b8f
+
+	column 'Region Code'
+		dataType: string
+		lineageTag: d5b6d6cb-37f7-4a43-a56b-8458213a5783
+		sourceColumn: Region Code
+
+	column 'Region Name'
+		dataType: string
+		lineageTag: 5fe11fef-8e6e-4432-9824-f9b659da7748
+		sourceColumn: Region Name
+
+	column 'Sales Manager'
+		dataType: string
+		lineageTag: b4e690ee-a711-4d9e-90ce-fbc6ec861d33
+		sourceColumn: Sales Manager
+
+	partition Region = entity
+		mode: directQuery
+		source
+			entityName: Region
+			expressionSource: 'DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c'
+
+		annotation ONT_WorkspaceId = 00000000-0000-0000-0000-000000000000
+
+		annotation ONT_ItemId = ea6fd78c-af5b-92af-408c-1c47f3dd4c43
+
+		annotation ONT_ItemKind = SemanticModel
+
+		annotation ONT_ItemName = ONT_ALM_ITEM_NAME
+
+		annotation ONT_WorkspaceName = WORKSPACE_NAME_PLACEHOLDER
+
+		annotation ONT_SemanticModelServer = powerbi://api.powerbi.com/v1.0/3fa9b173-f000-4529-a4f7-00d0d6a8d136
+
+		annotation ONT_SemanticModelDatabase = SM_Sales
+
+		annotation ONT_PinnedAtUtc = 2026-11-22T10:10:56Z
+

@@ -1,0 +1,75 @@
+/// Contiguous calendar covering the 2025-2026 demo actual and forecast periods.
+table Date
+	lineageTag: 9f132937-6c9c-4fad-8079-79a8c6f6f6d0
+	dataCategory: Time
+
+	/// Calendar date.
+	column Date
+		dataType: dateTime
+		isUnique
+		isKey
+		formatString: yyyy-MM-dd
+		lineageTag: 17c616ae-c226-4daa-a771-3a39e618068a
+		sourceColumn: Date
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		lineageTag: 995e0283-bbb8-4804-9436-687a02967518
+		summarizeBy: none
+		sourceColumn: Year
+
+	/// Calendar quarter, Q1-Q4.
+	column Quarter
+		dataType: string
+		lineageTag: 1113a2ee-96de-466b-b3fe-cd70406553e7
+		sourceColumn: Quarter
+
+	/// Month number, 1-12.
+	column 'Month Number'
+		dataType: int64
+		isHidden
+		lineageTag: b1f64325-7730-4f56-a57c-03eb4500dec0
+		summarizeBy: none
+		sourceColumn: Month Number
+
+	/// English month name.
+	column 'Month Name'
+		dataType: string
+		lineageTag: adfac4e6-3efa-44e1-bd4c-7ca3de1e31e6
+		sourceColumn: Month Name
+		sortByColumn: 'Month Number'
+
+	/// Numeric year/month sorting key.
+	column 'Year Month Number'
+		dataType: int64
+		isHidden
+		lineageTag: ba771157-5d4e-4ae3-afdd-129600d3796e
+		summarizeBy: none
+		sourceColumn: Year Month Number
+
+	/// Sortable year/month label.
+	column 'Year Month'
+		dataType: string
+		lineageTag: 1fd83a71-4419-42f5-8e72-90f01b133a75
+		sourceColumn: Year Month
+		sortByColumn: 'Year Month Number'
+
+	partition Calendar = m
+		mode: import
+		source =
+				let
+				    StartDate = #date(2025, 1, 1),
+				    EndExclusive = #date(2027, 1, 1),
+				    Dates = List.Dates(StartDate, Duration.Days(EndExclusive - StartDate), #duration(1,0,0,0)),
+				    Source = Table.FromList(Dates, Splitter.SplitByNothing(), {"Date"}),
+				    Typed = Table.TransformColumnTypes(Source, {{"Date", type date}}),
+				    Year = Table.AddColumn(Typed, "Year", each Date.Year([Date]), Int64.Type),
+				    Quarter = Table.AddColumn(Year, "Quarter", each "Q" & Text.From(Date.QuarterOfYear([Date])), type text),
+				    MonthNumber = Table.AddColumn(Quarter, "Month Number", each Date.Month([Date]), Int64.Type),
+				    MonthName = Table.AddColumn(MonthNumber, "Month Name", each Date.MonthName([Date], "en-US"), type text),
+				    YearMonthNumber = Table.AddColumn(MonthName, "Year Month Number", each [Year] * 100 + [Month Number], Int64.Type),
+				    YearMonth = Table.AddColumn(YearMonthNumber, "Year Month", each Date.ToText([Date], "yyyy-MM"), type text)
+				in
+				    YearMonth
+

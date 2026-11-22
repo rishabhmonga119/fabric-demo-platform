@@ -1,0 +1,249 @@
+/// Monthly beverage sales and forecasts at product, package, region, channel, and nullable partner grain. Delivery data stays separate.
+entity SalesPeriod
+	lineageTag: 7cefb675-8de3-432d-8c41-78bbe2e44669
+	backingTable: SalesPeriod
+
+	/// First day of the sales or forecast month.
+	property Month
+		dataType: dateTime
+		lineageTag: 30629caa-8c07-49bb-bf1b-e1fdb205b749
+
+		backingConfiguration
+			valueColumn: SalesPeriod.Month
+
+		synonym month
+
+		synonym period
+
+	/// Product key; SKU digits are legacy codes, not package sizes.
+	property 'Product Code'
+		dataType: string
+		lineageTag: 4ca95405-c3ef-42bf-ac8c-3e964ed79ecc
+
+		backingConfiguration
+			valueColumn: SalesPeriod.'Product Code'
+
+		synonym 'product code'
+
+		synonym sku
+
+	/// Package key, also called Gebinde.
+	property 'Package Code'
+		dataType: string
+		lineageTag: 56866bc4-6bd4-476f-89f8-b22dbc8afb97
+
+		backingConfiguration
+			valueColumn: SalesPeriod.'Package Code'
+
+		synonym 'package code'
+
+		synonym Gebinde
+
+		synonym package
+
+	/// Sales channel key, also called Kanal.
+	property 'Channel Code'
+		dataType: string
+		lineageTag: fc0f43b3-e182-47fa-bb14-91493bb3ff10
+
+		backingConfiguration
+			valueColumn: SalesPeriod.'Channel Code'
+
+		synonym 'channel code'
+
+		synonym Kanal
+
+		synonym channel
+
+	/// Sales region key.
+	property 'Region Code'
+		dataType: string
+		lineageTag: cb838437-5bc1-4b42-876b-bee133aa38ae
+
+		backingConfiguration
+			valueColumn: SalesPeriod.'Region Code'
+
+		synonym 'region code'
+
+		synonym region
+
+	/// Sold beverage volume in hectolitres (hl). Reuses the SM_Sales 'Actual hl' measure semantics.
+	property 'Actual Volume'
+		dataType: decimal
+		lineageTag: f5c3c0c3-1fc5-4397-a120-ce9381ac76b1
+
+		backingConfiguration
+			valueColumn: SalesPeriod.'Actual Volume'
+
+		synonym hl
+
+		synonym hectolitre
+
+		synonym volume
+
+		synonym 'actual hl'
+
+	/// Planned beverage volume in hectolitres (hl). Reuses the SM_Sales 'Forecast hl' measure semantics.
+	property 'Forecast Volume'
+		dataType: decimal
+		lineageTag: f91f39ba-f362-4d84-902f-d421e9df5233
+
+		backingConfiguration
+			valueColumn: SalesPeriod.'Forecast Volume'
+
+		synonym hl
+
+		synonym hectolitre
+
+		synonym volume
+
+		synonym 'forecast hl'
+
+	/// Actual minus planned volume in hectolitres (hl). Reuses the SM_Sales 'Deviation hl' measure semantics.
+	property 'Deviation Volume'
+		dataType: decimal
+		lineageTag: 495200e4-61b2-4408-b3a3-2edb53167e61
+
+		backingConfiguration
+			valueColumn: SalesPeriod.'Deviation Volume'
+
+		synonym hl
+
+		synonym hectolitre
+
+		synonym volume
+
+		synonym 'deviation hl'
+
+		synonym variance
+
+	/// Net sales revenue in EUR. Reuses the SM_Sales 'Revenue EUR' measure semantics.
+	property Revenue
+		dataType: decimal
+		lineageTag: ba0bbd65-b0cf-48f0-a7a0-a343b3f7bf8f
+
+		backingConfiguration
+			valueColumn: SalesPeriod.Revenue
+
+		synonym 'revenue eur'
+
+		synonym 'sales revenue'
+
+		synonym EUR
+
+	/// Contribution margin in EUR. Reuses the SM_Sales 'Margin EUR' measure semantics.
+	property Margin
+		dataType: decimal
+		lineageTag: 66bb01c5-5d11-4b12-b371-624d9151694f
+
+		backingConfiguration
+			valueColumn: SalesPeriod.Margin
+
+		synonym 'margin eur'
+
+		synonym 'contribution margin'
+
+		synonym EUR
+
+	/// Calendar year.
+	property Year
+		dataType: int64
+		lineageTag: cad8312a-662f-4e18-8017-c80d81639cfe
+
+		backingConfiguration
+			valueColumn: Date.Year
+
+		synonym year
+
+		synonym yr
+
+	/// Calendar quarter, Q1-Q4.
+	property Quarter
+		dataType: string
+		lineageTag: 6899aac5-0d71-408f-aa85-abad3da160b6
+
+		backingConfiguration
+			valueColumn: Date.Quarter
+
+		synonym quarter
+
+		synonym qtr
+
+	/// Month number, 1-12.
+	property 'Month Number'
+		dataType: int64
+		lineageTag: 046ef44d-3694-4b9e-8623-4d28f8df5594
+
+		backingConfiguration
+			valueColumn: Date.'Month Number'
+
+		synonym 'month number'
+
+		synonym 'month sort key'
+
+	/// English month name.
+	property 'Month Name'
+		dataType: string
+		lineageTag: 048ceee8-c600-4f70-91cd-ba76bb2955c3
+
+		backingConfiguration
+			valueColumn: Date.'Month Name'
+
+		synonym 'month name'
+
+		synonym month
+
+	/// Numeric year/month sorting key.
+	property 'Year Month Number'
+		dataType: int64
+		lineageTag: 1fd89ab9-144d-45f5-ad76-dadb73ab56c6
+
+		backingConfiguration
+			valueColumn: Date.'Year Month Number'
+
+		synonym 'year month number'
+
+		synonym 'year month sort key'
+
+	/// Sortable year/month label.
+	property 'Year Month'
+		dataType: string
+		lineageTag: b4512cd9-85b5-44b5-ae4e-8e116dc48df2
+
+		backingConfiguration
+			valueColumn: Date.'Year Month'
+
+		synonym 'year month'
+
+		synonym 'month label'
+
+		synonym 'period label'
+
+	/// Nullable partner key on the sales grain. Sales rows do not currently carry an assigned partner value.
+	property 'Partner ID'
+		dataType: string
+		lineageTag: c7aa4f5f-4394-423b-b817-36865b334779
+
+		backingConfiguration
+			valueColumn: SalesPeriod.'Partner ID'
+
+		synonym 'partner id'
+
+		synonym partner
+
+	additionalBackingTable
+		table: Date
+		relationship: SalesPeriod_Date_join
+
+	synonym 'sales period'
+
+	synonym 'monthly sales'
+
+	synonym 'sales vs forecast'
+
+	synonym 'forecast period'
+
+	synonym 'sales fact'
+
+	annotation semanticModelEntity = Sales vs Forecast
+

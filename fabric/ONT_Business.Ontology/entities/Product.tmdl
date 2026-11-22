@@ -1,0 +1,72 @@
+/// Illustrative beverage products. Product codes are independent of package sizes.
+entity Product
+	lineageTag: d6902152-e522-4f78-a716-29e64e367f62
+	backingTable: Product
+	keyProperty: 'Product Code'
+
+	/// Unique product identifier.
+	property 'Product Code'
+		dataType: string
+		lineageTag: 712fb637-bf2a-4bcd-a8d5-8a53c1ea2b9b
+
+		backingConfiguration
+			valueColumn: Product.'Product Code'
+
+		synonym 'product code'
+
+		synonym sku
+
+		synonym 'product id'
+
+		synonym 'item code'
+
+	/// Beverage product display name.
+	property 'Product Name'
+		dataType: string
+		lineageTag: a60d53f9-fc68-4b6e-a783-17c71c65d086
+
+		backingConfiguration
+			valueColumn: Product.'Product Name'
+
+		synonym 'product name'
+
+		synonym 'beverage name'
+
+	/// Product family or beverage style.
+	property 'Product Line'
+		dataType: string
+		lineageTag: fe601821-b9d2-495e-a065-19d732a2305f
+
+		backingConfiguration
+			valueColumn: Product.'Product Line'
+
+		synonym 'product family'
+
+		synonym category
+
+		synonym line
+
+	/// Illustrative product launch year.
+	property 'Launch Year'
+		dataType: int64
+		lineageTag: f000b059-b488-47aa-914a-e2528f60e6a5
+
+		backingConfiguration
+			valueColumn: Product.'Launch Year'
+
+		synonym 'launch year'
+
+		synonym 'year launched'
+
+	synonym product
+
+	synonym 'beverage product'
+
+	synonym SKU
+
+	synonym item
+
+	synonym merchandise
+
+	annotation semanticModelEntity = Product
+

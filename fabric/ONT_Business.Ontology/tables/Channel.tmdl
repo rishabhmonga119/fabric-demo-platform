@@ -1,0 +1,35 @@
+table Channel
+	lineageTag: cc873e67-5cff-426e-b20c-1e86d4ccfa0d
+
+	column 'Channel Code'
+		dataType: string
+		lineageTag: 1ab6ef44-90cc-49cf-8ed4-0945d2342d0f
+		sourceColumn: Channel Code
+
+	column 'Channel Name'
+		dataType: string
+		lineageTag: f03205b1-8d1f-4927-ae22-5e0a25b2d52f
+		sourceColumn: Channel Name
+
+	partition Channel = entity
+		mode: directQuery
+		source
+			entityName: Channel
+			expressionSource: 'DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c'
+
+		annotation ONT_WorkspaceId = 00000000-0000-0000-0000-000000000000
+
+		annotation ONT_ItemId = ea6fd78c-af5b-92af-408c-1c47f3dd4c43
+
+		annotation ONT_ItemKind = SemanticModel
+
+		annotation ONT_ItemName = ONT_ALM_ITEM_NAME
+
+		annotation ONT_WorkspaceName = WORKSPACE_NAME_PLACEHOLDER
+
+		annotation ONT_SemanticModelServer = powerbi://api.powerbi.com/v1.0/3fa9b173-f000-4529-a4f7-00d0d6a8d136
+
+		annotation ONT_SemanticModelDatabase = SM_Sales
+
+		annotation ONT_PinnedAtUtc = 2026-11-22T10:10:56Z
+

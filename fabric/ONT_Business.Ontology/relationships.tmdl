@@ -1,0 +1,40 @@
+relationship SalesPeriod_Date_join
+	fromColumn: Date.Date
+	toColumn: SalesPeriod.Month
+
+relationship SalesProduct_join
+	fromColumn: SalesPeriod.'Product Code'
+	toColumn: Product.'Product Code'
+
+relationship SalesPackage_join
+	fromColumn: SalesPeriod.'Package Code'
+	toColumn: Package.'Package Code'
+
+relationship SalesChannel_join
+	fromColumn: SalesPeriod.'Channel Code'
+	toColumn: Channel.'Channel Code'
+
+relationship SalesRegion_join
+	fromColumn: SalesPeriod.'Region Code'
+	toColumn: Region.'Region Code'
+
+relationship DeliveryPartner_join
+	fromColumn: Delivery.partner_id
+	toColumn: Partner.'Partner ID'
+
+relationship DeliveryProduct_join
+	fromColumn: Delivery.sku
+	toColumn: Product.'Product Code'
+
+relationship DeliveryPackage_join
+	fromColumn: Delivery.package_code
+	toColumn: Package.'Package Code'
+
+relationship DeliveryRegion_join
+	fromColumn: Delivery.region_code
+	toColumn: Region.'Region Code'
+
+relationship SalesPartner_join
+	fromColumn: SalesPeriod.'Partner ID'
+	toColumn: Partner.'Partner ID'
+

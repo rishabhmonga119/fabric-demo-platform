@@ -1,0 +1,142 @@
+/// Monthly beverage sales and forecasts at product, package, region and channel grain. Missing forecasts remain blank; future forecast-only months have zero actual sales.
+table 'Sales vs Forecast'
+	lineageTag: 73493ca6-f57f-4964-9f95-01033956e563
+
+	/// Sold beverage volume in hectolitres (hl). State the selected month range and region/channel filters.
+	measure 'Actual hl' = SUM('Sales vs Forecast'[Actual Volume])
+		formatString: #,##0.00 "hl"
+		displayFolder: Volume
+		lineageTag: 52facf61-2aba-4fba-ab17-b01e93e8efbf
+
+	/// Planned beverage volume in hectolitres (hl). Blank if no forecast exists for the selection.
+	measure 'Forecast hl' = SUM('Sales vs Forecast'[Forecast Volume])
+		formatString: #,##0.00 "hl"
+		displayFolder: Volume
+		lineageTag: 9b15962d-8bfa-4e31-a67b-598eb266da99
+
+	/// Actual minus planned volume in hl, summed only where a forecast exists. Positive means above plan; missing forecasts are not estimated.
+	measure 'Deviation hl' = SUM('Sales vs Forecast'[Deviation Volume])
+		formatString: #,##0.00 "hl";(#,##0.00) "hl"
+		displayFolder: Forecast comparison
+		lineageTag: 5a921716-3ac9-4923-a9a3-d6f0cf313198
+
+	/// Actual-minus-forecast deviation divided by forecast volume. Blank for a missing or zero forecast; positive means above plan.
+	measure 'Deviation %' = DIVIDE([Deviation hl], [Forecast hl])
+		formatString: 0.0%;(0.0%)
+		displayFolder: Forecast comparison
+		lineageTag: 5fb508f3-76f6-4a37-afca-ef7b3c293064
+
+	/// Net sales revenue in EUR for the selected actual-sales period and filters.
+	measure 'Revenue EUR' = SUM('Sales vs Forecast'[Revenue])
+		formatString: #,##0.00 "EUR"
+		displayFolder: Financials
+		lineageTag: c78ebb0b-cab1-4156-9067-3442235375a8
+
+	/// Contribution margin in EUR. Later OneLake column security controls access to this source field.
+	measure 'Margin EUR' = SUM('Sales vs Forecast'[Margin])
+		formatString: #,##0.00 "EUR"
+		displayFolder: Financials
+		lineageTag: d6eafa35-9a21-48f5-83e1-261120fee177
+
+	/// Revenue-weighted contribution margin: total margin EUR divided by total revenue EUR. Blank when revenue is zero or unavailable.
+	measure 'Margin %' = DIVIDE([Margin EUR], [Revenue EUR])
+		formatString: 0.0%
+		displayFolder: Financials
+		lineageTag: 10845ee8-30f5-49a2-b0ce-4e391e754be4
+
+	/// First day of the sales or forecast month.
+	column Month
+		dataType: dateTime
+		isHidden
+		formatString: MMM yyyy
+		lineageTag: 08ca7df6-00b4-4101-b85f-8b75945d9dda
+		sourceColumn: month
+
+	/// Product key; SKU digits are legacy codes, not package sizes.
+	column 'Product Code'
+		dataType: string
+		isHidden
+		lineageTag: 475ce583-8696-47b3-87ef-9e034c12b739
+		sourceColumn: sku
+
+	/// Package key, also called Gebinde.
+	column 'Package Code'
+		dataType: string
+		isHidden
+		lineageTag: 560f6082-1ba7-401f-bce1-7f094ec30722
+		sourceColumn: package_code
+
+	/// Sales channel key, also called Kanal.
+	column 'Channel Code'
+		dataType: string
+		isHidden
+		lineageTag: 497b5c53-fe53-412d-8511-491b21953f74
+		sourceColumn: channel_code
+
+	/// Sales region key.
+	column 'Region Code'
+		dataType: string
+		isHidden
+		lineageTag: 7bd6d8af-9e2a-484d-b3b7-1ecf5b24f480
+		sourceColumn: region_code
+
+	/// Nullable partner key. Delivery partnerships are a separate business grain and are not assigned to sales rows.
+	column 'Partner ID'
+		dataType: string
+		isHidden
+		lineageTag: 7d94ff56-5618-4c5a-ba63-15d27b2ccc71
+		sourceColumn: partner_id
+
+	/// Sold volume in hectolitres, abbreviated hl.
+	column 'Actual Volume'
+		dataType: decimal
+		isHidden
+		formatString: #,##0.00
+		lineageTag: 9d9c9920-ec5c-42c2-baca-af07cbdd7267
+		sourceColumn: actual_hl
+
+	/// Planned volume in hectolitres; blank where no forecast exists.
+	column 'Forecast Volume'
+		dataType: decimal
+		isHidden
+		formatString: #,##0.00
+		lineageTag: c821bb5b-1777-4663-9fa1-16b66e3612d8
+		sourceColumn: forecast_hl
+
+	/// Actual minus forecast volume at the business grain; blank without a forecast.
+	column 'Deviation Volume'
+		dataType: decimal
+		isHidden
+		formatString: #,##0.00
+		lineageTag: 89d842cc-b601-4d51-9cb3-650b421fa1b9
+		sourceColumn: deviation_hl
+
+	/// Net sales revenue in EUR.
+	column Revenue
+		dataType: decimal
+		isHidden
+		formatString: #,##0.00 "EUR"
+		lineageTag: fa98971b-96ca-48a1-8756-4b52502e97ee
+		sourceColumn: revenue_eur
+
+	/// Contribution margin in EUR; protected in the later OneLake column-security demonstration.
+	column Margin
+		dataType: decimal
+		isHidden
+		formatString: #,##0.00 "EUR"
+		lineageTag: 88d6dd83-644a-4b9d-b168-23b093245d57
+		sourceColumn: margin_eur
+
+	/// Stage of the underlying data: dev, test or prod.
+	column Environment
+		dataType: string
+		lineageTag: a2992229-b0c0-4bfa-bf2d-aa0b9d488c8a
+		sourceColumn: env_marker
+
+	partition sales_vs_forecast = entity
+		mode: directLake
+		source
+			entityName: sales_vs_forecast
+			schemaName: dbo
+			expressionSource: 'DirectLake - Sales'
+

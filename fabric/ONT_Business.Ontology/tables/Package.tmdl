@@ -1,0 +1,45 @@
+table Package
+	lineageTag: 12d4ed04-e369-47a0-9690-f510fdedf005
+
+	column 'Package Code'
+		dataType: string
+		lineageTag: 7e90ae48-48a7-4809-b71d-95784081f39a
+		sourceColumn: Package Code
+
+	column 'Package Type'
+		dataType: string
+		lineageTag: 5684d16c-11c2-4eb1-9108-9f8770d24863
+		sourceColumn: Package Type
+
+	column 'Volume Litres'
+		dataType: double
+		lineageTag: 738a28c1-f44e-46dd-bb27-93a022c8d7c7
+		sourceColumn: Volume Litres
+
+	column Returnable
+		dataType: boolean
+		lineageTag: c73e191e-acb6-4c6b-9be5-863df53e91d8
+		sourceColumn: Returnable
+
+	partition Package = entity
+		mode: directQuery
+		source
+			entityName: Package
+			expressionSource: 'DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c'
+
+		annotation ONT_WorkspaceId = 00000000-0000-0000-0000-000000000000
+
+		annotation ONT_ItemId = ea6fd78c-af5b-92af-408c-1c47f3dd4c43
+
+		annotation ONT_ItemKind = SemanticModel
+
+		annotation ONT_ItemName = ONT_ALM_ITEM_NAME
+
+		annotation ONT_WorkspaceName = WORKSPACE_NAME_PLACEHOLDER
+
+		annotation ONT_SemanticModelServer = powerbi://api.powerbi.com/v1.0/3fa9b173-f000-4529-a4f7-00d0d6a8d136
+
+		annotation ONT_SemanticModelDatabase = SM_Sales
+
+		annotation ONT_PinnedAtUtc = 2026-11-22T10:10:56Z
+

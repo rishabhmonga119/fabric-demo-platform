@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Lakehouse",
+    "displayName": "LH_Landing",
+    "description": "Managed by fabric-demo-platform demo automation: Stage-isolated standard and raw forecast ingestion."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "cc2fcd90-1d45-b943-4974-dff9fd2d2f87"
+  }
+}

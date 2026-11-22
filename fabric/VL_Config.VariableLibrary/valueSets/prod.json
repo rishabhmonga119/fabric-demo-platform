@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/variableLibrary/definition/valueSet/1.0.0/schema.json",
+  "name": "prod",
+  "variableOverrides": [
+    {
+      "name": "catalog",
+      "value": "demo_prod"
+    },
+    {
+      "name": "sp_folder",
+      "value": "Forecasts/Prod"
+    },
+    {
+      "name": "env_label",
+      "value": "prod"
+    }
+  ]
+}

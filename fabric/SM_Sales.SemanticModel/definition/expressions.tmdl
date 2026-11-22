@@ -1,0 +1,8 @@
+/// Direct Lake on OneLake source for the stage-owned curated lakehouse. End-user SSO is required.
+expression 'DirectLake - Sales' =
+		let
+		    Source = AzureStorage.DataLake("https://onelake.dfs.fabric.microsoft.com/3fa9b173-f000-4529-a4f7-00d0d6a8d136/a8a49dc0-330e-4a63-8280-dccb057b4cde", [HierarchicalNavigation=true])
+		in
+		    Source
+	lineageTag: 3351b754-7672-4ee8-ac9e-e30e29ac79a9
+

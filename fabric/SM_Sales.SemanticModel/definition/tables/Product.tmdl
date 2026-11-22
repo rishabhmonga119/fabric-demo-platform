@@ -1,0 +1,46 @@
+/// Illustrative beverage products. Product codes are independent of package sizes.
+table Product
+	lineageTag: e3e2e9e8-7eef-4d2d-89b5-896010864353
+
+	/// Unique product identifier.
+	column 'Product Code'
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: d1271937-0150-49ba-8212-05503644ec48
+		sourceColumn: sku
+
+	/// Beverage product display name.
+	column 'Product Name'
+		dataType: string
+		lineageTag: 51ca076c-92fd-4267-a08b-b5be46c0917a
+		isDefaultLabel
+		sourceColumn: product_name
+
+	/// Still, Sparkling, Medium, Flavoured or Soft drink.
+	column 'Product Line'
+		dataType: string
+		lineageTag: 8a769f1a-b2d1-4a7f-86f1-713cd68c44bd
+		sourceColumn: product_line
+
+	/// Illustrative product launch year.
+	column 'Launch Year'
+		dataType: int64
+		lineageTag: 1f1850a6-6e54-4465-8404-4fdd75a1e118
+		summarizeBy: none
+		sourceColumn: launch_year
+
+	/// Source environment marker.
+	column Environment
+		dataType: string
+		isHidden
+		lineageTag: 626fdf02-cecd-4221-8866-f4d927f17117
+		sourceColumn: env_marker
+
+	partition dim_product = entity
+		mode: directLake
+		source
+			entityName: dim_product
+			schemaName: gold
+			expressionSource: 'DirectLake - Sales'
+

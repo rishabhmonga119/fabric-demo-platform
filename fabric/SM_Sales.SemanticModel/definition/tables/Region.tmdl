@@ -1,0 +1,39 @@
+/// Four illustrative sales regions and their fictional managers.
+table Region
+	lineageTag: a177f011-4341-45e4-a948-a59d57befee1
+
+	/// Unique NORTH, SOUTH, EAST or WEST key.
+	column 'Region Code'
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: e46a2173-70d9-478f-9d5b-2de04a7f0483
+		sourceColumn: region_code
+
+	/// Region display name.
+	column 'Region Name'
+		dataType: string
+		lineageTag: 76eae939-ec56-40b5-b862-9aa6eebc8191
+		isDefaultLabel
+		sourceColumn: region_name
+
+	/// Fictional regional sales manager.
+	column 'Sales Manager'
+		dataType: string
+		lineageTag: 5975c2d4-1025-41ac-8977-d90c5bc47c9d
+		sourceColumn: sales_manager
+
+	/// Source environment marker.
+	column Environment
+		dataType: string
+		isHidden
+		lineageTag: a8126d6f-641e-44c7-b8f6-1d0656d599e8
+		sourceColumn: env_marker
+
+	partition dim_region = entity
+		mode: directLake
+		source
+			entityName: dim_region
+			schemaName: gold
+			expressionSource: 'DirectLake - Sales'
+

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/dataAgent/definition/ontology/1.0.0/schema.json",
+  "artifactId": "5d85a6c7-f3af-8940-45e5-fb832cf382af",
+  "workspaceId": "00000000-0000-0000-0000-000000000000",
+  "displayName": "ONT_Business",
+  "elements": [
+    {
+      "id": "Channel",
+      "is_selected": true,
+      "display_name": "Channel",
+      "type": "ontology.entity",
+      "description": "Sales channels, also called Kanal.",
+      "children": []
+    },
+    {
+      "id": "Delivery",
+      "is_selected": true,
+      "display_name": "Delivery",
+      "type": "ontology.entity",
+      "description": "Monthly delivery performance by partner, product, package and region, sourced from the curated delivery fact table.",
+      "children": []
+    },
+    {
+      "id": "Package",
+      "is_selected": true,
+      "display_name": "Package",
+      "type": "ontology.entity",
+      "description": "Package types, sizes and returnability; Gebinde.",
+      "children": []
+    },
+    {
+      "id": "Partner",
+      "is_selected": true,
+      "display_name": "Partner",
+      "type": "ontology.entity",
+      "description": "Fictional delivery partners. Sales rows have no assigned partner; delivery metrics use a separate source grain.",
+      "children": []
+    },
+    {
+      "id": "Product",
+      "is_selected": true,
+      "display_name": "Product",
+      "type": "ontology.entity",
+      "description": "Illustrative beverage products. Product codes are independent of package sizes.",
+      "children": []
+    },
+    {
+      "id": "Region",
+      "is_selected": true,
+      "display_name": "Region",
+      "type": "ontology.entity",
+      "description": "Four illustrative sales regions and their fictional managers.",
+      "children": []
+    },
+    {
+      "id": "SalesPeriod",
+      "is_selected": true,
+      "display_name": "SalesPeriod",
+      "type": "ontology.entity",
+      "description": "Monthly beverage sales and forecasts at product, package, region, channel, and nullable partner grain. Delivery data stays separate.",
+      "children": []
+    }
+  ],
+  "entitiesWithUserAuthoredDescriptions": []
+}

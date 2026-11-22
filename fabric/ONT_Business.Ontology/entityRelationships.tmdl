@@ -1,0 +1,90 @@
+/// Connect monthly sales facts to the product dimension by product code.
+entityRelationship SalesProduct
+	label: SalesProduct
+	lineageTag: 2576ee8c-75c1-4601-80af-ffead29b247e
+	fromEntity: SalesPeriod
+	toEntity: Product
+
+	backingConfiguration
+		relationship: SalesProduct_join
+
+/// Connect monthly sales facts to the package dimension by package code.
+entityRelationship SalesPackage
+	label: SalesPackage
+	lineageTag: 966db208-2323-4a2e-bfe8-f878b26616c4
+	fromEntity: SalesPeriod
+	toEntity: Package
+
+	backingConfiguration
+		relationship: SalesPackage_join
+
+/// Connect monthly sales facts to the channel dimension by channel code.
+entityRelationship SalesChannel
+	label: SalesChannel
+	lineageTag: c1206438-e181-474e-91c4-82568bb92e39
+	fromEntity: SalesPeriod
+	toEntity: Channel
+
+	backingConfiguration
+		relationship: SalesChannel_join
+
+/// Connect monthly sales facts to the region dimension by region code.
+entityRelationship SalesRegion
+	label: SalesRegion
+	lineageTag: 9667ee21-aabc-48d1-aeee-9ef8c575e19d
+	fromEntity: SalesPeriod
+	toEntity: Region
+
+	backingConfiguration
+		relationship: SalesRegion_join
+
+/// Connect delivery facts to the partner dimension by partner id.
+entityRelationship DeliveryPartner
+	label: DeliveryPartner
+	lineageTag: 8fa3d788-7139-44f4-810c-dee458af768d
+	fromEntity: Delivery
+	toEntity: Partner
+
+	backingConfiguration
+		relationship: DeliveryPartner_join
+
+/// Connect delivery facts to the product dimension by SKU, which matches Product Code.
+entityRelationship DeliveryProduct
+	label: DeliveryProduct
+	lineageTag: 2665f88b-4ac5-408b-9767-c73f9a740d7c
+	fromEntity: Delivery
+	toEntity: Product
+
+	backingConfiguration
+		relationship: DeliveryProduct_join
+
+/// Connect delivery facts to the package dimension by package code.
+entityRelationship DeliveryPackage
+	label: DeliveryPackage
+	lineageTag: 81f2c99b-8a90-4d0b-aacc-2d83efbb31cf
+	fromEntity: Delivery
+	toEntity: Package
+
+	backingConfiguration
+		relationship: DeliveryPackage_join
+
+/// Connect delivery facts to the region dimension by region code.
+entityRelationship DeliveryRegion
+	label: DeliveryRegion
+	lineageTag: 6f103f1d-4f52-4374-a9aa-0f65fc41a211
+	fromEntity: Delivery
+	toEntity: Region
+
+	backingConfiguration
+		relationship: DeliveryRegion_join
+
+/// Connect monthly sales facts to the partner dimension by partner id.
+entityRelationship SalesPartner
+	label: SalesPartner
+	lineageTag: bb7f3756-fa92-40b8-9e4f-c749edccf5f1
+	fromEntity: SalesPeriod
+	toEntity: Partner
+
+	backingConfiguration
+		relationship: SalesPartner_join
+

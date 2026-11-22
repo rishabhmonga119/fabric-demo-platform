@@ -1,0 +1,68 @@
+/// Fictional delivery partners. Sales rows have no assigned partner; delivery metrics use a separate source grain.
+entity Partner
+	lineageTag: e2ad3748-b11d-4a2c-93a0-816798dc507d
+	backingTable: Partner
+	keyProperty: 'Partner ID'
+
+	/// Unique partner identifier.
+	property 'Partner ID'
+		dataType: string
+		lineageTag: 49a01d4d-56e4-48a1-9850-f1e0dd182a2a
+
+		backingConfiguration
+			valueColumn: Partner.'Partner ID'
+
+		synonym 'partner id'
+
+		synonym 'partner key'
+
+	/// Fictional partner display name.
+	property 'Partner Name'
+		dataType: string
+		lineageTag: ee2ff3e8-ed1a-4223-b2bb-c5dfb5dc0b9c
+
+		backingConfiguration
+			valueColumn: Partner.'Partner Name'
+
+		synonym 'partner name'
+
+		synonym 'delivery partner name'
+
+	/// Logistics, Retail or Wholesale.
+	property 'Partner Type'
+		dataType: string
+		lineageTag: 78b14f28-5d9e-4c9d-bfab-38a22e66bd0e
+
+		backingConfiguration
+			valueColumn: Partner.'Partner Type'
+
+		synonym 'partner type'
+
+		synonym type
+
+	/// Partner country code.
+	property Country
+		dataType: string
+		lineageTag: 0b5728b9-1c01-4fcd-a8cd-4808819e5dac
+
+		backingConfiguration
+			valueColumn: Partner.Country
+
+		synonym country
+
+		synonym nation
+
+		synonym location
+
+	synonym partner
+
+	synonym 'delivery partner'
+
+	synonym 'logistics partner'
+
+	synonym carrier
+
+	synonym supplier
+
+	annotation semanticModelEntity = Partner
+

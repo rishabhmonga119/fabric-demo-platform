@@ -1,0 +1,25 @@
+relationship 'Sales Product'
+	fromColumn: 'Sales vs Forecast'.'Product Code'
+	toColumn: Product.'Product Code'
+
+relationship 'Sales Package'
+	fromColumn: 'Sales vs Forecast'.'Package Code'
+	toColumn: Package.'Package Code'
+
+relationship 'Sales Channel'
+	fromColumn: 'Sales vs Forecast'.'Channel Code'
+	toColumn: Channel.'Channel Code'
+
+relationship 'Sales Region'
+	fromColumn: 'Sales vs Forecast'.'Region Code'
+	toColumn: Region.'Region Code'
+
+relationship 'Sales Partner'
+	fromColumn: 'Sales vs Forecast'.'Partner ID'
+	toColumn: Partner.'Partner ID'
+
+relationship 'Sales Date'
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'Sales vs Forecast'.Month
+	toColumn: Date.Date
+

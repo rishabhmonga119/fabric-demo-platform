@@ -1,0 +1,61 @@
+table Delivery
+	lineageTag: 1e471dba-f185-4c3d-8ca4-4903c7710052
+
+	column month
+		dataType: dateTime
+		lineageTag: 064a6090-095a-44aa-b987-e4d8e8f14889
+		sourceColumn: month
+
+	column partner_id
+		dataType: string
+		lineageTag: 68dcae85-3176-4736-9613-7caa5ae0800b
+		sourceColumn: partner_id
+
+	column sku
+		dataType: string
+		lineageTag: 47ba4ed1-e089-4aea-a0c7-7c741df76c04
+		sourceColumn: sku
+
+	column package_code
+		dataType: string
+		lineageTag: b433d059-6142-4548-a042-5d85144635f9
+		sourceColumn: package_code
+
+	column region_code
+		dataType: string
+		lineageTag: 593545ca-6335-4813-92f6-89ffa865cc70
+		sourceColumn: region_code
+
+	column delivered_hl
+		dataType: decimal
+		lineageTag: 7c032554-5292-4aea-94f9-6d5d0477fca2
+		sourceColumn: delivered_hl
+
+	column on_time_pct
+		dataType: decimal
+		lineageTag: f85ff2b2-5fc5-4a3d-b801-8125141b5bd6
+		sourceColumn: on_time_pct
+
+	partition Delivery = entity
+		mode: directLake
+		source
+			entityName: fact_deliveries
+			schemaName: gold
+			expressionSource: DatabaseQuery2
+
+		annotation ONT_WorkspaceId = 00000000-0000-0000-0000-000000000000
+
+		annotation ONT_ItemId = 057b4cde-dccb-8280-4a63-330ea8a49dc0
+
+		annotation ONT_ItemKind = Lakehouse
+
+		annotation ONT_ItemName = ONT_ALM_ITEM_NAME
+
+		annotation ONT_WorkspaceName = WORKSPACE_NAME_PLACEHOLDER
+
+		annotation ONT_SqlEndpoint = hqrecxhv6f4uteyp2xz4oi2t7e-ooy2spya6auuljhxadinnkgrgy.datawarehouse.fabric.microsoft.com
+
+		annotation ONT_SqlDatabase = LH_Curated
+
+		annotation ONT_PinnedAtUtc = 2026-11-22T10:10:56Z
+

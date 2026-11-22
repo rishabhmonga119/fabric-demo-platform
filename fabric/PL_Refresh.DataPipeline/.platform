@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "PL_Refresh",
+    "description": "Managed by fabric-demo-platform demo automation: sequential Python clean and PySpark integration."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "ca0e481e-e11e-8737-4fde-871f923dd7b0"
+  }
+}

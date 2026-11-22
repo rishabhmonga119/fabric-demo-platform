@@ -1,0 +1,56 @@
+/// Four illustrative sales regions and their fictional managers.
+entity Region
+	lineageTag: 15e8ed75-dcd5-4f61-a057-f1529d431650
+	backingTable: Region
+	keyProperty: 'Region Code'
+
+	/// Unique NORTH, SOUTH, EAST or WEST key.
+	property 'Region Code'
+		dataType: string
+		lineageTag: fe58b63f-0f76-46f1-8f2b-6a079d107717
+
+		backingConfiguration
+			valueColumn: Region.'Region Code'
+
+		synonym 'region code'
+
+		synonym 'territory code'
+
+	/// Region display name.
+	property 'Region Name'
+		dataType: string
+		lineageTag: 4a22affd-a373-4e18-a19b-f8a38e5a45ab
+
+		backingConfiguration
+			valueColumn: Region.'Region Name'
+
+		synonym 'region name'
+
+		synonym 'sales region name'
+
+	/// Fictional regional sales manager.
+	property 'Sales Manager'
+		dataType: string
+		lineageTag: 78567b0c-8d81-4892-8ed9-99b299cf57b9
+
+		backingConfiguration
+			valueColumn: Region.'Sales Manager'
+
+		synonym manager
+
+		synonym 'regional manager'
+
+		synonym 'sales manager'
+
+	synonym region
+
+	synonym 'sales region'
+
+	synonym territory
+
+	synonym area
+
+	synonym zone
+
+	annotation semanticModelEntity = Region
+

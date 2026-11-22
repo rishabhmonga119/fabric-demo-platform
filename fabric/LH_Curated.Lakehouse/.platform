@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Lakehouse",
+    "displayName": "LH_Curated",
+    "description": "Managed by fabric-demo-platform demo automation: Curated sales/forecast integration and OneLake security."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "057b4cde-dccb-8280-4a63-330ea8a49dc0"
+  }
+}

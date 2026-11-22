@@ -1,0 +1,16 @@
+expression 'DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c' =
+		let
+		    Source = AnalysisServices.Database("powerbi://api.powerbi.com/v1.0/myorg/WORKSPACE_NAME_PLACEHOLDER", "SM_Sales"),
+		    Cubes = Table.Combine(Source[Data]),
+		    Cube = Cubes{[Id="Model", Kind="Cube"]}[Data]
+		in
+		    Cube
+	lineageTag: 291479bf-c57a-44d1-acac-ae6e0907fb05
+
+expression DatabaseQuery2 =
+		let
+		    Source = AzureStorage.DataLake("https://onelake.dfs.fabric.microsoft.com/00000000-0000-0000-0000-000000000000/057b4cde-dccb-8280-4a63-330ea8a49dc0", [HierarchicalNavigation=true])
+		in
+		    Source
+	lineageTag: ad79e2e7-d2bc-428f-8029-fe0b72dd84c1
+

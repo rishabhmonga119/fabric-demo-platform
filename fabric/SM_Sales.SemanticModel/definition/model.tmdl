@@ -1,0 +1,24 @@
+/// Synthetic beverage sales and forecasts. Volumes in hl, money in EUR. Direct Lake on OneLake with end-user SSO; a local imported calendar supports time filters.
+model SM_Sales
+	defaultMode: directLake
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-US
+	directLakeBehavior: directLakeOnly
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DirectLakeOnOneLakeInWeb","WebModelingEdit","CopilotTooling"]
+
+ref table 'Sales vs Forecast'
+ref table Product
+ref table Package
+ref table Channel
+ref table Region
+ref table Partner
+ref table Date
+
+ref cultureInfo en-US
+

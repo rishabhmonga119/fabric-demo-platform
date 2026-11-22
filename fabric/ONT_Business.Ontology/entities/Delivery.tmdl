@@ -1,0 +1,109 @@
+/// Monthly delivery performance by partner, product, package and region, sourced from the curated delivery fact table.
+entity Delivery
+	lineageTag: bae6c3ab-3784-4cbe-b465-e3fe1c10a171
+	backingTable: Delivery
+
+	/// First day of the delivery month.
+	property month
+		dataType: dateTime
+		lineageTag: 54af73be-13c5-40d2-8a5d-a94a684048be
+
+		backingConfiguration
+			valueColumn: Delivery.month
+
+		synonym month
+
+		synonym period
+
+	/// Partner identifier on the delivery grain.
+	property partner_id
+		dataType: string
+		lineageTag: 06a12db6-3bd0-4cad-be6a-d6099a49e15b
+
+		backingConfiguration
+			valueColumn: Delivery.partner_id
+
+		synonym 'partner id'
+
+		synonym partner
+
+	/// Product code on the delivery grain; matches the Product dimension's Product Code values.
+	property sku
+		dataType: string
+		lineageTag: 584d2a72-f05a-4d17-a5a0-49153f7be083
+
+		backingConfiguration
+			valueColumn: Delivery.sku
+
+		synonym sku
+
+		synonym 'product code'
+
+		synonym 'item code'
+
+	/// Package code on the delivery grain, also called Gebinde.
+	property package_code
+		dataType: string
+		lineageTag: a2ea827b-52bd-4676-93d1-6abd58c4545e
+
+		backingConfiguration
+			valueColumn: Delivery.package_code
+
+		synonym 'package code'
+
+		synonym Gebinde
+
+		synonym package
+
+	/// Region code on the delivery grain.
+	property region_code
+		dataType: string
+		lineageTag: c171ab9b-8c81-435b-8213-f3cfcda06e32
+
+		backingConfiguration
+			valueColumn: Delivery.region_code
+
+		synonym 'region code'
+
+		synonym region
+
+	/// Delivered beverage volume in hectolitres (hl).
+	property delivered_hl
+		dataType: decimal
+		lineageTag: eb459de7-c65d-49b0-ae33-b06ef57e9072
+
+		backingConfiguration
+			valueColumn: Delivery.delivered_hl
+
+		synonym hl
+
+		synonym hectolitre
+
+		synonym volume
+
+	/// Share of deliveries that were on time.
+	property on_time_pct
+		dataType: decimal
+		lineageTag: 47f0344d-f590-45ec-a491-72916b1cb1af
+
+		backingConfiguration
+			valueColumn: Delivery.on_time_pct
+
+		synonym 'on time percent'
+
+		synonym 'on time rate'
+
+		synonym 'delivery punctuality'
+
+	synonym delivery
+
+	synonym 'delivery performance'
+
+	synonym 'partner delivery'
+
+	synonym 'delivery fact'
+
+	synonym 'shipping performance'
+
+	annotation lakehouseTable = gold.fact_deliveries
+

@@ -1,0 +1,33 @@
+/// Sales channels, also called Kanal.
+table Channel
+	lineageTag: 1455d98e-8109-494c-9b30-bbff4dc42afa
+
+	/// Unique sales channel key.
+	column 'Channel Code'
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 6fb005f9-b0e9-442e-8a4e-3135728a952c
+		sourceColumn: channel_code
+
+	/// Food retail, gastronomy, beverage wholesale or online.
+	column 'Channel Name'
+		dataType: string
+		lineageTag: 5d338bab-d162-4cfb-bdbe-3e27116d1eac
+		isDefaultLabel
+		sourceColumn: channel_name
+
+	/// Source environment marker.
+	column Environment
+		dataType: string
+		isHidden
+		lineageTag: be597941-c611-44a9-8e2c-94ea814ce7fe
+		sourceColumn: env_marker
+
+	partition dim_channel = entity
+		mode: directLake
+		source
+			entityName: dim_channel
+			schemaName: gold
+			expressionSource: 'DirectLake - Sales'
+

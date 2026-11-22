@@ -1,0 +1,143 @@
+table SalesPeriod
+	lineageTag: b664d930-3bed-4ce1-a27c-b6e3794e39ca
+
+	/// Sold beverage volume in hectolitres (hl). State the selected month range and region/channel filters.
+	measure 'Actual hl' = EXTERNALMEASURE("Actual hl", CURRENCY, "DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c")
+		formatString: #,##0.00 "hl"
+		displayFolder: Volume
+		lineageTag: f5e2f7d6-4d29-429e-b55d-418019cab6ee
+		sourceLineageTag: 52facf61-2aba-4fba-ab17-b01e93e8efbf
+
+		annotation measure_Actual_hl = {"w":"3fa9b173-f000-4529-a4f7-00d0d6a8d136","i":"f3dd4c43-1c47-408c-92af-af5bea6fd78c","n":"SM_Sales","t":"Sales vs Forecast","m":"Actual hl","d":"Sold beverage volume in hectolitres (hl). State the selected month range and region/channel filters."}
+
+	/// Planned beverage volume in hectolitres (hl). Blank if no forecast exists for the selection.
+	measure 'Forecast hl' = EXTERNALMEASURE("Forecast hl", CURRENCY, "DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c")
+		formatString: #,##0.00 "hl"
+		displayFolder: Volume
+		lineageTag: 7184b249-813f-4d74-8640-121bf453b50e
+		sourceLineageTag: 9b15962d-8bfa-4e31-a67b-598eb266da99
+
+		annotation measure_Forecast_hl = {"w":"3fa9b173-f000-4529-a4f7-00d0d6a8d136","i":"f3dd4c43-1c47-408c-92af-af5bea6fd78c","n":"SM_Sales","t":"Sales vs Forecast","m":"Forecast hl","d":"Planned beverage volume in hectolitres (hl). Blank if no forecast exists for the selection."}
+
+	/// Actual minus planned volume in hl, summed only where a forecast exists. Positive means above plan; missing forecasts are not estimated.
+	measure 'Deviation hl' = EXTERNALMEASURE("Deviation hl", CURRENCY, "DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c")
+		formatString: #,##0.00 "hl";(#,##0.00) "hl"
+		displayFolder: Forecast comparison
+		lineageTag: dcb38d70-d9c2-41fd-9312-1787fe61a055
+		sourceLineageTag: 5a921716-3ac9-4923-a9a3-d6f0cf313198
+
+		annotation measure_Deviation_hl = {"w":"3fa9b173-f000-4529-a4f7-00d0d6a8d136","i":"f3dd4c43-1c47-408c-92af-af5bea6fd78c","n":"SM_Sales","t":"Sales vs Forecast","m":"Deviation hl","d":"Actual minus planned volume in hl, summed only where a forecast exists. Positive means above plan; missing forecasts are not estimated."}
+
+	/// Actual-minus-forecast deviation divided by forecast volume. Blank for a missing or zero forecast; positive means above plan.
+	measure 'Deviation %' = EXTERNALMEASURE("Deviation %", DOUBLE, "DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c")
+		formatString: 0.0%;(0.0%)
+		displayFolder: Forecast comparison
+		lineageTag: 33f1d99d-2089-439b-8525-dbf3afd6183d
+		sourceLineageTag: 5fb508f3-76f6-4a37-afca-ef7b3c293064
+
+		annotation measure_Deviation_Pct = {"w":"3fa9b173-f000-4529-a4f7-00d0d6a8d136","i":"f3dd4c43-1c47-408c-92af-af5bea6fd78c","n":"SM_Sales","t":"Sales vs Forecast","m":"Deviation %","d":"Actual-minus-forecast deviation divided by forecast volume. Blank for a missing or zero forecast; positive means above plan."}
+
+	/// Net sales revenue in EUR for the selected actual-sales period and filters.
+	measure 'Revenue EUR' = EXTERNALMEASURE("Revenue EUR", CURRENCY, "DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c")
+		formatString: #,##0.00 "EUR"
+		displayFolder: Financials
+		lineageTag: cc646f19-8dec-459e-b682-494e783c8ce6
+		sourceLineageTag: c78ebb0b-cab1-4156-9067-3442235375a8
+
+		annotation measure_Revenue_EUR = {"w":"3fa9b173-f000-4529-a4f7-00d0d6a8d136","i":"f3dd4c43-1c47-408c-92af-af5bea6fd78c","n":"SM_Sales","t":"Sales vs Forecast","m":"Revenue EUR","d":"Net sales revenue in EUR for the selected actual-sales period and filters."}
+
+	/// Contribution margin in EUR. Later OneLake column security controls access to this source field.
+	measure 'Margin EUR' = EXTERNALMEASURE("Margin EUR", CURRENCY, "DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c")
+		formatString: #,##0.00 "EUR"
+		displayFolder: Financials
+		lineageTag: 524677b4-7ea6-4e6e-9835-f6e1df016dd1
+		sourceLineageTag: d6eafa35-9a21-48f5-83e1-261120fee177
+
+		annotation measure_Margin_EUR = {"w":"3fa9b173-f000-4529-a4f7-00d0d6a8d136","i":"f3dd4c43-1c47-408c-92af-af5bea6fd78c","n":"SM_Sales","t":"Sales vs Forecast","m":"Margin EUR","d":"Contribution margin in EUR. Later OneLake column security controls access to this source field."}
+
+	/// Revenue-weighted contribution margin: total margin EUR divided by total revenue EUR. Blank when revenue is zero or unavailable.
+	measure 'Margin %' = EXTERNALMEASURE("Margin %", DOUBLE, "DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c")
+		formatString: 0.0%
+		displayFolder: Financials
+		lineageTag: 9fe40b40-a8f5-4ca9-93aa-722ca40183a7
+		sourceLineageTag: 10845ee8-30f5-49a2-b0ce-4e391e754be4
+
+		annotation measure_Margin_Pct = {"w":"3fa9b173-f000-4529-a4f7-00d0d6a8d136","i":"f3dd4c43-1c47-408c-92af-af5bea6fd78c","n":"SM_Sales","t":"Sales vs Forecast","m":"Margin %","d":"Revenue-weighted contribution margin: total margin EUR divided by total revenue EUR. Blank when revenue is zero or unavailable."}
+
+	column Month
+		dataType: dateTime
+		lineageTag: 11a5c9d9-5ad2-4d8e-9cd1-9994244823ff
+		sourceColumn: Month
+
+	column 'Product Code'
+		dataType: string
+		lineageTag: 121cd311-03ca-4e4e-9c79-20663ac48580
+		sourceColumn: Product Code
+
+	column 'Package Code'
+		dataType: string
+		lineageTag: f9419d92-368d-4535-a7a8-7278a6e36eb3
+		sourceColumn: Package Code
+
+	column 'Channel Code'
+		dataType: string
+		lineageTag: 098b8ccf-5eb1-438b-bdfd-af2c997de4c6
+		sourceColumn: Channel Code
+
+	column 'Region Code'
+		dataType: string
+		lineageTag: 44a5c57a-3311-4127-b612-2c10b89305db
+		sourceColumn: Region Code
+
+	column 'Actual Volume'
+		dataType: decimal
+		lineageTag: 7568d987-30c6-400d-a43a-5bfbc18d4f20
+		sourceColumn: Actual Volume
+
+	column 'Forecast Volume'
+		dataType: decimal
+		lineageTag: b5d5de30-d4ea-4eb4-9333-bef498bbb2ff
+		sourceColumn: Forecast Volume
+
+	column 'Deviation Volume'
+		dataType: decimal
+		lineageTag: 574870b4-b4b8-4470-b704-b550c311874a
+		sourceColumn: Deviation Volume
+
+	column Revenue
+		dataType: decimal
+		lineageTag: 249f72aa-770a-4071-9eac-eb0aa60a05f4
+		sourceColumn: Revenue
+
+	column Margin
+		dataType: decimal
+		lineageTag: 0c45847f-4a96-4f08-bd56-be6130d4278c
+		sourceColumn: Margin
+
+	column 'Partner ID'
+		dataType: string
+		lineageTag: c78ea48e-4803-4d87-bab8-7186546b1f55
+		sourceColumn: Partner ID
+
+	partition SalesPeriod = entity
+		mode: directQuery
+		source
+			entityName: Sales vs Forecast
+			expressionSource: 'DirectQuery to AS - 3fa9b173-f000-4529-a4f7-00d0d6a8d136/f3dd4c43-1c47-408c-92af-af5bea6fd78c'
+
+		annotation ONT_WorkspaceId = 00000000-0000-0000-0000-000000000000
+
+		annotation ONT_ItemId = ea6fd78c-af5b-92af-408c-1c47f3dd4c43
+
+		annotation ONT_ItemKind = SemanticModel
+
+		annotation ONT_ItemName = ONT_ALM_ITEM_NAME
+
+		annotation ONT_WorkspaceName = WORKSPACE_NAME_PLACEHOLDER
+
+		annotation ONT_SemanticModelServer = powerbi://api.powerbi.com/v1.0/3fa9b173-f000-4529-a4f7-00d0d6a8d136
+
+		annotation ONT_SemanticModelDatabase = SM_Sales
+
+		annotation ONT_PinnedAtUtc = 2026-11-22T10:10:56Z
+

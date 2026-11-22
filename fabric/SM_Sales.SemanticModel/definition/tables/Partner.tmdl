@@ -1,0 +1,46 @@
+/// Fictional delivery partners. Sales rows have no assigned partner; delivery metrics use a separate source grain.
+table Partner
+	lineageTag: 8ef83798-b9bf-4acd-8955-4dd203689934
+
+	/// Unique partner identifier.
+	column 'Partner ID'
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 9e870b4c-5c6e-41be-b2a9-1d7bd3ae5f82
+		sourceColumn: partner_id
+
+	/// Fictional partner display name.
+	column 'Partner Name'
+		dataType: string
+		lineageTag: b377706f-82f4-4eb9-a059-c6c7a559a6ee
+		isDefaultLabel
+		sourceColumn: partner_name
+
+	/// Logistics, Retail or Wholesale.
+	column 'Partner Type'
+		dataType: string
+		lineageTag: 8e8e5588-fa00-4fdc-95d2-8e422e939067
+		sourceColumn: partner_type
+
+	/// Partner country code.
+	column Country
+		dataType: string
+		lineageTag: 6b0a03f0-9fd8-40fc-97af-d7d03704e43d
+		dataCategory: Country
+		sourceColumn: country
+
+	/// Source environment marker.
+	column Environment
+		dataType: string
+		isHidden
+		lineageTag: 607b51b9-c5ce-4049-af35-952a41197fee
+		sourceColumn: env_marker
+
+	partition dim_partner = entity
+		mode: directLake
+		source
+			entityName: dim_partner
+			schemaName: gold
+			expressionSource: 'DirectLake - Sales'
+

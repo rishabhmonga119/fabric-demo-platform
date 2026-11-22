@@ -1,0 +1,15 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/mirroredAzureDatabricksCatalog/definition/mirroredAzureDatabricksCatalogDefinition/1.0.0/schema.json",
+  "autoSync": "Enabled",
+  "catalogName": "demo_dev",
+  "databricksWorkspaceConnectionId": "9430fa8c-03d8-476b-aa2e-167b0fb804f6",
+  "mirrorConfiguration": {
+    "schemas": [
+      {
+        "mirroringMode": "Full",
+        "name": "gold"
+      }
+    ]
+  },
+  "mirroringMode": "Partial"
+}

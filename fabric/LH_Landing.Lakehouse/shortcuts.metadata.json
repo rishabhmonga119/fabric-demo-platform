@@ -1,0 +1,14 @@
+[
+  {
+    "name": "raw_forecasts",
+    "path": "/Files",
+    "target": {
+      "type": "OneDriveSharePoint",
+      "oneDriveSharePoint": {
+        "connectionId": "5bb73026-8d9d-4ba1-9c44-91b68ac0bc95",
+        "location": "https://caldova30465160.sharepoint.com",
+        "subpath": "/sites/DemoData/Shared Documents/Forecasts/Dev/raw"
+      }
+    }
+  }
+]

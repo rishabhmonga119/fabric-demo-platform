@@ -1,0 +1,47 @@
+/// Package types, sizes and returnability; Gebinde.
+table Package
+	lineageTag: 5c2ee856-4100-4614-89e3-366f2537ea71
+
+	/// Unique package identifier.
+	column 'Package Code'
+		dataType: string
+		isKey
+		lineageTag: 5effd057-aa4c-416e-a1db-ff480d96b462
+		isDefaultLabel
+		sourceColumn: package_code
+
+	/// Glass or PET package material.
+	column 'Package Type'
+		dataType: string
+		lineageTag: 618d9947-cc80-4494-9ab1-8c7f04ab4663
+		sourceColumn: package_type
+
+	/// Individual package volume in litres; not sold volume in hectolitres.
+	column 'Volume Litres'
+		dataType: double
+		formatString: 0.00 "l"
+		lineageTag: e514919f-5f4b-4880-98e5-f4ebe00b16db
+		summarizeBy: none
+		sourceColumn: volume_l
+
+	/// Whether the package is returnable.
+	column Returnable
+		dataType: boolean
+		lineageTag: c898fbe0-96ad-4d06-a3f5-75cbb1a941db
+		summarizeBy: none
+		sourceColumn: returnable
+
+	/// Source environment marker.
+	column Environment
+		dataType: string
+		isHidden
+		lineageTag: fc86990a-49d0-4c9f-9920-981d86aefe52
+		sourceColumn: env_marker
+
+	partition dim_package = entity
+		mode: directLake
+		source
+			entityName: dim_package
+			schemaName: gold
+			expressionSource: 'DirectLake - Sales'
+

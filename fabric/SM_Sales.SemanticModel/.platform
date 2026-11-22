@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "SM_Sales",
+    "description": "Managed by fabric-demo-platform demo automation: sales and forecasts."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "ea6fd78c-af5b-92af-408c-1c47f3dd4c43"
+  }
+}
