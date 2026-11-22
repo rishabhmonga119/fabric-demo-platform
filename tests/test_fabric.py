@@ -2,7 +2,8 @@ import json
 from pathlib import Path
 import sys
 import unittest
-from unittest.mock import MagicMock, patch
+from contextlib import asynccontextmanager
+from unittest.mock import AsyncMock, MagicMock, patch
 from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
@@ -157,6 +158,40 @@ class JsonApiGuardTests(unittest.TestCase):
             self.assertEqual(api.request("GET", "/v1/operations/op"), {"status": "Running"})
             self.assertEqual(api.request("GET", "/v1/operations/op", with_response_info=True),
                              {"status_code": 200, "retry_after": "30", "body": {"status": "Running"}})
+
+
+class DataAgentMcpTests(unittest.IsolatedAsyncioTestCase):
+    async def run_question(self, is_error=False):
+        from mcp import types
+        from verify_data_agent import query_agent
+        session = MagicMock()
+        session.initialize = AsyncMock()
+        session.list_tools = AsyncMock(return_value=types.ListToolsResult(tools=[
+            types.Tool(name="ask", inputSchema={"type": "object",
+                       "properties": {"question": {"type": "string"}}, "required": ["question"]})]))
+        session.call_tool = AsyncMock(return_value=types.CallToolResult(
+            content=[types.TextContent(type="text", text="actual answer")], isError=is_error))
+        container = MagicMock()
+        container.__aenter__.return_value = session
+
+        @asynccontextmanager
+        async def transport(url, **kwargs):
+            yield None, None
+
+        with patch("httpx2.AsyncClient"), \
+                patch("mcp.ClientSession", return_value=container), \
+                patch("mcp.client.streamable_http.streamable_http_client", transport):
+            result = await query_agent("https://api.fabric.microsoft.com/agent",
+                                       {"x-ms-fabric-skill": "e2e-medallion-architecture"}, "question")
+        session.call_tool.assert_awaited_once_with("ask", {"question": "question"})
+        return result
+
+    async def test_mcp2_question_discovery_and_two_stream_transport_return_real_answer(self):
+        self.assertEqual(await self.run_question(), "actual answer")
+
+    async def test_mcp_tool_error_is_not_a_successful_answer(self):
+        with self.assertRaises(http_api.ApiError):
+            await self.run_question(is_error=True)
 
 
 class LakehouseLroTests(unittest.TestCase):

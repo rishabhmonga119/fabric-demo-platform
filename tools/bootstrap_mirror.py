@@ -1,4 +1,4 @@
-"""Verify/share source connections and create the Dev Gold-only mirrored catalog."""
+"""Create a stage-isolated Gold mirrored catalog; Dev also verifies connection sharing."""
 
 import argparse
 from base64 import b64decode, b64encode
@@ -26,13 +26,17 @@ def mirror_definition(catalog: str, connection_id: str) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--stage", choices=("dev", "test", "prod"), default="dev")
+    parser.add_argument("--approved-prod", action="store_true")
     args = parser.parse_args()
     verify_context()
+    if args.stage == "prod" and not args.approved_prod:
+        raise ContextError("Explicit production deployment approval is required.")
     config = load_config()
     api = Api("https://api.fabric.microsoft.com", config["tenant"]["id"], skill="sqldw-cli")
     connections = api.list("/v1/connections")
     principal = config["entra"]["application"]["service_principal_id"]
-    for key, connection in config["fabric"]["connections"].items():
+    for key, connection in (config["fabric"]["connections"].items() if args.stage == "dev" else []):
         matches = [item for item in connections if item.get("displayName") == connection["name"]]
         if len(matches) != 1:
             raise ContextError(f"Expected one user-created connection {connection['name']}.")
@@ -65,15 +69,15 @@ def main() -> None:
             connection["id"] = item["id"]
             save_config(config)
             record(f"Verified user-created `{connection['name']}` connection `{item['id']}` and CI/CD User access; credentials untouched. Skills: common/COMMON-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md; official connections roleAssignments contract.")
-    stage = config["environments"]["dev"]
-    if stage["databricks_catalog"] != "demo_dev":
-        raise ContextError("Dev mirror catalog differs from the fixed stage binding.")
+    stage = config["environments"][args.stage]
+    if stage["databricks_catalog"] != "demo_" + args.stage:
+        raise ContextError("Mirror catalog differs from the fixed stage binding.")
     workspace_id = stage["workspace_id"]
     workspace = api.request("GET", f"/v1/workspaces/{workspace_id}")
     capacity = [item for item in api.list("/v1/capacities") if item["id"] == config["fabric"]["capacity_id"]]
     if workspace["capacityId"] != config["fabric"]["capacity_id"] or len(capacity) != 1 or \
             capacity[0]["sku"] != config["cost_guardrails"]["fabric_sku"] or capacity[0]["state"] != "Active":
-        raise ContextError(f"Dev mirror workspace/capacity differs from approved Active {config['cost_guardrails']['fabric_sku']}.")
+        raise ContextError(f"Mirror workspace/capacity differs from approved Active {config['cost_guardrails']['fabric_sku']}.")
     name = "MIR_UC_Gold"
     matches = [item for item in api.list(f"/v1/workspaces/{workspace_id}/items?type={TYPE}")
                if item["displayName"] == name]
@@ -90,7 +94,7 @@ def main() -> None:
         definition = mirror_definition(stage["databricks_catalog"], connection_id)
         # ITEM-DEFINITIONS-CORE.md Other Item Types; mirrored-azuredatabricks-unitycatalog-definition.
         payload = {"displayName": name, "type": TYPE,
-                   "description": f"{MARKER}: Dev Unity Catalog Gold only; future Gold changes auto-sync.",
+                   "description": f"{MARKER}: {args.stage.title()} Unity Catalog Gold only; future Gold changes auto-sync.",
                    "definition": {"parts": [{"path": "definition.json", "payloadType": "InlineBase64",
                                              "payload": b64encode(json.dumps(definition).encode()).decode()}]}}
         item = create_item(api, f"/v1/workspaces/{workspace_id}/items", payload, args.dry_run)

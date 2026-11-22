@@ -447,20 +447,43 @@ For every API you call, cite the Skills for Fabric reference file you used.
 Create .github/workflows/deploy.yml:
 - on: push to main (paths: fabric/**), workflow_dispatch (input stage: test|prod|both).
 - permissions: id-token: write, contents: read.
-- job update-dev: azure/login (OIDC, sp-fabric-demo-cicd) → python tools/git_update_dev.py
-  (Fabric REST updateFromGit for DEMO-Analytics-Dev, conflict resolution PreferRemote).
-- job deploy-test: needs update-dev, environment: test → deploy.py --stage test →
-  post_deploy.py --stage test → tools/verify.py --stage test.
-- job deploy-prod: needs deploy-test, environment: prod (required reviewer = me) → same for prod.
-- Show a step summary with item counts and the env_marker check.
-Also create .github/workflows/pr-check.yml: on pull_request → pytest + a fabric-cicd
-dry-run/validation of parameter.yml.
+- Do not update Dev from this Test/Prod workflow.
+- job preflight: Azure OIDC, approved app/tenant/repository context checks, read-only
+  fabric-cicd dry-runs for the selected stages.
+- job deploy-test: needs preflight, environment: test → deploy.py --stage test
+  --phase ingest → deploy.py --stage test --phase analytics → verify.py --stage test
+  --metadata-only.
+- job deploy-prod: needs preflight and successful/skipped deploy-test, environment:
+  prod (required reviewer = me) → same metadata-only phases with --approved-prod.
+- Add validate_only input: run OIDC preflight but skip both deployment jobs.
+- Show metadata scope/binding results and explicitly state that env_marker and
+  business-data checks are a separate user-authenticated step, not a successful skip.
+Also create .github/workflows/pr-check.yml: on pull_request → existing unittest
+suite + the fabric-cicd parameter parser offline for every stage/phase.
 ```
 
 **Manual (GitHub):** environments `test` and `prod`; `prod` with **required reviewer** (you); secrets/vars: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `FABRIC_CAPACITY_ID` (variables, no client secret). Branch protection on `main`: PR required; allow admins to bypass (needed for reset).
 
-**First run:** `gh workflow run deploy.yml -f stage=both` → approve Prod.
+**Approved identity split:** GitHub OIDC uses sp-fabric-demo-cicd for metadata
+only. Local changes retain the original three admin-user context checks.
+PL_Refresh, model data refresh, row counts, rendered pages and Data Agent answers
+remain a separate DEMO-user-authenticated acceptance step. The current Spark SQL
+reader does not support service principals. Initial stage mirrors, lakehouses and
+transformed shortcuts must exist before OIDC metadata deployment.
+
+**First validation:** `gh workflow run deploy.yml -f stage=prod -f validate_only=true`
+does not change any workspace. Normal deployment is `-f stage=both` without
+validate_only; approve Prod. Do not dispatch Test deployment during an explicitly
+Prod-only rollout.
 **Check:** Test shows `env_marker = 'test'`, Prod `'prod'`; reports render; shortcuts point to the stage's own folder/catalog.
+
+For report-only corrections, use `tools/deploy.py --stage test --phase report`
+to avoid republishing models, notebooks, ontology, or agent. The report's source
+caption is parameterized for Test/Prod. Use `tools/verify.py --stage test
+--report-only --report-preview-dir <new-local-report-directory>` to check its
+binding/caption and download the deployed PBIR for rendering; this does not
+rerun the successful model refresh. Add `--dry-run` for a read-only preflight.
+Never unpack over durable source files.
 
 ---
 

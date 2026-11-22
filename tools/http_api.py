@@ -10,7 +10,7 @@ from uuid import UUID
 from azure.identity import AzureCliCredential
 from azure.core.credentials import TokenCredential
 
-from common import ContextError, verify_context
+from common import ContextError, is_metadata_ci, verify_context, verify_metadata_request
 
 
 class ApiError(RuntimeError):
@@ -37,7 +37,7 @@ class Api:
         self.base = base
         self.skill = skill
         self.credential = credential if credential is not None else \
-            AzureCliCredential(tenant_id=tenant_id, process_timeout=30)
+            AzureCliCredential(process_timeout=30, **({} if is_metadata_ci() else {"tenant_id": tenant_id}))
         self.opener = build_opener(NoRedirects())
 
     def request(self, method: str, endpoint: str, payload: dict | bytes | None = None,
@@ -47,6 +47,7 @@ class Api:
         parsed = urlparse(url)
         if parsed.scheme != "https" or parsed.netloc != urlparse(self.base).netloc:
             raise ContextError("Refusing credentials for an unexpected API origin.")
+        verify_metadata_request(method, url, payload)
         mutation = method != "GET"
         for attempt in range(3):
             if mutation:

@@ -43,7 +43,7 @@ Fabric CLI installation and authentication follow the
 ## Cost and safety
 
 Use the existing Fabric capacity at its explicitly approved configured SKU
-(currently F8); automation must not resize it. Provision only Step 1's storage,
+(currently F4); automation must not resize it. Provision only Step 1's storage,
 access connector and one Premium Databricks workspace. Use serverless or
 single-node compute; persistent compute must auto-terminate after 15 minutes.
 Never delete or overwrite pre-existing resources without explicit permission.
@@ -144,3 +144,68 @@ password resets remain human checkpoints; secrets must never be saved here.
 
 Do not start Step 2 until Unity Catalog, external-access grants and storage
 checks pass. An ARM deployment marked `Succeeded` alone is not a completed step.
+
+## Deployment and refresh identities
+
+[The deployment workflow](.github/workflows/deploy.yml) uses GitHub OIDC and
+`sp-fabric-demo-cicd` for **metadata-only** Test/Prod deployment with fabric-cicd.
+It publishes the Variable Library, notebooks, pipeline, model, report, ontology,
+and Data Agent definitions. It does not update Dev, run Spark, refresh business
+data, or claim that row counts and `env_marker` were checked. Prod requires the
+repository owner's environment approval. No client secret or Azure subscription
+role is required.
+
+CI has its own explicit guard: approved tenant/application/SP object, immutable
+repository/owner IDs, owner-triggered main-branch workflow, target stage and F4.
+The original Azure/Fabric/GitHub **admin-user checks remain unchanged locally**.
+CI API guards reject cross-stage writes, data-refresh jobs, shortcuts,
+infrastructure creation, deletions, and permission changes.
+
+The current Spark SQL-endpoint reader supports interactive Entra users, not
+service principals. Keep `NB_Clean_Forecast` as Python and `NB_Integrate` as
+PySpark with Spark SQL joins/PySpark writes on the Starter Pool, without a custom
+Environment. Refresh and data acceptance are a **separate user-authenticated
+step**, not a skipped or falsely successful CI task:
+
+```powershell
+.\.venv\Scripts\python.exe .\tools\check_context.py --dry-run
+.\.venv\Scripts\python.exe .\tools\bootstrap_refresh_pipeline.py --stage prod --run --approved-prod --dry-run
+.\.venv\Scripts\python.exe .\tools\bootstrap_refresh_pipeline.py --stage prod --run --approved-prod
+.\.venv\Scripts\python.exe .\tools\post_deploy.py --stage prod --approved-prod
+.\.venv\Scripts\python.exe .\tools\verify.py --stage prod --approved-prod
+.\.venv\Scripts\python.exe .\tools\verify_data_agent.py --stage prod --approved-prod --publish --dry-run
+.\.venv\Scripts\python.exe .\tools\verify_data_agent.py --stage prod --approved-prod --publish
+```
+
+Use `--stage test` without the Prod approval flag for Test. After data acceptance,
+check both rendered report pages and actual Data Agent answers. External mirror,
+lakehouse and shortcut preparation are initial-stage prerequisites, not OIDC
+metadata deployment.
+
+Read-only OIDC validation can be dispatched without deploying either workspace:
+
+```powershell
+.\.venv\Scripts\python.exe .\tools\run_oidc_check.py --metadata-validation --stage both --dry-run
+.\.venv\Scripts\python.exe .\tools\run_oidc_check.py --metadata-validation --stage both
+```
+
+[PR checks](.github/workflows/pr-check.yml) run the repository tests and the same
+fabric-cicd parameter parser offline, without cloud credentials.
+
+Configure the owned GitHub Prod reviewer and main PR protection with
+`tools/setup_deployment_workflow.py --dry-run`, then without `--dry-run`.
+It preserves the existing Test environment/OIDC variables and makes no Fabric
+workspace or tenant-permission changes. Publishing DA_Sales for MCP queries does
+not publish it to Agent Store or Microsoft 365.
+
+### Current Data Agent blocker
+
+Prod's items, pipeline, physical rows, semantic-model measures and both report
+pages are verified. The Data Agent is published and points only to ONT_Business,
+but its real MCP answer check is **blocked**, not passed. Microsoft documents
+[a current known issue](https://learn.microsoft.com/fabric/iq/ontology/resources-troubleshooting#troubleshoot-ontology-as-data-agent-source):
+Data Agent doesn't work with an ontology that uses semantic models for binding.
+The captured ontology has those bindings. A fix requires supported V2 authoring
+to bind the ontology to managed lakehouse tables; external shortcut tables aren't
+supported by the ontology graph either. Keep the report on SM_Sales and don't
+add a standalone semantic-model source to the Data Agent as a workaround.

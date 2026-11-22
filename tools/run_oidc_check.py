@@ -15,12 +15,18 @@ from infra.deploy import record, save_config
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--metadata-validation", action="store_true",
+                        help="Validate the metadata deployment workflow with no workspace writes.")
+    parser.add_argument("--stage", choices=("test", "prod", "both"), default="prod")
     args = parser.parse_args()
     verify_context()
     config = load_config()
     gh = cli("gh")
     repository = f"{config['github']['owner']}/{config['github']['repository']}"
-    command = [gh, "workflow", "run", "oidc-check.yml", "--repo", repository, "--ref", "main"]
+    workflow = "deploy.yml" if args.metadata_validation else "oidc-check.yml"
+    command = [gh, "workflow", "run", workflow, "--repo", repository, "--ref", "main"]
+    if args.metadata_validation:
+        command += ["-f", f"stage={args.stage}", "-f", "validate_only=true"]
     if args.dry_run:
         mutate(command, dry_run=True)
         print("DRY-RUN: poll the matching workflow run; no dispatch performed.")
@@ -31,7 +37,7 @@ def main() -> None:
     deadline = time.monotonic() + 900
     while time.monotonic() < deadline:
         runs = json.loads(run([
-            gh, "run", "list", "--repo", repository, "--workflow", "oidc-check.yml",
+            gh, "run", "list", "--repo", repository, "--workflow", workflow,
             "--branch", "main", "--event", "workflow_dispatch", "--limit", "10",
             "--json", "databaseId,status,conclusion,url,headSha,createdAt"
         ]))
@@ -49,12 +55,15 @@ def main() -> None:
                 if item["conclusion"] != "success":
                     record(f"OIDC check FAILED: `{item['url']}`.")
                     raise ContextError(f"OIDC workflow failed: {item['url']}")
-                config["github"]["oidc_check"] = {
+                state_key = "metadata_validation" if args.metadata_validation else "oidc_check"
+                config["github"][state_key] = {
                     "run_id": item["databaseId"], "url": item["url"],
                     "commit": sha, "result": "success",
                 }
                 save_config(config)
-                record(f"Step 2 Check: GitHub OIDC SP lists Test items PASS; `{item['url']}`.")
+                message = f"Step 6 metadata-only OIDC/SDK preflight for {args.stage} PASS; no workspace changes" \
+                    if args.metadata_validation else "Step 2 Check: GitHub OIDC SP lists Test items PASS"
+                record(f"{message}; `{item['url']}`.")
                 print(f"OIDC access check: PASS ({item['url']})")
                 return
         time.sleep(10)

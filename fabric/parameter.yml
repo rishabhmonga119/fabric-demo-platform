@@ -1,0 +1,82 @@
+find_replace:
+  - find_value: "3fa9b173-f000-4529-a4f7-00d0d6a8d136"
+    replace_value:
+      test: "$workspace.$id"
+      prod: "$workspace.$id"
+    item_type: [Notebook, DataPipeline, SemanticModel, Report, Ontology, DataAgent]
+  - find_value: "00000000-0000-0000-0000-000000000000"
+    replace_value:
+      test: "$workspace.$id"
+      prod: "$workspace.$id"
+    item_type: [SemanticModel, Ontology, DataAgent]
+  - find_value: "fd2d2f87-dff9-4974-b943-1d45cc2fcd90"
+    replace_value:
+      test: "$items.Lakehouse.LH_Landing.$id"
+      prod: "$items.Lakehouse.LH_Landing.$id"
+    item_type: [Notebook, SemanticModel, Ontology]
+  - find_value: "cc2fcd90-1d45-b943-4974-dff9fd2d2f87"
+    replace_value:
+      test: "$items.Lakehouse.LH_Landing.$id"
+      prod: "$items.Lakehouse.LH_Landing.$id"
+    item_type: [Notebook, SemanticModel, Ontology]
+  - find_value: "a8a49dc0-330e-4a63-8280-dccb057b4cde"
+    replace_value:
+      test: "$items.Lakehouse.LH_Curated.$id"
+      prod: "$items.Lakehouse.LH_Curated.$id"
+    item_type: [Notebook, SemanticModel, Ontology]
+  - find_value: "057b4cde-dccb-8280-4a63-330ea8a49dc0"
+    replace_value:
+      test: "$items.Lakehouse.LH_Curated.$id"
+      prod: "$items.Lakehouse.LH_Curated.$id"
+    item_type: [Notebook, SemanticModel, Ontology]
+  - find_value: "f3dd4c43-1c47-408c-92af-af5bea6fd78c"
+    replace_value:
+      test: "$items.SemanticModel.SM_Sales.$id"
+      prod: "$items.SemanticModel.SM_Sales.$id"
+    item_type: [Report, Ontology]
+  - find_value: "ea6fd78c-af5b-92af-408c-1c47f3dd4c43"
+    replace_value:
+      test: "$items.SemanticModel.SM_Sales.$id"
+      prod: "$items.SemanticModel.SM_Sales.$id"
+    item_type: [Report, Ontology]
+  - find_value: "f561f6f6-ebce-4c34-99c8-1457da45a9d8"
+    replace_value:
+      test: "$items.Notebook.NB_Clean_Forecast.$id"
+      prod: "$items.Notebook.NB_Clean_Forecast.$id"
+    item_type: DataPipeline
+  - find_value: "a1fcd41e-f5b3-4f06-9f05-dd91004eed34"
+    replace_value:
+      test: "$items.Notebook.NB_Integrate.$id"
+      prod: "$items.Notebook.NB_Integrate.$id"
+    item_type: DataPipeline
+  - find_value: "2cf382af-fb83-45e5-8940-f3af5d85a6c7"
+    replace_value:
+      test: "$items.Ontology.ONT_Business.$id"
+      prod: "$items.Ontology.ONT_Business.$id"
+    item_type: DataAgent
+  - find_value: "5d85a6c7-f3af-8940-45e5-fb832cf382af"
+    replace_value:
+      test: "$items.Ontology.ONT_Business.$id"
+      prod: "$items.Ontology.ONT_Business.$id"
+    item_type: DataAgent
+  - find_value: "stage = 'dev'"
+    replace_value:
+      test: "stage = 'test'"
+      prod: "stage = 'prod'"
+    item_type: Notebook
+  - find_value: "DEMO-Analytics-Dev"
+    replace_value:
+      test: "$workspace.$name"
+      prod: "$workspace.$name"
+    item_type: [Notebook, Ontology]
+  - find_value: "WORKSPACE_NAME_PLACEHOLDER"
+    replace_value:
+      test: "$workspace.$name_encoded"
+      prod: "$workspace.$name_encoded"
+    item_type: Ontology
+  - find_value: "Source: SM_Sales, Dev."
+    replace_value:
+      test: "Source: SM_Sales, Test."
+      prod: "Source: SM_Sales, Prod."
+    item_type: Report
+    item_name: RPT_Sales

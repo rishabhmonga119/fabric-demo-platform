@@ -1482,6 +1482,134 @@ Step 4 commit `8591cd6e6117ff30181814e903e9b224d83ea9fa` pushed and remote HEAD 
 
 ### Step 5 complete - workspace capture and source handoff
 
+### Step 6 - Test accepted; GitHub Actions and Prod pending
+
+Current status, 2026-11-22:
+
+- All 11 requested Test items are deployed. The first Test pipeline completed;
+  physical Curated output and the live model query both verified 10,304 rows,
+  marker `test`, and the intended Jan 2025-Nov 2026 range.
+- Test SM_Sales `52c8a3a4-5da4-4dde-b239-effa95b8ca55` refreshed successfully.
+  Seven baseline measures and the 730-day calendar passed. The Data Agent
+  references the Test ontology only; the report still uses SM_Sales.
+- Test RPT_Sales `d2e7b370-490d-4be3-8c8e-7c82386e76a6` passed live binding,
+  deployed-definition, and both-page screenshot checks. Margin % renders 26.7%.
+  The deployed Margin footer now correctly says `Source: SM_Sales, Test.`
+  Initial captures caught blank/faded page transitions; settled active-page
+  captures proved complete rendering without changing the layout.
+- Added the report stage-caption parameter and `--phase report`, so this
+  correction republished only RPT_Sales through fabric-cicd. The successful
+  pipeline/model refresh was not repeated. Report verification supports
+  `--report-only --report-preview-dir <new-local-directory>` and uses the
+  documented PBIR getDefinition endpoint plus CLI unpack.
+- The report-only dry-run initially stopped on three out-of-scope,
+  ontology-named supporting items: Eventhouse
+  `14dc951b-770e-4d6a-a472-cea7e6e4d011`, GraphModel
+  `20c9d46d-4686-4f49-999b-639a4d6cc362`, and KQLDatabase
+  `3e73ccf4-acb0-41ea-9450-cdbfa1ec9854`. Narrowed ownership checks to the
+  selected publish types; out-of-scope items remain untouched and orphan
+  deletion remains disabled.
+- Commands: `python -m py_compile tools\deploy.py tools\verify.py`;
+  `python tools\verify.py --stage test --dry-run`;
+  `python tools\verify.py --stage test`;
+  `python tools\deploy.py --stage test --phase report --dry-run`;
+  `python tools\deploy.py --stage test --phase report`;
+  `python tools\verify.py --stage test --report-only --report-preview-dir ...`.
+  Deployed PBIR validation passed with zero errors/warnings; service preview,
+  both-page capture, and settled-image review passed against the Test model.
+- Report skill loaded from
+  `C:\Users\rishabhmonga\.copilot\installed-plugins\fabric-collection\powerbi-authoring\skills\powerbi-report-cli\SKILL.md`;
+  references: `references/management.md`, `management-part-02.md`,
+  `authoring.md`, and `authoring/preview*.md`, `screenshot-review.md`.
+  Deployment references: fabric-skills `common/COMMON-CORE.md`,
+  `common/COMMON-CLI.md`, and
+  https://microsoft.github.io/fabric-cicd/latest/how_to/parameterization/.
+- GitHub Actions deployment is not wired, Prod is not deployed, and Step 6
+  is not complete. Hosted OIDC signs in as the approved service principal,
+  which cannot satisfy the current local admin-user/CLI identity guard.
+  That guard has not been relaxed. Microsoft also explicitly documents that
+  the Spark SQL-endpoint connector supports interactive Entra users, not
+  service principals:
+  https://learn.microsoft.com/en-us/fabric/data-engineering/spark-data-warehouse-connector#authentication.
+  Deployment/refresh identity and the initial Prod approval require an
+  explicit decision; no SP-compatible Spark refresh is claimed.
+
+Initial Prod deployment and CI split approved by the user after Test acceptance:
+
+- Deploy initial Prod locally using fabric-cicd under the verified DEMO admin
+  on the existing F4; verify items, stage-local rows, report rendering, and
+  actual Data Agent answers.
+- Then configure metadata-only GitHub Actions/OIDC with sp-fabric-demo-cicd.
+  Keep data refresh and Spark SQL reads user-authenticated as a separate step,
+  and document the split in README.
+- Do not modify Dev or Test during this rollout. Stop for any new tenant
+  setting or permission grant. No such change is currently authorized.
+
+Prod checkpoint, 2026-11-22:
+
+- All 11 requested Prod items were deployed, with IDs in environments.yml.
+  MIR_UC_Gold is bound to `demo_prod.gold`; raw/standard SharePoint targets are
+  `Forecasts/Prod/raw` and `Forecasts/Prod/standard`. The user created the Excel
+  transformation in the Prod UI.
+- First scoped forecast metadata refresh found no Delta log while the new
+  transformation was still materializing. A later scoped refresh returned
+  NotRun with a successful sync timestamp, and the SQL MCP verified **3,696**
+  actual rows in `forecast.forecast_standard`. No table was recreated.
+- The first Prod PL_Refresh completed once. SQL MCP verified
+  `dbo.sales_vs_forecast`: **10,304** rows, only marker `prod`,
+  Jan 2025-Nov 2026, actual hl **4,488,091.02**, revenue EUR
+  **288,517,979.92**, and margin EUR **76,975,278.66**.
+- Prod model initial refresh and seven-measure/calendar/stage checks passed.
+  Deployed report PBIR passed validation with zero errors/warnings. Both pages
+  passed actual screenshot review, including the settled **26.7%** margin card
+  and correct `Source: SM_Sales, Prod.` caption. Temporary screenshots were
+  cleaned and the visible Prod preview retained.
+- Published the ontology-only Prod Data Agent for its public MCP endpoint,
+  not Agent Store/M365. Added a genuine runtime verifier using the official
+  MCP client. Corrected MCP 2 differences from older documentation examples:
+  two transport streams and snake-case schema/error attributes. Focused
+  context/API/MCP tests passed (20 tests); no full unchanged-data suite rerun.
+- The actual Data Agent question returned a content-unavailable refusal,
+  not the expected baseline. Its answer check is **blocked**. Microsoft states
+  that Data Agent currently doesn't work with semantic-model-bound ontologies:
+  https://learn.microsoft.com/fabric/iq/ontology/resources-troubleshooting#troubleshoot-ontology-as-data-agent-source.
+  The captured ontology uses those bindings. No safety controls were bypassed,
+  no unsupported V1 definition substituted, and no standalone model source
+  added to DA_Sales. Rebinding V2 to supported managed lakehouse data is a
+  separate required fix; agent answers are not claimed successful.
+- Metadata-only OIDC workflow and PR checks are implemented. GitHub Prod
+  reviewer/main PR protection readback passed; existing Test environment and
+  OIDC variables were preserved. No tenant setting or new permission grant
+  was made. Read-only hosted OIDC/SDK verification is pending push/dispatch.
+- Step 6 is not fully accepted while the Data Agent runtime check is blocked.
+  A checkpoint push uses `[skip ci]` so introducing the workflow/parameters
+  does not automatically redeploy Test during this Prod-only rollout.
+
+Earlier ingestion and source-handoff notes below are retained as audit history.
+
+- Step 5 automation commit `ea291684c7914fd2ec5c556701246e8523b47633`
+  was pushed and remote main verified.
+- Created Test MIR_UC_Gold over `demo_test.gold`, schema-enabled LH_Landing
+  and LH_Curated through their documented APIs. No stage data was copied.
+- Published Test VL_Config, NB_Clean_Forecast, NB_Integrate and PL_Refresh
+  using fabric-cicd. Parameters are narrowed to each publish phase so the
+  library cannot silently skip notebook workspace/lakehouse replacements.
+- Source staging includes only Git-tracked files, not live `.pbi` browser
+  profiles. The library's regional LRO Location could not receive credentials;
+  the repository's same-origin API/LRO transport was used instead. Accepted
+  operations are recorded and resumed, not blindly resubmitted.
+- Verified both notebooks have `stage = 'test'`, the Test workspace ID,
+  and no Dev workspace reference. Verified raw SharePoint Test folder and
+  Test Gold mirror shortcut targets, Starter Pool/no custom Environment,
+  and active Variable Library value set `test`.
+- SQL metadata check returned no `forecast.forecast_standard` table in
+  Test LH_Landing. Excel preview transformation is not in the captured
+  shortcut metadata and has no documented public creation payload.
+  User chose to create it in Test UI after Computer Use detected active
+  user input. The first pipeline run and analytics publish wait on that input.
+- Prod has not been deployed. Its deployment remains gated after Test
+  data/binding verification and production approval.
+
 - All 11 requested Dev items are captured in Git at
   `1f6056d485fe57ad7f10c5b849e464be9ff954d6`. Workspace and remote heads match,
   with zero pending changes. GitHub credential write authorization was fixed
@@ -1611,3 +1739,125 @@ Step 4 commit `8591cd6e6117ff30181814e903e9b224d83ea9fa` pushed and remote HEAD 
 - 2026-11-22T11:15:23+00:00: Step 5 source capture integrated: all 11 item folders from Git commit `1f6056d485fe57ad7f10c5b849e464be9ff954d6`, actual logical IDs and opaque user-authored model/ontology/agent state preserved. No unrelated paths or preview caches touched.
 
 - 2026-11-22T11:46:49+00:00: Step 5 source capture integrated: all 11 item folders from Git commit `1f6056d485fe57ad7f10c5b849e464be9ff954d6`, actual logical IDs and opaque user-authored model/ontology/agent state preserved. No unrelated paths or preview caches touched.
+
+- 2026-11-22T16:59:06+00:00: Created/verified `MIR_UC_Gold`: `f9e0ebdb-f691-4b61-9e2d-033b6bdd6d70`, catalog `demo_test`, gold only, autoSync Enabled. Skill: common/ITEM-DEFINITIONS-CORE.md Other Item Types and its mirrored Azure Databricks definition spec. Data-table verification pending.
+
+- 2026-11-22T17:00:40+00:00: Created/verified owned Test `LH_Landing`: `8f144ba3-441b-4d52-b511-c31e6723656f`; skill references: fabric-skills/common/COMMON-CORE.md; COMMON-CLI.md; SPARK-AUTHORING-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md.
+
+- 2026-11-22T17:00:55+00:00: Test `LH_Landing` Check: schema-enabled dbo, OneLake paths and SQL endpoint Success PASS.
+
+- 2026-11-22T17:01:09+00:00: Created/verified owned Test `LH_Curated`: `131b3d5b-5c57-4f24-97de-2ba407db823d`; skill references: fabric-skills/common/COMMON-CORE.md; COMMON-CLI.md; SPARK-AUTHORING-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md.
+
+- 2026-11-22T17:01:24+00:00: Test `LH_Curated` Check: schema-enabled dbo, OneLake paths and SQL endpoint Success PASS.
+
+- 2026-11-22T17:10:56+00:00: Starting test/ingest fabric-cicd deployment with per-write context guards. Lakehouse/mirror preparation and shortcuts use their supported post-deploy APIs; no orphan deletion or paid-resource creation.
+
+- 2026-11-22T17:15:18+00:00: Starting test/ingest fabric-cicd deployment with per-write context guards. Lakehouse/mirror preparation and shortcuts use their supported post-deploy APIs; no orphan deletion or paid-resource creation.
+
+- 2026-11-22T17:19:13+00:00: Stage deployment blocked: An unrecorded stage item exists; no overwrite.
+
+- 2026-11-22T17:21:24+00:00: Recovered delayed visibility of owned test item `VL_Config`: `dc23655e-cfe6-481c-804a-1c3d2793138b`; no duplicate creation.
+
+- 2026-11-22T17:21:27+00:00: Starting test/ingest fabric-cicd deployment with per-write context guards. Lakehouse/mirror preparation and shortcuts use their supported post-deploy APIs; no orphan deletion or paid-resource creation.
+
+- 2026-11-22T17:28:02+00:00: Starting test/ingest fabric-cicd deployment with per-write context guards. Lakehouse/mirror preparation and shortcuts use their supported post-deploy APIs; no orphan deletion or paid-resource creation.
+
+- 2026-11-22T17:29:49+00:00: test/ingest metadata deployment PASS: NB_Clean_Forecast, NB_Integrate, PL_Refresh, VL_Config. References: common/COMMON-CORE.md; https://microsoft.github.io/fabric-cicd/latest/how_to/parameterization/.
+
+- 2026-11-22T17:36:48+00:00: test LH_Landing/raw_forecasts target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T17:37:02+00:00: test LH_Curated/gold target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T17:37:08+00:00: test ingestion metadata ready: stage shortcuts, Starter Pool/no custom Environment, active Variable Library value set verified. Excel preview standard transformation must be created in the UI if absent; no unsupported payload.
+
+- 2026-11-22T18:04:56+00:00: Scoped LH_Landing.forecast SQL metadata refresh checked for forecast_standard; previously synced NotRun tables: []; recreateTables=false; source tables unchanged.
+
+- 2026-11-22T18:07:59+00:00: Started/monitoring DEMO-Analytics-Test PL_Refresh `4efa540c-75c9-4a3e-b17b-ab6cec39ad0b`.
+
+- 2026-11-22T18:10:43+00:00: DEMO-Analytics-Test PL_Refresh Completed; both notebook dependencies honored.
+
+- 2026-11-22T18:20:38+00:00: test LH_Landing/raw_forecasts target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T18:20:44+00:00: test LH_Curated/gold target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T18:20:58+00:00: test LH_Curated/forecast_clean target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T18:21:04+00:00: test ingestion metadata ready: stage shortcuts, Starter Pool/no custom Environment, active Variable Library value set verified. Excel preview standard transformation must be created in the UI if absent; no unsupported payload.
+
+- 2026-11-22T18:21:37+00:00: Starting test/analytics fabric-cicd deployment with per-write context guards. Lakehouse/mirror preparation and shortcuts use their supported post-deploy APIs; no orphan deletion or paid-resource creation.
+
+- 2026-11-22T18:26:03+00:00: Starting test/analytics fabric-cicd deployment with per-write context guards. Lakehouse/mirror preparation and shortcuts use their supported post-deploy APIs; no orphan deletion or paid-resource creation.
+
+- 2026-11-22T18:29:50+00:00: test/analytics metadata deployment PASS: DA_Sales, ONT_Business, RPT_Sales, SM_Sales. References: common/COMMON-CORE.md; https://microsoft.github.io/fabric-cicd/latest/how_to/parameterization/.
+
+- 2026-11-22T18:34:23+00:00: Started/monitoring SM_Sales refresh `2e43156a-d4e5-4bfd-b3a5-7700eca36389`.
+
+- 2026-11-22T18:34:56+00:00: SM_Sales initial refresh and seven-measure live check PASS: `{"[Actual hl]": 4488091.02, "[Forecast hl]": 2286058.24, "[Deviation hl]": -188035.14, "[Deviation %]": -0.0822529963191139, "[Revenue EUR]": 288517979.92, "[Margin EUR]": 76975278.66, "[Margin %]": 0.26679543050087773, "[Rows]": 10304, "[Calendar days]": 730, "[Stage]": "test"}`.
+
+- 2026-11-22T18:35:27+00:00: test analytics bindings PASS: stage-local Direct Lake/SSO, report model/pages, ontology-only Data Agent. Model live baseline query verified the stage marker and row count.
+
+- 2026-11-22T18:44:28+00:00: Stage deployment blocked: An unrecorded stage item exists; no overwrite.
+
+- 2026-11-22T18:46:47+00:00: Starting test/report fabric-cicd deployment with per-write context guards. Lakehouse/mirror preparation and shortcuts use their supported post-deploy APIs; no orphan deletion or paid-resource creation.
+
+- 2026-11-22T18:47:37+00:00: test/report metadata deployment PASS: RPT_Sales. References: common/COMMON-CORE.md; https://microsoft.github.io/fabric-cicd/latest/how_to/parameterization/.
+
+- 2026-11-22T18:50:00+00:00: test report binding and stage caption PASS; deployed PBIR retrieved for rendered review. Reference: powerbi-report-cli/references/management-part-02.md.
+
+- 2026-11-22T19:06:32+00:00: Created/verified `MIR_UC_Gold`: `307c660c-fa6b-41cd-85e0-fdd085ed2520`, catalog `demo_prod`, gold only, autoSync Enabled. Skill: common/ITEM-DEFINITIONS-CORE.md Other Item Types and its mirrored Azure Databricks definition spec. Data-table verification pending.
+
+- 2026-11-22T19:07:01+00:00: Created/verified owned Prod `LH_Landing`: `dffa5f8d-1221-4a23-9e5f-a693701b7eb7`; skill references: fabric-skills/common/COMMON-CORE.md; COMMON-CLI.md; SPARK-AUTHORING-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md.
+
+- 2026-11-22T19:07:16+00:00: Prod `LH_Landing` Check: schema-enabled dbo, OneLake paths and SQL endpoint Success PASS.
+
+- 2026-11-22T19:07:28+00:00: Created/verified owned Prod `LH_Curated`: `4e5c9ace-eea9-4796-94b6-48e3c1e55d91`; skill references: fabric-skills/common/COMMON-CORE.md; COMMON-CLI.md; SPARK-AUTHORING-CORE.md; skills/dataflows-cli/references/authoring/connection-management.md.
+
+- 2026-11-22T19:07:43+00:00: Prod `LH_Curated` Check: schema-enabled dbo, OneLake paths and SQL endpoint Success PASS.
+
+- 2026-11-22T19:09:35+00:00: Starting prod/ingest fabric-cicd deployment with per-write context guards. Lakehouse/mirror preparation and shortcuts use their supported post-deploy APIs; no orphan deletion or paid-resource creation.
+
+- 2026-11-22T19:11:24+00:00: prod/ingest metadata deployment PASS: NB_Clean_Forecast, NB_Integrate, PL_Refresh, VL_Config. References: common/COMMON-CORE.md; https://microsoft.github.io/fabric-cicd/latest/how_to/parameterization/.
+
+- 2026-11-22T19:13:40+00:00: prod LH_Landing/raw_forecasts target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T19:13:53+00:00: prod LH_Curated/gold target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T19:13:58+00:00: prod ingestion metadata ready: stage shortcuts, Starter Pool/no custom Environment, active Variable Library value set verified. Excel preview standard transformation must be created in the UI if absent; no unsupported payload.
+
+- 2026-11-22T19:46:31+00:00: Scoped SQL metadata refresh did not succeed: `[{"tableName": "forecast.forecast_standard", "status": "Failure", "startDateTime": "2026-11-22T19:46:27.459091Z", "endDateTime": "2026-11-22T19:46:29.6794232Z", "error": {"source": 0, "errorCode": "DeltaTableNotFound", "message": "Delta table 'Tables\\forecast\\forecast_standard\\_delta_log' not found."}}]`; source tables unchanged.
+
+- 2026-11-22T19:46:31+00:00: Forecast metadata refresh blocked: Scoped SQL metadata refresh returned a non-success table status.
+
+- 2026-11-22T19:52:04+00:00: Scoped LH_Landing.forecast SQL metadata refresh checked for forecast_standard; previously synced NotRun tables: ['forecast.forecast_standard']; recreateTables=false; source tables unchanged.
+
+- 2026-11-22T19:53:16+00:00: Started/monitoring DEMO-Analytics-Prod PL_Refresh `c205819d-d65e-4bdb-a521-a4240136188f`.
+
+- 2026-11-22T19:55:44+00:00: DEMO-Analytics-Prod PL_Refresh Completed; both notebook dependencies honored.
+
+- 2026-11-22T19:58:34+00:00: prod LH_Landing/raw_forecasts target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T19:58:39+00:00: prod LH_Curated/gold target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T19:58:52+00:00: prod LH_Curated/forecast_clean target binding PASS; reference: spark-cli common/COMMON-CORE.md OneLake Shortcuts.
+
+- 2026-11-22T19:58:59+00:00: prod ingestion metadata ready: stage shortcuts, Starter Pool/no custom Environment, active Variable Library value set verified. Excel preview standard transformation must be created in the UI if absent; no unsupported payload.
+
+- 2026-11-22T19:59:49+00:00: Starting prod/analytics fabric-cicd deployment with per-write context guards. Lakehouse/mirror preparation and shortcuts use their supported post-deploy APIs; no orphan deletion or paid-resource creation.
+
+- 2026-11-22T20:03:56+00:00: prod/analytics metadata deployment PASS: DA_Sales, ONT_Business, RPT_Sales, SM_Sales. References: common/COMMON-CORE.md; https://microsoft.github.io/fabric-cicd/latest/how_to/parameterization/.
+
+- 2026-11-22T20:07:24+00:00: Started/monitoring SM_Sales refresh `f19053a1-fad7-42de-abbc-b4e3c01a8abf`.
+
+- 2026-11-22T20:07:58+00:00: SM_Sales initial refresh and seven-measure live check PASS: `{"[Actual hl]": 4488091.02, "[Forecast hl]": 2286058.24, "[Deviation hl]": -188035.14, "[Deviation %]": -0.0822529963191139, "[Revenue EUR]": 288517979.92, "[Margin EUR]": 76975278.66, "[Margin %]": 0.26679543050087773, "[Rows]": 10304, "[Calendar days]": 730, "[Stage]": "prod"}`.
+
+- 2026-11-22T20:08:29+00:00: prod analytics bindings PASS: stage-local Direct Lake/SSO, report model/pages, ontology-only Data Agent. Model live baseline query verified the stage marker and row count.
+
+- 2026-11-22T20:11:34+00:00: Published Prod DA_Sales `40265df6-63e2-45a4-9dfa-865a134e3cdc` for MCP querying, not Agent Store/M365. Ontology-only draft preserved. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/publish-data-agent; https://learn.microsoft.com/fabric/data-science/fabric-data-agent-sdk.
+
+- 2026-11-22T20:14:41+00:00: Prod Data Agent verification blocked: ExceptionGroup('unhandled errors in a TaskGroup', [ExceptionGroup('unhandled errors in a TaskGroup', [AttributeError("'Tool' object has no attribute 'inputSchema'")])])
+
+- 2026-11-22T20:17:56+00:00: Prod Data Agent answer did not match the requested exact baseline. Question: Using ONT_Business and its bound data, for all regions, channels and packages from January 2025 through October 2026 inclusive, give total actual volume in hl, total revenue EUR, total contribution margin EUR, and env_marker. Use exact decimal totals, not abbreviated millions. State the period and units. Answer: There’s content here I can’t work with. Try asking a new question. If that doesn’t work, there might be an issue with the content in your source data.
+
+- 2026-11-22T20:17:56+00:00: Prod Data Agent verification blocked: A real Data Agent answer omitted or differed from the verified baseline.
+
+- 2026-11-22T20:30:02+00:00: GitHub metadata-only CI controls PASS: Prod environment `28183792552` requires owner review; main requires PR/validate with admin bypass. Existing Test environment and OIDC variables preserved; no tenant settings or permission grants. References: https://docs.github.com/rest/deployments/environments; https://docs.github.com/rest/branches/branch-protection; https://cli.github.com/manual/gh_variable_set.

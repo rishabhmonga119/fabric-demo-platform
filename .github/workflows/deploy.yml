@@ -1,0 +1,124 @@
+name: Fabric metadata deployment
+
+on:
+  push:
+    branches: [main]
+    paths: ['fabric/**']
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: Target stage
+        type: choice
+        options: [test, prod, both]
+        default: both
+        required: true
+      validate_only:
+        description: Verify OIDC and SDK parameters without changing any workspace
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: fabric-metadata-deployment
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  FABRIC_METADATA_CI: 'true'
+  AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  FABRIC_CAPACITY_ID: ${{ vars.FABRIC_CAPACITY_ID }}
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    env:
+      FABRIC_METADATA_READ_ONLY: 'true'
+      DEPLOY_SELECTION: ${{ inputs.stage || 'both' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+      - name: Validate selected stages with the approved OIDC principal
+        shell: bash
+        run: |
+          set -euo pipefail
+          selection="$DEPLOY_SELECTION"
+          for stage in test prod; do
+            if [[ "$selection" != both && "$selection" != "$stage" ]]; then
+              continue
+            fi
+            export FABRIC_DEPLOY_STAGE="$stage"
+            python tools/deploy.py --stage "$stage" --phase ingest --approved-prod --dry-run
+            python tools/deploy.py --stage "$stage" --phase analytics --approved-prod --dry-run
+          done
+          echo "OIDC/SDK preflight only: no item writes, Spark runs or business-data queries." >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-test:
+    needs: preflight
+    if: ${{ !inputs.validate_only && (github.event_name == 'push' || inputs.stage == 'test' || inputs.stage == 'both') }}
+    runs-on: ubuntu-latest
+    environment: test
+    env:
+      FABRIC_DEPLOY_STAGE: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+      - name: Publish Test metadata only
+        run: |
+          python tools/deploy.py --stage test --phase ingest
+          python tools/deploy.py --stage test --phase analytics
+          python tools/verify.py --stage test --metadata-only
+      - name: Record deployment scope
+        run: |
+          echo "Test: 7 definition item types deployed; stage-local model/report/ontology bindings checked." >> "$GITHUB_STEP_SUMMARY"
+          echo "No Spark/data refresh. Row counts, env_marker and rendered/agent answers require the separate DEMO-user acceptance step." >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-prod:
+    needs: [preflight, deploy-test]
+    if: ${{ always() && needs.preflight.result == 'success' && !inputs.validate_only && (needs.deploy-test.result == 'success' || needs.deploy-test.result == 'skipped') && (github.event_name == 'push' || inputs.stage == 'prod' || inputs.stage == 'both') }}
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      FABRIC_DEPLOY_STAGE: prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+      - name: Publish approved Prod metadata only
+        run: |
+          python tools/deploy.py --stage prod --phase ingest --approved-prod
+          python tools/deploy.py --stage prod --phase analytics --approved-prod
+          python tools/verify.py --stage prod --metadata-only --approved-prod
+      - name: Record deployment scope
+        run: |
+          echo "Prod: 7 definition item types deployed after environment approval; metadata bindings checked." >> "$GITHUB_STEP_SUMMARY"
+          echo "No Spark/data refresh. Run the separate DEMO-user acceptance step before treating data checks as passed." >> "$GITHUB_STEP_SUMMARY"

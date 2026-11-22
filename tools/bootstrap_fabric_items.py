@@ -1,4 +1,4 @@
-"""Provision owned schema-enabled Dev lakehouses and inspect connector prerequisites."""
+"""Provision owned stage lakehouses; Dev also inspects connector prerequisites."""
 
 import argparse
 import json
@@ -70,8 +70,12 @@ def wait_operation(api: Api, uri: str, name: str, *, retry_after: str | None = N
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--stage", choices=("dev", "test", "prod"), default="dev")
+    parser.add_argument("--approved-prod", action="store_true")
     args = parser.parse_args()
     verify_context()
+    if args.stage == "prod" and not args.approved_prod:
+        raise ContextError("Explicit production deployment approval is required.")
     config = load_config()
     api = Api("https://api.fabric.microsoft.com", config["tenant"]["id"], skill=SKILL)
     capacity = [item for item in api.list("/v1/capacities")
@@ -79,13 +83,13 @@ def main() -> None:
     if len(capacity) != 1 or capacity[0]["sku"] != config["cost_guardrails"]["fabric_sku"] or \
             capacity[0]["state"] != "Active":
         raise ContextError(f"Selected existing Fabric capacity is not the approved Active {config['cost_guardrails']['fabric_sku']}.")
-    stage = config["environments"]["dev"]
+    stage = config["environments"][args.stage]
     workspace_id = stage["workspace_id"]
     workspace = api.request("GET", f"/v1/workspaces/{workspace_id}")
     if workspace["displayName"] != stage["workspace_name"] or \
             workspace["capacityId"] != config["fabric"]["capacity_id"] or \
             workspace.get("capacityAssignmentProgress") != "Completed":
-        raise ContextError("Dev workspace name/capacity/assignment differs from the approved configuration.")
+        raise ContextError("Workspace name/capacity/assignment differs from the approved configuration.")
     items = api.list(f"/v1/workspaces/{workspace_id}/items?type=Lakehouse")
     for name, purpose in (
         ("LH_Landing", "Stage-isolated standard and raw forecast ingestion."),
@@ -108,7 +112,7 @@ def main() -> None:
         if not args.dry_run:
             stage["items"][name] = {"id": item["id"], "type": "Lakehouse"}
             save_config(config)
-            record(f"Created/verified owned Dev `{name}`: `{item['id']}`; skill references: {REFERENCES}.")
+            record(f"Created/verified owned {args.stage.title()} `{name}`: `{item['id']}`; skill references: {REFERENCES}.")
         deadline = time.monotonic() + 300
         while True:
             detail = api.request("GET", f"/v1/workspaces/{workspace_id}/lakehouses/{item['id']}")
@@ -125,8 +129,10 @@ def main() -> None:
         if not args.dry_run:
             stage["items"][name]["sql_endpoint_id"] = endpoint["id"]
             save_config(config)
-            record(f"Dev `{name}` Check: schema-enabled dbo, OneLake paths and SQL endpoint Success PASS.")
-        print(f"PASS Dev {name}: {item['id']}")
+            record(f"{args.stage.title()} `{name}` Check: schema-enabled dbo, OneLake paths and SQL endpoint Success PASS.")
+        print(f"PASS {args.stage.title()} {name}: {item['id']}")
+    if args.stage != "dev":
+        return
     # Connection reference requires live discovery; OAuth2 is explicitly not API-creatable.
     supported = api.list("/v1/connections/supportedConnectionTypes?showAllCreationMethods=true")
     connector_info = [item for item in supported

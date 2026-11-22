@@ -17,22 +17,77 @@ sys.path.insert(0, str(ROOT))
 from infra.deploy import record, save_config
 
 
+def run_pipeline(api: Api, config: dict, stage: dict, item: dict, dry_run: bool) -> None:
+    jobs_root = f"/v1/workspaces/{stage['workspace_id']}/items/{item['id']}/jobs"
+    jobs = api.list(jobs_root + "/instances")
+    active = [job for job in jobs if job["status"] not in ("Completed", "Failed", "Cancelled", "Deduped")]
+    if len(active) > 1:
+        raise ContextError("Multiple active pipeline runs; no duplicate submission.")
+    if dry_run:
+        api.request("POST", jobs_root + "/instances?jobType=Pipeline", {}, dry_run=True)
+        return
+    if active:
+        uri = api.base + jobs_root + "/instances/" + active[0]["id"]
+        delay = 10
+    else:
+        response = api.request("POST", jobs_root + "/instances?jobType=Pipeline", {},
+                               accept_operation=True, with_response_info=True)
+        uri = response["body"]["operation_uri"]
+        raw = response["retry_after"]
+        delay = int(raw) if isinstance(raw, str) and raw.isdigit() else 10
+    configured = stage["items"]["PL_Refresh"]
+    configured["last_run_id"] = urlparse(uri).path.rstrip("/").split("/")[-1]
+    configured["last_run_uri"] = uri
+    save_config(config)
+    record(f"Started/monitoring {stage['workspace_name']} PL_Refresh `{configured['last_run_id']}`.")
+    deadline = time.monotonic() + 1800
+    time.sleep(max(1, delay))
+    while time.monotonic() < deadline:
+        result = api.request("GET", uri)
+        print(f"PL_Refresh: {result['status']}", flush=True)
+        if result["status"] == "Completed":
+            configured["last_run_state"] = "Completed"
+            save_config(config)
+            record(f"{stage['workspace_name']} PL_Refresh Completed; both notebook dependencies honored.")
+            return
+        if result["status"] in ("Failed", "Cancelled", "Deduped"):
+            record(f"PL_Refresh failed: `{json.dumps(result.get('failureReason'))}`.")
+            raise ApiError(f"PL_Refresh: {json.dumps(result.get('failureReason'))}")
+        time.sleep(15)
+    raise TimeoutError("PL_Refresh did not finish within 30 minutes.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--run", action="store_true")
+    parser.add_argument("--stage", choices=("dev", "test", "prod"), default="dev")
+    parser.add_argument("--approved-prod", action="store_true")
     args = parser.parse_args()
     verify_context()
+    if args.stage == "prod" and not args.approved_prod:
+        raise ContextError("Production pipeline execution requires deployment approval.")
     config = load_config()
-    stage = config["environments"]["dev"]
+    stage = config["environments"][args.stage]
     workspace_id = stage["workspace_id"]
-    api = Api("https://api.fabric.microsoft.com", config["tenant"]["id"], skill="pipeline-migration")
+    api = Api("https://api.fabric.microsoft.com", config["tenant"]["id"],
+              skill="pipeline-migration" if args.stage == "dev" else "e2e-medallion-architecture")
     workspace = api.request("GET", f"/v1/workspaces/{workspace_id}")
     capacities = [item for item in api.list("/v1/capacities")
                   if item["id"] == config["fabric"]["capacity_id"]]
     if workspace["capacityId"] != config["fabric"]["capacity_id"] or len(capacities) != 1 or \
             capacities[0]["sku"] != config["cost_guardrails"]["fabric_sku"] or capacities[0]["state"] != "Active":
         raise ContextError("Refresh pipeline requires the approved active workspace/capacity.")
+    if args.stage != "dev":
+        if not args.run:
+            raise ContextError("Stage pipelines are deployed by fabric-cicd; this command runs an existing pipeline only.")
+        matches = [item for item in api.list(f"/v1/workspaces/{workspace_id}/items?type=DataPipeline")
+                   if item["displayName"] == "PL_Refresh"]
+        if len(matches) != 1 or matches[0]["id"] != stage["items"]["PL_Refresh"]["id"] or \
+                not (matches[0].get("description") or "").startswith(MARKER):
+            raise ContextError("Existing stage refresh pipeline is unowned/conflicting.")
+        run_pipeline(api, config, stage, matches[0], args.dry_run)
+        return
     notebooks = api.list(f"/v1/workspaces/{workspace_id}/items?type=Notebook")
     activities = []
     for name in ("NB_Clean_Forecast", "NB_Integrate"):
@@ -98,42 +153,7 @@ def main() -> None:
         record(f"Created/updated owned PL_Refresh `{item['id']}`; Python cleaning then PySpark integration, no pool/environment overrides. Skill: pipeline-migration/resources/notebook-activity-migration.md; common/ITEM-DEFINITIONS-CORE.md DataPipeline.")
     if not args.run:
         return
-    jobs_root = f"/v1/workspaces/{workspace_id}/items/{item['id']}/jobs"
-    jobs = api.list(jobs_root + "/instances")
-    active = [job for job in jobs if job["status"] not in ("Completed", "Failed", "Cancelled", "Deduped")]
-    if len(active) > 1:
-        raise ContextError("Multiple active pipeline runs; no duplicate submission.")
-    if args.dry_run:
-        api.request("POST", jobs_root + "/instances?jobType=Pipeline", {}, dry_run=True)
-        return
-    if active:
-        uri = api.base + jobs_root + "/instances/" + active[0]["id"]
-        delay = 10
-    else:
-        response = api.request("POST", jobs_root + "/instances?jobType=Pipeline", {},
-                               accept_operation=True, with_response_info=True)
-        uri = response["body"]["operation_uri"]
-        raw = response["retry_after"]
-        delay = int(raw) if isinstance(raw, str) and raw.isdigit() else 10
-    configured["last_run_id"] = urlparse(uri).path.rstrip("/").split("/")[-1]
-    configured["last_run_uri"] = uri
-    save_config(config)
-    record(f"Started/monitoring PL_Refresh `{configured['last_run_id']}`.")
-    deadline = time.monotonic() + 1800
-    time.sleep(max(1, delay))
-    while time.monotonic() < deadline:
-        result = api.request("GET", uri)
-        print(f"PL_Refresh: {result['status']}", flush=True)
-        if result["status"] == "Completed":
-            configured["last_run_state"] = "Completed"
-            save_config(config)
-            record("PL_Refresh Completed; both notebook dependencies honored.")
-            return
-        if result["status"] in ("Failed", "Cancelled", "Deduped"):
-            record(f"PL_Refresh failed: `{json.dumps(result.get('failureReason'))}`.")
-            raise ApiError(f"PL_Refresh: {json.dumps(result.get('failureReason'))}")
-        time.sleep(15)
-    raise TimeoutError("PL_Refresh did not finish within 30 minutes.")
+    run_pipeline(api, config, stage, item, args.dry_run)
 
 
 if __name__ == "__main__":

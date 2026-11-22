@@ -3,3 +3,5 @@ ms-fabric-cli
 PyYAML
 openpyxl
 nbformat
+fabric-cicd>=1.4,<2
+mcp>=2.3,<3

@@ -97,6 +97,10 @@ github:
     test:
       id: 28115104729
       name: test
+    prod:
+      id: 28183792552
+      name: prod
+      required_reviewer_id: 23618963
   owner_id: 23618963
   repository_id: 1466744419
   oidc_subject_prefix: repo:rishabhmonga119@23618963/fabric-demo-platform@1466744419
@@ -106,6 +110,11 @@ github:
     commit: 9d8d7c3a5781e1ccf1adc36f0b4989dae288dd15
     result: success
   fabric_connection_id: 9a69d679-cb80-4a4d-ba43-b30660a09347
+  metadata_deployment:
+    workflow: deploy.yml
+    refresh_identity: demo-admin-user
+    main_pr_required: true
+    admin_bypass: true
 entra:
   application:
     name: sp-fabric-demo-cicd
@@ -453,7 +462,100 @@ environments:
     storage_container: uc-test
     sharepoint_folder: Forecasts/Test
     admin_group: SG-Demo-Fabric-Admins
-    items: {}
+    items:
+      MIR_UC_Gold:
+        id: f9e0ebdb-f691-4b61-9e2d-033b6bdd6d70
+        type: MirroredAzureDatabricksCatalog
+        sql_endpoint_id: f0cf2ed4-6005-4285-b4c0-d2dc53d4781b
+      LH_Landing:
+        id: 8f144ba3-441b-4d52-b511-c31e6723656f
+        type: Lakehouse
+        sql_endpoint_id: 450f4d42-143a-4f49-bda5-80b33cc5caf8
+        shortcuts:
+          Files/raw_forecasts:
+            name: raw_forecasts
+            path: /Files
+            target:
+              type: OneDriveSharePoint
+              oneDriveSharePoint:
+                driveId: b!fl7D45miBEi-DN8YNgdCVLYZkNTPBsZKkNc3zApyYUs2ryRWykplRKoRpOUJJg1w
+                updateFabricItemSensitivity: false
+                siteId: null
+                siteUrl: null
+                subpath: /sites/DemoData/Shared Documents/Forecasts/Test/raw
+                connectionId: 5bb73026-8d9d-4ba1-9c44-91b68ac0bc95
+                location: https://caldova30465160.sharepoint.com
+      LH_Curated:
+        id: 131b3d5b-5c57-4f24-97de-2ba407db823d
+        type: Lakehouse
+        sql_endpoint_id: c9419105-ce67-4c9f-87af-9667d902915e
+        shortcuts:
+          Tables/gold:
+            name: gold
+            path: /Tables
+            target:
+              type: OneLake
+              oneLake:
+                workspaceId: 0a29b70a-6bc9-4bfc-b196-61825cf9f75a
+                itemId: f9e0ebdb-f691-4b61-9e2d-033b6bdd6d70
+                path: Tables/gold
+          Tables/dbo/forecast_clean:
+            name: forecast_clean
+            path: /Tables/dbo
+            target:
+              type: OneLake
+              oneLake:
+                workspaceId: 0a29b70a-6bc9-4bfc-b196-61825cf9f75a
+                itemId: 8f144ba3-441b-4d52-b511-c31e6723656f
+                path: Tables/forecast/forecast_clean
+      VL_Config:
+        id: dc23655e-cfe6-481c-804a-1c3d2793138b
+        type: VariableLibrary
+        active_value_set: test
+      NB_Integrate:
+        id: 2c40a5ef-efd6-4d80-9769-3d7b5107edfd
+        type: Notebook
+      NB_Clean_Forecast:
+        id: c87e68af-c1bf-424f-8489-af3977153cc9
+        type: Notebook
+      PL_Refresh:
+        id: 5c4c37e5-9e6d-43ce-98f8-83b96736cd3e
+        type: DataPipeline
+        last_run_id: 4efa540c-75c9-4a3e-b17b-ab6cec39ad0b
+        last_run_uri: https://api.fabric.microsoft.com/v1/workspaces/0a29b70a-6bc9-4bfc-b196-61825cf9f75a/items/5c4c37e5-9e6d-43ce-98f8-83b96736cd3e/jobs/instances/4efa540c-75c9-4a3e-b17b-ab6cec39ad0b
+        last_run_state: Completed
+      SM_Sales:
+        id: 52c8a3a4-5da4-4dde-b239-effa95b8ca55
+        type: SemanticModel
+        connection_binding:
+          connectivityType: Automatic
+          connectionDetails:
+            path: https://onelake.dfs.fabric.microsoft.com/0a29b70a-6bc9-4bfc-b196-61825cf9f75a/131b3d5b-5c57-4f24-97de-2ba407db823d/
+            type: AzureDataLakeStorage
+        last_refresh_id: 2e43156a-d4e5-4bfd-b3a5-7700eca36389
+        last_refresh_state: Completed
+        baseline_query:
+          '[Actual hl]': 4488091.02
+          '[Forecast hl]': 2286058.24
+          '[Deviation hl]': -188035.14
+          '[Deviation %]': -0.0822529963191139
+          '[Revenue EUR]': 288517979.92
+          '[Margin EUR]': 76975278.66
+          '[Margin %]': 0.26679543050087773
+          '[Rows]': 10304
+          '[Calendar days]': 730
+          '[Stage]': test
+      RPT_Sales:
+        id: d2e7b370-490d-4be3-8c8e-7c82386e76a6
+        type: Report
+        web_url: https://app.powerbi.com/groups/0a29b70a-6bc9-4bfc-b196-61825cf9f75a/reports/d2e7b370-490d-4be3-8c8e-7c82386e76a6
+      ONT_Business:
+        id: 1f6c8dfa-68d3-4db0-9c12-f2c9738a280f
+        type: Ontology
+      DA_Sales:
+        id: 22e0b46f-519e-47ac-9033-aa0c8b1d9381
+        type: DataAgent
+        ontology_context_pending: false
     databricks_managed_location: abfss://uc-test@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/
     databricks_catalog_storage_location: abfss://uc-test@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/19327965-c698-4679-9f7e-79e860ed1ebc
     databricks_external_location: el_uc_test
@@ -501,6 +603,7 @@ environments:
         etag: '"{79CE395A-949B-4C2E-9ACB-5B4CC178AF7F},1"'
         sha256: a974612ab2c9ae78dd2bcab2014f70151a2e9711312509f971d9c5a8f46abac5
         verified: true
+    deployment_operations: {}
   prod:
     workspace_name: DEMO-Analytics-Prod
     workspace_id: 4cd2247c-ab4c-441a-9637-f3c3d525f4c1
@@ -511,7 +614,104 @@ environments:
     viewer_groups:
     - SG-Demo-Sales-North
     - SG-Demo-Sales-South
-    items: {}
+    items:
+      MIR_UC_Gold:
+        id: 307c660c-fa6b-41cd-85e0-fdd085ed2520
+        type: MirroredAzureDatabricksCatalog
+        sql_endpoint_id: 7d20184d-b4bd-4565-b8e7-416b26576c65
+      LH_Landing:
+        id: dffa5f8d-1221-4a23-9e5f-a693701b7eb7
+        type: Lakehouse
+        sql_endpoint_id: cdcfded8-8668-40b2-a30f-5b4ea5d5f76b
+        shortcuts:
+          Files/raw_forecasts:
+            name: raw_forecasts
+            path: /Files
+            target:
+              type: OneDriveSharePoint
+              oneDriveSharePoint:
+                driveId: b!fl7D45miBEi-DN8YNgdCVLYZkNTPBsZKkNc3zApyYUs2ryRWykplRKoRpOUJJg1w
+                updateFabricItemSensitivity: false
+                siteId: null
+                siteUrl: null
+                subpath: /sites/DemoData/Shared Documents/Forecasts/Prod/raw
+                connectionId: 5bb73026-8d9d-4ba1-9c44-91b68ac0bc95
+                location: https://caldova30465160.sharepoint.com
+      LH_Curated:
+        id: 4e5c9ace-eea9-4796-94b6-48e3c1e55d91
+        type: Lakehouse
+        sql_endpoint_id: 8bc680d7-0fad-4fd5-8d2a-10a83dfa66bf
+        shortcuts:
+          Tables/gold:
+            name: gold
+            path: /Tables
+            target:
+              type: OneLake
+              oneLake:
+                workspaceId: 4cd2247c-ab4c-441a-9637-f3c3d525f4c1
+                itemId: 307c660c-fa6b-41cd-85e0-fdd085ed2520
+                path: Tables/gold
+          Tables/dbo/forecast_clean:
+            name: forecast_clean
+            path: /Tables/dbo
+            target:
+              type: OneLake
+              oneLake:
+                workspaceId: 4cd2247c-ab4c-441a-9637-f3c3d525f4c1
+                itemId: dffa5f8d-1221-4a23-9e5f-a693701b7eb7
+                path: Tables/forecast/forecast_clean
+      VL_Config:
+        id: c091eed3-5438-4557-83ac-eeacb710374d
+        type: VariableLibrary
+        active_value_set: prod
+      NB_Integrate:
+        id: bb15ccc5-d23c-47e9-9309-4f52600c3b85
+        type: Notebook
+      NB_Clean_Forecast:
+        id: 3c4991c3-f074-44fb-b791-38b7dce4aeb8
+        type: Notebook
+      PL_Refresh:
+        id: 384fad4d-64d7-4f76-afff-2d1549a626e7
+        type: DataPipeline
+        last_run_id: c205819d-d65e-4bdb-a521-a4240136188f
+        last_run_uri: https://api.fabric.microsoft.com/v1/workspaces/4cd2247c-ab4c-441a-9637-f3c3d525f4c1/items/384fad4d-64d7-4f76-afff-2d1549a626e7/jobs/instances/c205819d-d65e-4bdb-a521-a4240136188f
+        last_run_state: Completed
+      RPT_Sales:
+        id: 1793447a-f0b1-4032-ae7f-f99f4a1b9a62
+        type: Report
+        web_url: https://app.powerbi.com/groups/4cd2247c-ab4c-441a-9637-f3c3d525f4c1/reports/1793447a-f0b1-4032-ae7f-f99f4a1b9a62
+      SM_Sales:
+        id: fcd20b15-77e8-4493-970e-0c4555b56cf7
+        type: SemanticModel
+        connection_binding:
+          connectivityType: Automatic
+          connectionDetails:
+            path: https://onelake.dfs.fabric.microsoft.com/4cd2247c-ab4c-441a-9637-f3c3d525f4c1/4e5c9ace-eea9-4796-94b6-48e3c1e55d91/
+            type: AzureDataLakeStorage
+        last_refresh_id: f19053a1-fad7-42de-abbc-b4e3c01a8abf
+        last_refresh_state: Completed
+        baseline_query:
+          '[Actual hl]': 4488091.02
+          '[Forecast hl]': 2286058.24
+          '[Deviation hl]': -188035.14
+          '[Deviation %]': -0.0822529963191139
+          '[Revenue EUR]': 288517979.92
+          '[Margin EUR]': 76975278.66
+          '[Margin %]': 0.26679543050087773
+          '[Rows]': 10304
+          '[Calendar days]': 730
+          '[Stage]': prod
+      ONT_Business:
+        id: fc2f5c83-8a1d-4626-b487-971446fe982f
+        type: Ontology
+      DA_Sales:
+        id: 40265df6-63e2-45a4-9dfa-865a134e3cdc
+        type: DataAgent
+        runtime_verification_state: blocked
+        runtime_verification_reason: semantic-model-bound-ontology-known-issue
+        ontology_context_pending: false
+        published_definition_sha256: 989151ce6f3c82eb18f089fc1c0674e9bb85968ee593c7daf28c1419af90ec42
+        mcp_url: https://api.fabric.microsoft.com/v1/mcp/workspaces/4cd2247c-ab4c-441a-9637-f3c3d525f4c1/dataagents/40265df6-63e2-45a4-9dfa-865a134e3cdc/agent
     databricks_managed_location: abfss://uc-prod@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/
     databricks_catalog_storage_location: abfss://uc-prod@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/56c770b2-9622-4eb2-91a6-a047c665e3e3
     databricks_external_location: el_uc_prod
@@ -559,6 +759,7 @@ environments:
         etag: '"{D2DCE8B6-C3B5-4C74-88FA-B3565750F245},1"'
         sha256: 45dcd68a21d026869c00db7611b44ddeb9f3c924f5912c40832eee2c9c1afb19
         verified: true
+    deployment_operations: {}
 partner:
   workspace_name: DEMO-Partner-A
   workspace_id: f29bb81d-9fae-413e-bff4-0a1c56a78ac3

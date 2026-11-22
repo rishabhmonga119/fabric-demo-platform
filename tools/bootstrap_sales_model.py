@@ -32,7 +32,7 @@ def definition_parts(folder):
     return parts, sha256(json.dumps(parts, sort_keys=True).encode()).hexdigest()
 
 
-def refresh_and_check(pbi, root, configured, config):
+def refresh_and_check(pbi, root, configured, config, stage_name="dev"):
     history = pbi.list(root + "/refreshes?$top=10")
     recorded = configured.get("last_refresh_id")
     if recorded:
@@ -103,7 +103,7 @@ def refresh_and_check(pbi, root, configured, config):
         raise ApiError("Model query must return exactly one complete result row.")
     row = table["rows"][0]
     if row.get("[Rows]") != 10304 or row.get("[Calendar days]") != 730 or \
-            row.get("[Stage]") != "dev" or Decimal(str(row.get("[Actual hl]"))) != Decimal("4488091.02"):
+            row.get("[Stage]") != stage_name or Decimal(str(row.get("[Actual hl]"))) != Decimal("4488091.02"):
         raise ApiError("Model business-row count, calendar, environment or actual checksum differs.")
     measures = ("Actual hl", "Forecast hl", "Deviation hl", "Deviation %",
                 "Revenue EUR", "Margin EUR", "Margin %")

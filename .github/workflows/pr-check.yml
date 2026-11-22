@@ -1,0 +1,26 @@
+name: PR checks
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Run repository tests
+        run: python -m unittest discover -s tests
+      - name: Validate every stage parameter with fabric-cicd
+        run: |
+          python tools/deploy.py --stage test --validate-only
+          python tools/deploy.py --stage prod --validate-only
