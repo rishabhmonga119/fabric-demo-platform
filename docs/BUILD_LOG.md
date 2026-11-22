@@ -1569,21 +1569,66 @@ Prod checkpoint, 2026-11-22:
   MCP client. Corrected MCP 2 differences from older documentation examples:
   two transport streams and snake-case schema/error attributes. Focused
   context/API/MCP tests passed (20 tests); no full unchanged-data suite rerun.
-- The actual Data Agent question returned a content-unavailable refusal,
-  not the expected baseline. Its answer check is **blocked**. Microsoft states
-  that Data Agent currently doesn't work with semantic-model-bound ontologies:
-  https://learn.microsoft.com/fabric/iq/ontology/resources-troubleshooting#troubleshoot-ontology-as-data-agent-source.
-  The captured ontology uses those bindings. No safety controls were bypassed,
-  no unsupported V1 definition substituted, and no standalone model source
-  added to DA_Sales. Rebinding V2 to supported managed lakehouse data is a
-  separate required fix; agent answers are not claimed successful.
+- The tested **published MCP** question returned a content-unavailable refusal,
+  not the expected baseline. That particular answer check did not pass.
+  Microsoft lists a semantic-model-bound ontology issue, but this does not
+  establish the cause. The user subsequently showed an ontology-only
+  **draft UI** response with real historical trends. Corrected the earlier
+  overbroad "Data Agent blocked" diagnosis: the draft can answer, and the
+  published MCP result needs separate investigation. Both draft and published
+  definition readback contain the same Prod ontology/workspace IDs. No safety
+  control was bypassed, ontology rebound, V1 definition substituted, or
+  standalone semantic-model source added.
 - Metadata-only OIDC workflow and PR checks are implemented. GitHub Prod
   reviewer/main PR protection readback passed; existing Test environment and
   OIDC variables were preserved. No tenant setting or new permission grant
   was made. Read-only hosted OIDC/SDK verification is pending push/dispatch.
-- Step 6 is not fully accepted while the Data Agent runtime check is blocked.
+- At this earlier checkpoint, published Data Agent answer acceptance was still
+  pending; the successful follow-up below supersedes that status.
   A checkpoint push uses `[skip ci]` so introducing the workflow/parameters
   does not automatically redeploy Test during this Prod-only rollout.
+
+Hosted CI capacity verification:
+
+- Pushed checkpoint `bdee4057ea98a3017d261ae19ee361e1677e56e0` with `[skip ci]`.
+  Read-only OIDC run `45067822040` authenticated successfully as the approved
+  app/main subject and passed tenant/application/repository identity guards,
+  then stopped at capacity visibility. Fabric capacity listing requires
+  capacity Administrator/Contributor access; the app did not have that access.
+- Independently reconfirmed the same capacity Active F4 and Test's unchanged
+  capacity assignment. The user explicitly approved **Azure Reader only on
+  the one existing capacity resource**, not capacity administration,
+  subscription-wide roles, or paid-resource changes.
+- `grant_ci_capacity_reader.py --dry-run`, then
+  `--approved-capacity-reader`, created/read back assignment
+  `d0661003-3606-5499-82b6-f2438517dd4d`. Scope and assignment ID are in config.
+  Initial CLI list validation rejected `--all` with `--scope`; corrected to
+  the documented scoped list before making the grant.
+- CI now verifies the live SKU/state through the official Azure capacity
+  GET API using that limited Reader access. Local capacity verification
+  remains through Fabric under the DEMO admin. Workspace/F4 checks are not
+  skipped or weakened, and no resize/activation method is used.
+  Reference:
+  https://learn.microsoft.com/rest/api/microsoftfabric/fabric-capacities/get?view=rest-microsoftfabric-2023-11-01.
+
+Data Agent empirical verification follow-up:
+
+- The user's screenshot showed the **draft UI** generating ontology-grounded
+  historical trends. Both draft/published definition readback referenced the
+  same Prod ONT_Business and workspace. No ontology binding was changed.
+- The same historical-trends question through **published Prod MCP** also
+  generated a detailed business answer. Windows console CP1252 initially
+  prevented printing a nonbreaking hyphen; captured the answer with UTF-8 and
+  corrected the runtime verifier's output encoding. The earlier broad
+  "semantic-model-bound ontology makes this agent unusable" conclusion was
+  not supported by live evidence and was withdrawn.
+- Ordinary business questions through Prod MCP returned exact actual volume
+  **4,488,091.02 hl**, revenue **288,517,979.92 EUR**, margin
+  **76,975,278.66 EUR**, and revenue-weighted margin **26.68%**, with the correct
+  Jan 2025-Oct 2026 scope. Both answer checks passed and actual answers are in
+  the config/audit log. The ontology-only source and report's model are preserved.
+- No source rebinding, standalone semantic-model source, safety-control change,
+  or new tenant setting was used to get these answers.
 
 Earlier ingestion and source-handoff notes below are retained as audit history.
 
@@ -1861,3 +1906,28 @@ Earlier ingestion and source-handoff notes below are retained as audit history.
 - 2026-11-22T20:17:56+00:00: Prod Data Agent verification blocked: A real Data Agent answer omitted or differed from the verified baseline.
 
 - 2026-11-22T20:30:02+00:00: GitHub metadata-only CI controls PASS: Prod environment `28183792552` requires owner review; main requires PR/validate with admin bypass. Existing Test environment and OIDC variables preserved; no tenant settings or permission grants. References: https://docs.github.com/rest/deployments/environments; https://docs.github.com/rest/branches/branch-protection; https://cli.github.com/manual/gh_variable_set.
+
+- 2026-11-22T20:41:42+00:00: OIDC check FAILED: `https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/45067822040`.
+
+- 2026-11-22T20:54:13+00:00: Capacity Reader grant blocked: az.CMD role assignment list --assignee-object-id e4234475-0f90-44c2-b256-20ce1b6c7614 --scope /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/fabric-demo-rg/providers/Microsoft.Fabric/capacities/capacityswitzerlandnorth --all --fill-principal-name false --output json failed (exit 1): ERROR: group or scope are not required when --all is used
+
+- 2026-11-22T20:55:49+00:00: Explicitly approved capacity-only Azure Reader grant PASS: `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/fabric-demo-rg/providers/Microsoft.Fabric/capacities/capacityswitzerlandnorth/providers/Microsoft.Authorization/roleAssignments/d0661003-3606-5499-82b6-f2438517dd4d` for `e4234475-0f90-44c2-b256-20ce1b6c7614` at `/subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/fabric-demo-rg/providers/Microsoft.Fabric/capacities/capacityswitzerlandnorth`. No Contributor/Admin, subscription role, resize or resource creation. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/cli/azure/role/assignment#az-role-assignment-create.
+
+- 2026-11-22T21:12:27+00:00: Prod Data Agent MCP answer PASS. Question: What are total actual sales volume in hl, total net revenue in EUR, and total contribution margin in EUR from January 2025 through October 2026 inclusive? Include all regions, channels, products and packages. Show exact decimal totals, not abbreviated millions, and state the period and units. Answer: Period and scope used:
+- Period: January 2025 through October 2026 inclusive (monthly SalesPeriod data)
+- Scope: All regions, all channels, all products, all packages
+
+Totals (exact, not abbreviated):
+- Total actual sales volume: **4,488,091.02 hl**
+- Total net revenue: **288,517,979.92 EUR**
+- Total contribution margin: **76,975,278.66 EUR**
+
+- 2026-11-22T21:12:58+00:00: Prod Data Agent MCP answer PASS. Question: What is the revenue-weighted contribution margin percentage across all regions, channels and packages for January 2025 through October 2026 inclusive? Calculate total margin divided by total revenue, not an average of percentages. Show the percentage to two decimal places. Answer: Revenue-weighted contribution margin percentage from January 2025 through October 2026 (inclusive), across all regions, channels and packages is:
+
+**26.68%**
+
+- **Calculation:**  
+  \[
+  \text{Margin \%} = \frac{\sum \text{Margin (EUR)}}{\sum \text{Revenue (EUR)}} \times 100
+  \]
+  using all SalesPeriod rows from **2025-01-01** through **2026-10-01** (month is first-of-month).

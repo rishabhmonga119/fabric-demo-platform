@@ -88,6 +88,7 @@ fabric:
     sharepoint:
       name: conn-sp-demodata
       id: 5bb73026-8d9d-4ba1-9c44-91b68ac0bc95
+  capacity_resource_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/fabric-demo-rg/providers/Microsoft.Fabric/capacities/capacityswitzerlandnorth
 github:
   owner: rishabhmonga119
   repository: fabric-demo-platform
@@ -115,6 +116,10 @@ github:
     refresh_identity: demo-admin-user
     main_pr_required: true
     admin_bypass: true
+  capacity_reader:
+    principal_id: e4234475-0f90-44c2-b256-20ce1b6c7614
+    scope: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/fabric-demo-rg/providers/Microsoft.Fabric/capacities/capacityswitzerlandnorth
+    role_assignment_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/fabric-demo-rg/providers/Microsoft.Fabric/capacities/capacityswitzerlandnorth/providers/Microsoft.Authorization/roleAssignments/d0661003-3606-5499-82b6-f2438517dd4d
 entra:
   application:
     name: sp-fabric-demo-cicd
@@ -707,11 +712,41 @@ environments:
       DA_Sales:
         id: 40265df6-63e2-45a4-9dfa-865a134e3cdc
         type: DataAgent
-        runtime_verification_state: blocked
-        runtime_verification_reason: semantic-model-bound-ontology-known-issue
+        runtime_verification_state: passed
         ontology_context_pending: false
         published_definition_sha256: 989151ce6f3c82eb18f089fc1c0674e9bb85968ee593c7daf28c1419af90ec42
         mcp_url: https://api.fabric.microsoft.com/v1/mcp/workspaces/4cd2247c-ab4c-441a-9637-f3c3d525f4c1/dataagents/40265df6-63e2-45a4-9dfa-865a134e3cdc/agent
+        verified_answers:
+          ? What are total actual sales volume in hl, total net revenue in EUR, and
+            total contribution margin in EUR from January 2025 through October 2026
+            inclusive? Include all regions, channels, products and packages. Show
+            exact decimal totals, not abbreviated millions, and state the period and
+            units.
+          : 'Period and scope used:
+
+            - Period: January 2025 through October 2026 inclusive (monthly SalesPeriod
+            data)
+
+            - Scope: All regions, all channels, all products, all packages
+
+
+            Totals (exact, not abbreviated):
+
+            - Total actual sales volume: **4,488,091.02 hl**
+
+            - Total net revenue: **288,517,979.92 EUR**
+
+            - Total contribution margin: **76,975,278.66 EUR**'
+          ? What is the revenue-weighted contribution margin percentage across all
+            regions, channels and packages for January 2025 through October 2026 inclusive?
+            Calculate total margin divided by total revenue, not an average of percentages.
+            Show the percentage to two decimal places.
+          : "Revenue-weighted contribution margin percentage from January 2025 through\
+            \ October 2026 (inclusive), across all regions, channels and packages\
+            \ is:\n\n**26.68%**\n\n- **Calculation:**  \n  \\[\n  \\text{Margin \\\
+            %} = \\frac{\\sum \\text{Margin (EUR)}}{\\sum \\text{Revenue (EUR)}} \\\
+            times 100\n  \\]\n  using all SalesPeriod rows from **2025-01-01** through\
+            \ **2026-10-01** (month is first-of-month)."
     databricks_managed_location: abfss://uc-prod@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/
     databricks_catalog_storage_location: abfss://uc-prod@stdemolakenzskwyvxcpeuk.dfs.core.windows.net/__unitystorage/catalogs/56c770b2-9622-4eb2-91a6-a047c665e3e3
     databricks_external_location: el_uc_prod

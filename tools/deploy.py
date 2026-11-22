@@ -13,6 +13,7 @@ import yaml
 
 from common import ContextError, ROOT, cli, is_metadata_ci, load_config, run, verify_context
 from bootstrap_fabric_items import MARKER, wait_operation
+from capacity_guard import verify_stage_capacity
 from http_api import Api, ApiError
 
 sys.path.insert(0, str(ROOT))
@@ -112,12 +113,7 @@ def main() -> None:
         stage["deployment_operations"].pop(uri)
         save_config(config)
     workspace = api.request("GET", f"/v1/workspaces/{stage['workspace_id']}")
-    capacities = [item for item in api.list("/v1/capacities")
-                  if item["id"] == config["fabric"]["capacity_id"]]
-    if workspace["displayName"] != stage["workspace_name"] or \
-            workspace["capacityId"] != config["fabric"]["capacity_id"] or len(capacities) != 1 or \
-            capacities[0]["state"] != "Active" or capacities[0]["sku"] != config["cost_guardrails"]["fabric_sku"]:
-        raise ContextError("Stage workspace/capacity differs from the approved existing Active F4.")
+    verify_stage_capacity(api, config, workspace, stage)
     existing = api.list(f"/v1/workspaces/{stage['workspace_id']}/items")
     for item in existing:
         if item["type"] not in PHASES[args.phase]:

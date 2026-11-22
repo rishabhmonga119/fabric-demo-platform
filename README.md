@@ -160,6 +160,9 @@ repository/owner IDs, owner-triggered main-branch workflow, target stage and F4.
 The original Azure/Fabric/GitHub **admin-user checks remain unchanged locally**.
 CI API guards reject cross-stage writes, data-refresh jobs, shortcuts,
 infrastructure creation, deletions, and permission changes.
+CI reads the live F4 SKU/state through the Azure capacity GET API using an
+explicitly approved **Reader grant on that capacity resource only**. It has no
+Azure subscription-wide role or capacity-administration/resize permission.
 
 The current Spark SQL-endpoint reader supports interactive Entra users, not
 service principals. Keep `NB_Clean_Forecast` as Python and `NB_Integrate` as
@@ -198,14 +201,15 @@ It preserves the existing Test environment/OIDC variables and makes no Fabric
 workspace or tenant-permission changes. Publishing DA_Sales for MCP queries does
 not publish it to Agent Store or Microsoft 365.
 
-### Current Data Agent blocker
+### Draft versus published Data Agent verification
 
-Prod's items, pipeline, physical rows, semantic-model measures and both report
-pages are verified. The Data Agent is published and points only to ONT_Business,
-but its real MCP answer check is **blocked**, not passed. Microsoft documents
-[a current known issue](https://learn.microsoft.com/fabric/iq/ontology/resources-troubleshooting#troubleshoot-ontology-as-data-agent-source):
-Data Agent doesn't work with an ontology that uses semantic models for binding.
-The captured ontology has those bindings. A fix requires supported V2 authoring
-to bind the ontology to managed lakehouse tables; external shortcut tables aren't
-supported by the ontology graph either. Keep the report on SM_Sales and don't
-add a standalone semantic-model source to the Data Agent as a workaround.
+Prod's items, pipeline, physical rows, semantic-model measures, both report
+pages, and actual published Data Agent answers are verified. DA_Sales points
+only to ONT_Business. An initial highly specific MCP question returned a refusal,
+but the user's draft UI screenshot and the same historical-trends question
+through published MCP both produced real answers. Ordinary business questions
+then returned the exact baseline totals and **26.68%** weighted margin.
+Do not diagnose the entire agent as unusable from one refused question or apply
+an ontology rebind merely because a generic known-issues page suggests one.
+The report remains on SM_Sales; ontology bindings and the ontology-only agent
+were preserved.

@@ -23,14 +23,14 @@ REFERENCES = (
 )
 QUESTIONS = [
     (
-        "Using ONT_Business and its bound data, for all regions, channels and packages "
-        "from January 2025 through October 2026 inclusive, give total actual volume in hl, "
-        "total revenue EUR, total contribution margin EUR, and env_marker. "
-        "Use exact decimal totals, not abbreviated millions. State the period and units.",
+        "What are total actual sales volume in hl, total net revenue in EUR, and total "
+        "contribution margin in EUR from January 2025 through October 2026 inclusive? "
+        "Include all regions, channels, products and packages. Show exact decimal totals, "
+        "not abbreviated millions, and state the period and units.",
         (Decimal("4488091.02"), Decimal("288517979.92"), Decimal("76975278.66")),
     ),
     (
-        "Using ONT_Business and its bound data, what is the revenue-weighted contribution "
+        "What is the revenue-weighted contribution "
         "margin percentage across all regions, channels and packages for January 2025 "
         "through October 2026 inclusive? Calculate total margin divided by total revenue, "
         "not an average of percentages. Show the percentage to two decimal places.",
@@ -66,6 +66,8 @@ async def query_agent(url: str, headers: dict[str, str], question: str) -> str:
 
 
 def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--stage", choices=("prod",), required=True)
     parser.add_argument("--approved-prod", action="store_true")
@@ -143,6 +145,9 @@ def main() -> None:
         agent.setdefault("verified_answers", {})[question] = answer
         save_config(config)
         record(f"Prod Data Agent MCP answer PASS. Question: {question} Answer: {answer}")
+    agent["runtime_verification_state"] = "passed"
+    agent.pop("runtime_verification_reason", None)
+    save_config(config)
     print("PASS: Prod Data Agent returned both real ontology-grounded baseline answers.")
 
 

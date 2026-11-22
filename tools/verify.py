@@ -9,6 +9,7 @@ import tempfile
 
 from bootstrap_fabric_items import post_and_wait
 from bootstrap_sales_model import refresh_and_check
+from capacity_guard import verify_stage_capacity
 from common import ContextError, ROOT, cli, is_metadata_ci, load_config, run, verify_context
 from http_api import Api, ApiError
 
@@ -39,12 +40,7 @@ def main() -> None:
     api = Api("https://api.fabric.microsoft.com", config["tenant"]["id"],
               skill="semantic-model-authoring")
     live_workspace = api.request("GET", f"/v1/workspaces/{workspace}")
-    capacities = [item for item in api.list("/v1/capacities")
-                  if item["id"] == config["fabric"]["capacity_id"]]
-    if live_workspace["displayName"] != stage["workspace_name"] or \
-            live_workspace["capacityId"] != config["fabric"]["capacity_id"] or len(capacities) != 1 or \
-            capacities[0]["state"] != "Active" or capacities[0]["sku"] != config["cost_guardrails"]["fabric_sku"]:
-        raise ContextError("Stage initialization target differs from the approved existing Active F4.")
+    verify_stage_capacity(api, config, live_workspace, stage)
     items = api.list(f"/v1/workspaces/{workspace}/items")
     for name in config["environments"]["dev"]["items"]:
         matches = [item for item in items if item["displayName"] == name and

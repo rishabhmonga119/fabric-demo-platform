@@ -160,6 +160,47 @@ class JsonApiGuardTests(unittest.TestCase):
                              {"status_code": 200, "retry_after": "30", "body": {"status": "Running"}})
 
 
+class CapacityReaderGuardTests(unittest.TestCase):
+    def setUp(self):
+        self.resource = "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Fabric/capacities/demo"
+        self.config = {
+            "fabric": {"capacity_id": "capacity", "capacity_resource_id": self.resource},
+            "azure": {"subscription_id": "sub"}, "cost_guardrails": {"fabric_sku": "F4"},
+            "entra": {"application": {"service_principal_id": "sp"}},
+            "github": {"capacity_reader": {"scope": self.resource, "principal_id": "sp"}},
+        }
+        self.workspace = {"displayName": "Prod", "capacityId": "capacity"}
+        self.stage = {"workspace_name": "Prod"}
+
+    def test_ci_reads_live_sku_without_capacity_administration(self):
+        from capacity_guard import verify_stage_capacity
+        api = MagicMock()
+        capacity = {"id": self.resource, "sku": {"name": "F4"}, "properties": {"state": "Active"}}
+        with patch("capacity_guard.is_metadata_ci", return_value=True), \
+                patch("capacity_guard.cli", return_value="az"), \
+                patch("capacity_guard.run", return_value=json.dumps(capacity)):
+            verify_stage_capacity(api, self.config, self.workspace, self.stage)
+        api.list.assert_not_called()
+
+    def test_changed_sku_or_suspended_capacity_stops_ci(self):
+        from capacity_guard import verify_stage_capacity
+        for sku, state in (("F8", "Active"), ("F4", "Inactive")):
+            capacity = {"id": self.resource, "sku": {"name": sku}, "properties": {"state": state}}
+            with self.subTest(sku=sku, state=state), \
+                    patch("capacity_guard.is_metadata_ci", return_value=True), \
+                    patch("capacity_guard.cli", return_value="az"), \
+                    patch("capacity_guard.run", return_value=json.dumps(capacity)):
+                with self.assertRaises(http_api.ContextError):
+                    verify_stage_capacity(MagicMock(), self.config, self.workspace, self.stage)
+
+    def test_workspace_capacity_mismatch_stops_before_any_azure_read(self):
+        from capacity_guard import verify_stage_capacity
+        with patch("capacity_guard.run") as run, self.assertRaises(http_api.ContextError):
+            verify_stage_capacity(MagicMock(), self.config,
+                                  {**self.workspace, "capacityId": "other"}, self.stage)
+        run.assert_not_called()
+
+
 class DataAgentMcpTests(unittest.IsolatedAsyncioTestCase):
     async def run_question(self, is_error=False):
         from mcp import types
