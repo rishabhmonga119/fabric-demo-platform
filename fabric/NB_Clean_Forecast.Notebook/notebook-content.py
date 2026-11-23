@@ -24,6 +24,13 @@ allowed_actors = ['341769a6-9b1d-422e-8080-a666d62dc21d', 'e4234475-0f90-44c2-b2
 mappings = {'headers': {'Monat': 'month', 'Artikelnummer': 'sku', 'Gebinde': 'package_code', 'Region': 'region_code', 'Kanal': 'channel_code', 'Menge (hl)': 'forecast_hl'}, 'channels': {'Handel': 'RETAIL', 'Gastro': 'HORECA', 'GFGH': 'WHOLESALE', 'Online': 'ECOM'}, 'packages': {'Still 0,75 Glas': 'GL-075-RET', '0,25 Glas': 'GL-025-RET', 'PET 1,0': 'PET-100', 'PET 0,5': 'PET-050', 'PET 1,5': 'PET-150'}}
 
 
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "jupyter_python"
+# META }
+
 # CELL ********************
 
 """Pure forecast parsing shared by the generated Fabric notebook and local checks."""
@@ -115,6 +122,13 @@ def parse_sheet(rows, filename, mappings, dimensions):
         raise ValueError(f"{filename}: required forecast headers were not found.")
     return records, rejects
 
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "jupyter_python"
+# META }
 
 # CELL ********************
 
@@ -208,6 +222,13 @@ def write_owned_delta(root, schema, name, frame, arrow_schema, options):
     print(f"{schema}.{name}: {len(frame)} rows")
 
 
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "jupyter_python"
+# META }
+
 # CELL ********************
 
 """Execution cell embedded in NB_Clean_Forecast."""
@@ -270,3 +291,10 @@ write_owned_delta(roots["LH_Landing"], "forecast", "forecast_rejects",
 write_owned_delta(roots["LH_Landing"], "forecast", "forecast_clean", clean, clean_schema, options)
 print(json.dumps({"clean_rows": len(clean), "reject_rows": len(rejects), "duplicates_removed": duplicates}))
 
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "jupyter_python"
+# META }
