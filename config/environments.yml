@@ -120,6 +120,11 @@ github:
     principal_id: e4234475-0f90-44c2-b256-20ce1b6c7614
     scope: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/fabric-demo-rg/providers/Microsoft.Fabric/capacities/capacityswitzerlandnorth
     role_assignment_id: /subscriptions/61ab2275-fb68-4081-ac0f-076c87caf0c1/resourceGroups/fabric-demo-rg/providers/Microsoft.Fabric/capacities/capacityswitzerlandnorth/providers/Microsoft.Authorization/roleAssignments/d0661003-3606-5499-82b6-f2438517dd4d
+  metadata_validation:
+    run_id: 45071446452
+    url: https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/45071446452
+    commit: a8a9705570ef7eabde5b547902e53fb5b9d64187
+    result: success
 entra:
   application:
     name: sp-fabric-demo-cicd

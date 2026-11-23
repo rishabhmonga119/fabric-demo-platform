@@ -1482,7 +1482,7 @@ Step 4 commit `8591cd6e6117ff30181814e903e9b224d83ea9fa` pushed and remote HEAD 
 
 ### Step 5 complete - workspace capture and source handoff
 
-### Step 6 - Test accepted; GitHub Actions and Prod pending
+### Step 6 - Approved Prod rollout and metadata-only CI completed
 
 Current status, 2026-11-22:
 
@@ -1631,6 +1631,29 @@ Data Agent empirical verification follow-up:
   or new tenant setting was used to get these answers.
 
 Earlier ingestion and source-handoff notes below are retained as audit history.
+
+Final approved rollout result:
+
+- Prod: all 11 requested items deployed; first refresh completed; 10,304 rows
+  marked only `prod`; baseline totals/calendar/schema bindings verified; both
+  actual report pages rendered; published ontology-only Data Agent returned
+  the exact business totals and 26.68% weighted margin.
+- Metadata-only GitHub workflow, PR checks, Prod required reviewer and main PR
+  protection are pushed. Local admin-user checks remain unchanged. The only
+  newly approved Azure permission is Reader on the single existing F4 resource.
+- Hosted OIDC run **45071446452** passed under the approved application/tenant/
+  immutable repository identities. It read the live Active F4 through the
+  capacity-only Reader role and validated **Test ingest, Test analytics,
+  Prod ingest and Prod analytics** with the actual fabric-cicd parser.
+  https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/45071446452
+- Both deployment jobs were intentionally skipped because this was
+  `validate_only=true`; no Test/Dev change or duplicate Prod deployment was
+  performed. This proves hosted identity/capacity/SDK preflight, not a new
+  SP-driven publish or data refresh. Spark/data refresh remains a separate
+  user-authenticated step documented in README.
+- Checkpoints were pushed and remote main verified. Runtime/config/audit results
+  are persisted. Agent Store/M365 publication and the partner/baseline steps
+  remain separate subsequent work.
 
 - Step 5 automation commit `ea291684c7914fd2ec5c556701246e8523b47633`
   was pushed and remote main verified.
@@ -1931,3 +1954,5 @@ Totals (exact, not abbreviated):
   \text{Margin \%} = \frac{\sum \text{Margin (EUR)}}{\sum \text{Revenue (EUR)}} \times 100
   \]
   using all SalesPeriod rows from **2025-01-01** through **2026-10-01** (month is first-of-month).
+
+- 2026-11-22T21:20:19+00:00: Step 6 metadata-only OIDC/SDK preflight for both PASS; no workspace changes; `https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/45071446452`.
