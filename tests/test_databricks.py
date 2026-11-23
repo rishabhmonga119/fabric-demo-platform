@@ -66,10 +66,16 @@ class StatementExecutionTests(unittest.TestCase):
         client = self.client()
         pending = {"statement_id": "statement-1", "status": {"state": "PENDING"}}
         succeeded = {"status": {"state": "SUCCEEDED"}, "result": {"data_array": [["7"]]}}
-        with patch("databricks_sql.mutate", return_value=json.dumps(pending)), \
+        def submit(command, **kwargs):
+            payload = Path(command[command.index("--json") + 1][1:]).read_text(encoding="utf-8")
+            self.assertEqual(json.loads(payload)["wait_timeout"], "0s")
+            return json.dumps(pending)
+
+        with patch("databricks_sql.mutate", side_effect=submit) as post, \
              patch.object(client, "read", return_value=succeeded) as read, \
              patch("databricks_sql.time.sleep"):
             self.assertEqual(client.execute("SELECT COUNT(*) FROM demo_dev.gold.dim_product"), succeeded)
+            post.assert_called_once()
             read.assert_called_once_with("api", "get", "/api/2.0/sql/statements/statement-1")
 
     def test_failed_statement_is_never_returned_as_successful_data(self):

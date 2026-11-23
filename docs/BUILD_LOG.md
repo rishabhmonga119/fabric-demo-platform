@@ -1965,6 +1965,24 @@ verification/sealing command is the remaining technical action. No final
 baseline tag is claimed yet. The user explicitly said **"skip that step!"** in response to
 the recordings prerequisite; recordings are skipped, not marked as recorded.
 
+- First full gate stopped on a **180-second Databricks CLI submission timeout**
+  at Prod dim_region after **17 actual Gold table checks passed**. No business
+  mismatch was observed in those tables, no tag was created, and the owned
+  warehouse was confirmed STOPPED. The filtered query-history lookup was empty
+  and is inconclusive about that submission; it is not treated as success.
+- Hardened Statement Execution to documented **wait_timeout=0s** asynchronous
+  submission, followed by polling the same returned statement ID. No blind
+  submission retry was added. Generic CLI timeouts now surface as an explicit
+  fail-closed ContextError rather than an unhandled traceback. A live read of
+  the affected Prod dim_region target passed (4 rows), and the owned warehouse
+  was stopped again afterward.
+- Moved the costly full Gold recheck behind the other live preflight checks,
+  still before sealing. No failed check is skipped or replaced by cached
+  success. Nine focused snapshot/CSV/timeout/Statement Execution tests passed,
+  including exactly one nonblocking submission and same-ID polling.
+  Async contract:
+  <https://docs.databricks.com/api/statement-execution/v1/execute-statement>.
+
 - `python tools/prepare_fallback.py` passed all three real query-scoped
   validations (computed result, zero actual, missing forecast) without
   persisting a measure or refreshing a model. Created/pushed

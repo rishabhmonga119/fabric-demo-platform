@@ -14,6 +14,13 @@ from http_api import ApiError
 
 
 class BaselineSnapshotTests(unittest.TestCase):
+    def test_cli_timeout_is_actionable_and_never_blindly_retried(self):
+        error = common.subprocess.TimeoutExpired(["some-cli", "api", "post"], 180)
+        with patch.object(common.subprocess, "run", side_effect=error) as command:
+            with self.assertRaisesRegex(common.ContextError, "may have been accepted"):
+                common.run(["some-cli", "api", "post"])
+            command.assert_called_once()
+
     def test_role_ids_are_ignored_but_policies_and_members_are_preserved(self):
         roles = [{"id": "server-generated", "name": "DefaultReader",
                   "decisionRules": [{"effect": "Permit", "constraints": {"rows": ["NORTH"]}}],

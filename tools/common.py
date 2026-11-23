@@ -67,10 +67,14 @@ def run(
         execution = [str(python), "-IBm", "azure.cli", *command[1:]]
         env = dict(os.environ if env is None else env)
         env["AZ_INSTALLER"] = "MSI"
-    result = subprocess.run(
-        execution, cwd=cwd, check=False, capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=180, env=env
-    )
+    try:
+        result = subprocess.run(
+            execution, cwd=cwd, check=False, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=180, env=env
+        )
+    except subprocess.TimeoutExpired as error:
+        raise ContextError(f"{Path(command[0]).name} timed out after 180 seconds. A remote request "
+                           "may have been accepted; inspect its state before resubmitting.") from error
     if result.returncode != 0:
         raise ContextError(
             f"{Path(command[0]).name} {' '.join(command[1:])} failed "

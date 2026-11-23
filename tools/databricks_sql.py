@@ -24,7 +24,7 @@ class DatabricksSql:
         payload = {
             "warehouse_id": self.warehouse_id, "statement": statement,
             "format": "JSON_ARRAY", "disposition": "INLINE",
-            "wait_timeout": "30s", "on_wait_timeout": "CONTINUE", "row_limit": 100,
+            "wait_timeout": "0s", "on_wait_timeout": "CONTINUE", "row_limit": 100,
         }
         with tempfile.TemporaryDirectory(prefix="demo-sql-") as directory:
             body = Path(directory) / "body.json"

@@ -213,10 +213,6 @@ def verify_all(*, dry_run: bool = False, seal: bool = False) -> None:
     require(existing_tag in (None, head) if seal else existing_tag == head,
             "demo-baseline is missing or points elsewhere; never overwrite an existing baseline tag.")
     print("PASS Git readiness: clean pushed main, no open PRs, exact prepared branch/tag.")
-    actual_gold = verify_gold(config, list(config["environments"]), log=print)
-    require(json.loads(json.dumps(actual_gold)) == json.loads(paths[2].read_text(encoding="utf-8")),
-            "Actual Gold data differs from the captured expected-count baseline.")
-    print("PASS Databricks: all Gold rows/grains/fingerprints/comments, no UC filters/masks; warehouse stopped.")
     require(manifest_file_sets(capture_manifest(config)) ==
             manifest_file_sets(json.loads(paths[1].read_text(encoding="utf-8"))),
             "Actual SharePoint file set differs from its manifest.")
@@ -242,6 +238,10 @@ def verify_all(*, dry_run: bool = False, seal: bool = False) -> None:
             checkpoint["north_viewer_ontology_instances_verification"] == "user-confirmed",
             "Real viewer ontology/Data Agent acceptance is not confirmed.")
     print("PASS human evidence: viewer agent/instances and cross-tenant read/revocation/cleanup.")
+    actual_gold = verify_gold(config, list(config["environments"]), log=print)
+    require(json.loads(json.dumps(actual_gold)) == json.loads(paths[2].read_text(encoding="utf-8")),
+            "Actual Gold data differs from the captured expected-count baseline.")
+    print("PASS Databricks: all Gold rows/grains/fingerprints/comments, no UC filters/masks; warehouse stopped.")
     require(not run([cli("git"), "status", "--porcelain"]).strip(),
             "Verification unexpectedly changed repository files; no baseline sealing.")
     if seal and not existing_tag:
