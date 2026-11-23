@@ -608,6 +608,34 @@ approval; do not switch the automation's tenant-A CLI identity to tenant B.
 References: [IQ Sharing overview](https://learn.microsoft.com/fabric/onelake/iq-share/onelake-share-overview)
 and [Create a Share](https://learn.microsoft.com/fabric/onelake/iq-share/create-share).
 
+The producer Share now has a documented public API. Set the private recipient
+UPN in the local environment variable named by `partner.recipient_upn_env`;
+do not commit that address or the invitation URL to this public repository.
+After explicit approval, use:
+
+```powershell
+python tools\manage_partner_share.py create --expires-utc 2026-11-30T23:59:59Z --dry-run
+python tools\manage_partner_share.py create --expires-utc 2026-11-30T23:59:59Z --approved-external-share
+python tools\manage_partner_share.py status
+```
+
+Choose a new approved future expiration for later rehearsals. The script
+inventories the whole OneLake Tables/Files trees, rejects extra data or files,
+checks the exact glossary text, and reads back the Share's exact asset,
+recipient and expiration. No source OneLake role is treated as an IQ Share
+filter. The ordinary List Tables API rejects schema-enabled lakehouses;
+the physical OneLake inventory avoids that unsupported operation.
+
+Tenant B accepts using the invited identity; do not change the tenant-A CLI.
+After the consumer query and revocation rehearsal, explicitly approved cleanup
+uses `python tools\manage_partner_share.py delete --approved-rehearsal-cleanup`.
+It deletes only the recorded owned rehearsal Share and verifies its absence.
+The tenant-B operator separately deletes only the rehearsal Share Subscription
+and its associated newly created Mirrored OneLake item. Never delete an
+existing inbound workspace or unrelated tenant-B content.
+API references: [Create Share](https://learn.microsoft.com/rest/api/fabric/share/items/create-share)
+and the [public Share definition schema](https://developer.microsoft.com/json-schemas/fabric/item/share/definition/share/1.0.0/schema.json).
+
 ---
 
 ## Step 9 — Baseline and recordings

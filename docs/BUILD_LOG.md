@@ -1960,10 +1960,57 @@ Totals (exact, not abbreviated):
 - 2026-11-23T07:08:56+00:00: Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime publication, existing sales-group Viewer memberships and enabled Power BI/Copilot plans. No cloud writes, grants, licences or duplicate agent publication. Agent Store/Teams/Agent Builder/viewer-session checks require the human checkpoint. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent; https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments; https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot; https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
 ## 2026-11-23 - Step 8: Output-only partner producer
 
-Status: PRODUCER VERIFIED; cross-tenant acceptance/security/revocation rehearsal
-is pending tenant B and explicit sharing/access approval. No Share, Share
-Subscription, guest, recipient grant or partner reader-role membership was
-created. Step 9 remains pending; no baseline tag or recording is claimed.
+Status: PRODUCER AND APPROVED INVITATION VERIFIED; the single-recipient
+rehearsal Share is Active, but recipient acceptance/query/revocation rehearsal
+is still pending. No consumer Share Subscription, B2B guest, workspace-role
+grant or partner reader-role membership was created by this automation.
+Step 9 remains pending; no baseline tag or recording is claimed.
+
+- Tenant B details are now supplied and stored as IDs/domain/inbound workspace
+  in configuration. Public OpenID discovery confirms the supplied domain maps
+  to tenant `e3722af7-9524-4604-88d1-6940e5abe26c`. The user confirms Share
+  Subscription is enabled and provides inbound workspace
+  `8e547d7e-ac1f-4404-aaeb-427c11b8a8fc`; the actual consumer session/capacity
+  and roles are not independently verified yet. Keep tenant-A CLI identities.
+- User explicitly approved one rehearsal Share to the supplied named
+  recipient, expiration **2026-11-30T23:59:59Z**, followed by scoped
+  revocation/deletion after validation. The recipient address is held only in
+  a process-local environment variable, not committed to this public repo.
+- Created `SH_PartnerA_Rehearsal`
+  `8343ea43-7fe0-4b23-9a1b-0c4ce64791ff` using the documented Share API and
+  Microsoft's published `share.json`/common JSON schemas. GetDefinition
+  readback exactly matches one asset (the output-only LH_PartnerA), one named
+  tenant-B recipient, MirroredOneLake representation and the approved
+  expiration. Share state is **Active**; recipient acceptance is **Pending**.
+  The private invitation URL is printed only to the caller, not logged or
+  committed. No access to Prod or additional items was shared.
+- Added `tools/manage_partner_share.py` with dry-run, explicit external-grant
+  and cleanup gates, identity/capacity/ownership checks, complete paginated
+  OneLake Tables/Files inventory, exact glossary-text verification, LRO
+  operation persistence/resume, exact Share definition readback and
+  recorded-ID-only cleanup. Read-only status reuses the existing Share.
+  Commands: `python tools/manage_partner_share.py create --expires-utc 2026-11-30T23:59:59Z --dry-run`;
+  the same command with `--approved-external-share`; `python tools/manage_partner_share.py status`.
+- Diagnostics resolved before/after creation without expanding scope:
+  List Tables rejects schema-enabled lakehouses, so preflight uses documented
+  OneLake storage listing instead. Local Git CRLF versus Fabric LF required
+  comparing glossary text as the notebook does. The live API returns
+  `app.powerbi.com/iqshare/accept` rather than the conceptual documentation's
+  `app.fabric.microsoft.com/share/invite/...`; validation supports both and
+  binds the live Power BI URL to the exact producer tenant/workspace/Share IDs.
+  The created Share was inspected, not recreated, after this URL-shape error.
+- **13 focused partner tests passed**, including external grant approval
+  gating, exact Share scope/expiry, whole-item disclosure guards and
+  matching-first-party invitation validation. Skill references:
+  `e2e-medallion-architecture/SKILL.md`, `common/COMMON-CORE.md`,
+  `common/COMMON-CLI.md`. API/schema references:
+  <https://learn.microsoft.com/rest/api/fabric/share/items/create-share>,
+  <https://learn.microsoft.com/rest/api/fabric/share/items/get-share-definition>,
+  <https://developer.microsoft.com/json-schemas/fabric/item/share/definition/share/1.0.0/schema.json>,
+  <https://developer.microsoft.com/json-schemas/fabric/item/share/definition/common/1.0.0/schema.json>.
+  Final status again reports recipient Pending, without a second create.
+  `git diff --check` passed. A bounded repository check found neither the
+  private recipient address nor the actual invitation URL in committed inputs.
 
 - User approved **output-only LH_PartnerA**. Corrected the original delivery
   source mismatch: sales_vs_forecast has no delivery measures. The notebook
@@ -2023,7 +2070,8 @@ created. Step 9 remains pending; no baseline tag or recording is claimed.
   `onelake-catalog-cli/references/admin-audit.md`; existing settings API
   contract is also used by `tools/bootstrap_fabric.py`. Final existing-item
   `--dry-run --run` and `git diff --check` passed.
-- Human checkpoint: provide tenant B ID/domain, invited recipient and an
+- Earlier producer-only human checkpoint (tenant-B details now supplied above):
+  provide tenant B ID/domain, invited recipient and an
   existing capacity-backed `PARTNER-Inbound` workspace. Tenant B's admin must
   enable **Enable Share Subscription Item (preview)**, and the accepting
   recipient needs Admin/Member/Contributor on that workspace. Tenant B's
@@ -2251,3 +2299,11 @@ Follow-up from the user's live UI checks:
 - 2026-11-23T09:35:23+00:00: DEMO-Partner-A NB_Partner_Extract Completed.
 
 - 2026-11-23T09:35:26+00:00: Step 8 producer Check PASS: notebook completed after exact persisted Delta row comparison against P-A filtered delivery/product projection and exact glossary file readback. Actual exit-value metrics: {"check": "PASS", "table": "dbo.partner_a_deliveries", "rows": 1232, "columns": ["month", "sku", "product_name", "package_code", "region_code", "delivered_hl", "on_time_pct"], "delivered_hl": "1121803.72", "min_month": "2025-01-01", "max_month": "2026-10-01", "regions": ["EAST", "NORTH"], "exact_filtered_row_readback": true, "glossary_readback": true}. Tenant B/sharing/security acceptance remains a human checkpoint; no Share, guest or new grants created.
+
+- 2026-11-23T10:06:33+00:00: Created owned rehearsal IQ Share 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff for the one approved tenant-B recipient; source only LH_PartnerA; expiry 2026-11-30T23:59:59Z. Recipient/invitation kept out of public configuration and logs. References: e2e-medallion-architecture/SKILL.md; fabric-skills/common/COMMON-CORE.md; COMMON-CLI.md; https://learn.microsoft.com/rest/api/fabric/share/items/create-share; https://learn.microsoft.com/rest/api/fabric/share/items/get-share-definition; https://learn.microsoft.com/rest/api/fabric/share/items/delete-share; https://developer.microsoft.com/json-schemas/fabric/item/share/definition/share/1.0.0/schema.json.
+
+- 2026-11-23T10:06:53+00:00: Partner IQ Share action blocked: Share is not Active with a documented Fabric invitation URL.
+
+- 2026-11-23T10:10:42+00:00: Rehearsal Share 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff readback PASS: exact single asset/recipient/expiration, Active invitation. Consumer acceptance/query not yet verified.
+
+- 2026-11-23T10:14:22+00:00: Rehearsal Share 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff readback PASS: exact single asset/recipient/expiration, Active invitation, recipient acceptance Pending. Source readback does not itself verify a consumer query.

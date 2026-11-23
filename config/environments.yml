@@ -823,11 +823,12 @@ partner:
       last_run_uri: https://api.fabric.microsoft.com/v1/workspaces/f29bb81d-9fae-413e-bff4-0a1c56a78ac3/items/cf84484d-58e7-4693-a622-caada58aaf0c/jobs/instances/d65c4002-dc26-4e13-9b05-97b2261d9ef8
       last_run_definition_sha256: 4a22ff51da240a5d9b96e772b906837fb2a8af765d6b4771a4ec879ad82ab377
       last_run_state: Completed
-  tenant_b_id: null
-  tenant_b_domain: null
+  tenant_b_id: e3722af7-9524-4604-88d1-6940e5abe26c
+  tenant_b_domain: mngenvmcap173637.onmicrosoft.com
   recipient_upn: null
+  recipient_upn_env: FABRIC_PARTNER_RECIPIENT_UPN
   inbound_workspace_name: PARTNER-Inbound
-  inbound_workspace_id: null
+  inbound_workspace_id: 8e547d7e-ac1f-4404-aaeb-427c11b8a8fc
   producer_metrics:
     check: PASS
     table: dbo.partner_a_deliveries
@@ -850,7 +851,12 @@ partner:
     glossary_readback: true
   producer_verification: passed-notebook-exact-delta-and-glossary-readback
   producer_layout: output-only-approved
-  sharing_verification: pending-tenant-b-and-approved-sharing
+  sharing_verification: pending-consumer-acceptance-and-query
+  rehearsal_share:
+    expires_utc: '2026-11-30T23:59:59Z'
+    id: 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff
+    state: Active
+    recipient_acceptance_status: Pending
 cost_guardrails:
   databricks_workspace_count: 1
   databricks_sku: premium

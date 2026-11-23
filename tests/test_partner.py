@@ -141,3 +141,87 @@ class PartnerExecutionTests(unittest.TestCase):
                             job_type="RunNotebook", definition_sha256="digest")
         api.request.assert_called_once_with(
             "GET", "/v1/workspaces/workspace/items/item/jobs/instances/recent")
+
+
+class PartnerShareTests(unittest.TestCase):
+    def setUp(self):
+        self.config = {
+            "tenant": {"id": "11111111-1111-4111-8111-111111111111"},
+            "partner": {
+                "tenant_b_id": "22222222-2222-4222-8222-222222222222",
+                "tenant_b_domain": "partner.example", "workspace_id": "partner-workspace",
+                "recipient_upn_env": "FABRIC_PARTNER_RECIPIENT_UPN",
+                "items": {"LH_PartnerA": {"id": "output-lakehouse"}},
+            },
+        }
+
+    def test_share_is_one_output_asset_and_cross_tenant_recipient_with_explicit_expiry(self):
+        from manage_partner_share import canonical, share_document
+        from common import ContextError
+        document = share_document(self.config, "user@partner.example", "2099-01-01T00:00:00Z")
+        self.assertEqual(len(document["assets"]), 1)
+        self.assertEqual(document["assets"][0]["item"]["itemId"], "output-lakehouse")
+        self.assertEqual(document["recipients"], [{
+            "type": "User", "userPrincipalName": "user@partner.example",
+            "tenantId": self.config["partner"]["tenant_b_id"]}])
+        self.assertEqual(document["sharePolicies"][0]["properties"]["expirationDateTime"],
+                         "2099-01-01T00:00:00Z")
+        exported = deepcopy(document)
+        exported["assets"][0].pop("shareAs")
+        exported["assets"][0]["item"].pop("referenceType")
+        self.assertEqual(canonical(document), canonical(exported))
+        with self.assertRaises(ContextError):
+            share_document(self.config, "different@other.example", "2099-01-01T00:00:00Z")
+        self.config["partner"]["tenant_b_id"] = self.config["tenant"]["id"]
+        with self.assertRaises(ContextError):
+            share_document(self.config, "user@partner.example", "2099-01-01T00:00:00Z")
+
+    def test_whole_item_guard_rejects_extra_tables_files_or_missing_delta_log(self):
+        from manage_partner_share import guard_shared_inventory
+        from common import ContextError
+        table = "lakehouse/Tables/dbo/partner_a_deliveries"
+        paths = {table, table + "/_delta_log", table + "/_delta_log/00000000000000000000.json",
+                 table + "/part.parquet"}
+        files = {"lakehouse/Files/context/partner_glossary.md"}
+        guard_shared_inventory(paths, files, "lakehouse")
+        for tables, shared_files in (
+                (paths | {"lakehouse/Tables/dbo/all_deliveries"}, files),
+                (paths, files | {"lakehouse/Files/raw.csv"}), ({table + "/part.parquet"}, files),
+                (set(), files)):
+            with self.subTest(tables=tables, files=shared_files), self.assertRaises(ContextError):
+                guard_shared_inventory(tables, shared_files, "lakehouse")
+
+    def test_unapproved_share_never_constructs_an_authenticated_api_client(self):
+        import manage_partner_share as share
+        with patch.object(sys, "argv", ["manage_partner_share.py", "create",
+                                       "--expires-utc", "2099-01-01T00:00:00Z"]), \
+                patch.object(share, "is_metadata_ci", return_value=False), \
+                patch.object(share, "verify_context"), \
+                patch.object(share, "load_config", return_value=self.config), \
+                patch.dict(share.os.environ, {"FABRIC_PARTNER_RECIPIENT_UPN": "user@partner.example"}), \
+                patch.object(share, "Api") as api, self.assertRaises(share.ContextError):
+            try:
+                share.main()
+            finally:
+                api.assert_not_called()
+
+    def test_live_powerbi_invitation_is_bound_to_exact_producer_tenant_workspace_and_share(self):
+        from manage_partner_share import invitation_url
+        from http_api import ApiError
+        url = ("https://app.powerbi.com/iqshare/accept?"
+               "providerTenantId=producer&workspaceId=workspace&shareId=share")
+        detail = {"id": "share", "properties": {"shareStatus": "Active", "invitationUrl": url}}
+        self.assertEqual(invitation_url(detail, "producer", "workspace"), url)
+        for invalid in (url.replace("workspaceId=workspace", "workspaceId=other"),
+                        url.replace("app.powerbi.com", "unexpected.example"),
+                        url.replace("shareId=share", "shareId=other")):
+            with self.subTest(url=invalid), self.assertRaises(ApiError):
+                invitation_url({**detail, "properties": {**detail["properties"],
+                                                        "invitationUrl": invalid}},
+                               "producer", "workspace")
+
+    def test_documented_fabric_invitation_path_is_also_supported(self):
+        from manage_partner_share import invitation_url
+        url = "https://app.fabric.microsoft.com/share/invite/share"
+        detail = {"id": "share", "properties": {"shareStatus": "Active", "invitationUrl": url}}
+        self.assertEqual(invitation_url(detail, "producer", "workspace"), url)
