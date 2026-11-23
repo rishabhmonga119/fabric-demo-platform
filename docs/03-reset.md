@@ -1,11 +1,5 @@
 # 03 — Reset After Rehearsal
 
-**Implementation status:** baseline role/file capture, expected-count checks,
-prepared fallback generation, `tools/verify.py --all`, and scoped rehearsal IQ
-Share cleanup are implemented. The `tools/reset/` orchestrator and reset scripts
-below are still a specification, not implemented/rehearsed commands. Do not
-assume the advertised full reset is currently available.
-
 Goal: return every system to the `demo-baseline` state in ~15 minutes with one command:
 ```
 python tools/reset/reset_all.py --confirm            # full reset
@@ -64,10 +58,8 @@ config/environments.yml, retry with backoff for 429/5xx, long-running-operation 
    - Dev: Fabric Git status → updateFromGit with conflict resolution PreferRemote
      (workspace head = current, remote commit = demo-baseline SHA). If the workspace has
      uncommitted changes, undo them first (document the API used).
-   - Test/Prod metadata only: gh workflow run deploy.yml --ref demo-baseline -f stage=both; wait; print
+   - Test/Prod: gh workflow run deploy.yml -f stage=both -f ref=demo-baseline; wait; print
      the approval URL for prod and poll until done (approval stays manual).
-   - The OIDC workflow doesn't update Dev or run Spark/data refresh. Keep
-     user-authenticated refresh separate; don't weaken the CI identity guard.
    - Then post_deploy.py --stage <stage> (shortcuts, mirror binding).
    - Wait for the Excel shortcut transformation to finish (poll the target table's
      max(month) or the shortcut monitoring status), then run PL_Refresh and wait.
@@ -104,34 +96,56 @@ config/environments.yml, retry with backoff for 429/5xx, long-running-operation 
 ## Prepare the baseline (one-time, after `01` is complete)
 
 ```
+git tag demo-baseline && git push origin demo-baseline
 python tools/export_roles.py --out config/onelake_roles.baseline.json
 python tools/build_manifest.py --out seed/manifest.json
-python tools/build_expected_counts.py --capture-baseline
+python tools/build_expected_counts.py --out seed/expected_counts.json
 ```
-The expected-count snapshot was already captured in Step 3; don't rerun
-unchanged data merely to reformat it. When capture is needed, use
-`--capture-baseline` (`--dry-run` first). It verifies actual Gold against the
-independently generated seed and refuses a different existing snapshot.
-Commit/push the snapshots and tooling before preparing refs.
 Prepared fallback for Act 3:
 ```
-python tools/prepare_fallback.py --dry-run
-python tools/prepare_fallback.py
-python tools/verify.py --all --dry-run --seal
-python tools/verify.py --all --seal
+git checkout -b demo/forecast-accuracy-prepared demo-baseline
+# apply the Forecast Accuracy change once (via Copilot), commit
+git tag demo-prepared-change && git push origin demo-prepared-change demo/forecast-accuracy-prepared
+git checkout main
 ```
-The fallback is generated in an owned temporary worktree; main and live models
-keep the seven-measure baseline. Query-scoped validation doesn't persist a
-measure. `--seal` creates/pushes `demo-baseline` only after all technical checks
-pass and verifies remote main/tag equality. Later run `python tools/verify.py --all`.
-The verifier doesn't append to BUILD_LOG after sealing, so the baseline HEAD
-stays unchanged. Recordings were explicitly skipped for this build.
+
+---
+
+## Re-baseline after the first rehearsal (fixes made on 23 Nov)
+
+The first rehearsal changed the *intended* baseline (report fixes, bookmark, doc fixes). The old `demo-baseline` tag doesn't contain them, so **move the baseline first, then reset** – otherwise the reset deletes the fixes.
+
+**Keep in the baseline (must survive every reset)**
+- `RPT_Sales`: Year Month slicer (multi-select, "Select all", no Blank), slicer doesn't filter the line chart, bookmark "Demo – North Retail Oct 2026", slicers saved as All.
+- `SM_Sales` fixes: `[Actual hl]` BLANK for months without actuals; deviation only where forecast exists.
+- Comments in `fabric/parameter.yml` and `config/environments.yml`; `openpyxl` in `requirements.txt`; Node 24 action versions (optional).
+- Updated `docs/02-demo-script.md`, `docs/04-sample-data.md`, `docs/03-reset.md`.
+- Prerequisites set outside Git: ReadAll for `SG-Demo-Sales-North/South` on Prod `MIR_UC_Gold`; tenant settings for IQ Sharing (tenant A: Share Item + External data sharing; tenant B: Share Subscription Item).
+- Branch protection on `main`: PR + required check `validate`, approvals off (or second reviewer account).
+
+**Remove (demo-time changes)**
+- `[Forecast Accuracy %]` measure, synonym and DA_Sales instruction (Act 3/4) – in Git and in Dev/Test/Prod.
+- `+500 hl` row in `demo_dev` (Act 1) and the inserted delivery row in `demo_prod` (Act 7).
+- `forecast_2026-12_late.xlsx` in `Forecasts/Dev/standard`.
+- OneLake roles `Sales_North` and any leftover `SalesNorth` on Prod `LH_Curated`.
+- `LHPartnerShare` (tenant A) and the Share Subscription + Mirrored OneLake item in `PARTNER-Inbound` (tenant B).
+
+**Steps**
+1. Make sure Dev UI changes (bookmark, slicer) are committed from the Dev workspace (Source control → Commit) and pulled locally (`git pull`).
+2. On `main`: `git revert <squash commit "Add Forecast Accuracy %…">` → push. The deploy workflow runs and removes the measure from Test/Prod (approve `prod`).
+3. Commit the doc/config fixes above to `main`.
+4. Move the tags: `git tag -f demo-baseline && git push -f origin demo-baseline`.
+5. Rebuild the fallback branch from the new baseline: `demo/forecast-accuracy-prepared` = new baseline + the Forecast Accuracy commit (`git cherry-pick <squash commit>`); move `demo-prepared-change` to it.
+6. Delete the demo-time OneLake roles, then re-export: `python tools/export_roles.py --out config/onelake_roles.baseline.json` (must contain **no** sales roles). Commit, move `demo-baseline` again if this changed a file.
+7. Run `python tools/reset/reset_all.py --dry-run`, check the plan, then `--confirm`.
+8. Run `python tools/verify.py --all`; regenerate `seed/expected_counts.json` only if verify fails **because** of intended changes.
+9. Work through the manual checklist below.
 
 ---
 
 ## Manual checklist (things scripts can't fully reset)
 
-- [ ] **Tenant B:** confirm no rehearsal Share Subscription / related Mirrored OneLake item is left; preserve the existing workspace and unrelated items.
+- [ ] **Tenant B:** confirm `PARTNER-Inbound` has no Share Subscription / Mirrored OneLake item left.
 - [ ] **IQ Sharing invitations:** delete old invitation mails in the partner mailbox (avoids clicking an old link live).
 - [ ] **M365 Copilot / Teams:** start a new chat for each profile; unpin nothing (agents stay published).
 - [ ] **Browser profiles:** sign-in still valid (P1, P2, P3); clear Power BI cache if the report shows old data (Ctrl+F5).

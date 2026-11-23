@@ -6,7 +6,7 @@ Illustrative beverage data (mineral water / soft drinks). **Not customer data.**
 - Same numbers in all three stages. Every table carries `env_marker` (`dev` / `test` / `prod`) so the audience can see which source a stage reads.
 - Units: volume in hectolitres (hl), money in EUR, months as first-of-month `DATE`.
 - Actuals: **2025-01 to 2026-10**. Forecasts: **2026-01 to 2026-11** (baseline) + **2026-12** (live file in Act 1).
-- Expected row counts and checksums are **computed** by `tools/build_expected_counts.py --capture-baseline` after the first run and stored in `seed/expected_counts.json`. Actual Gold data must match the independently generated seed before capture; don't hard-code checks.
+- Expected row counts and checksums are **computed** by `tools/build_expected_counts.py` after the first run and stored in `seed/expected_counts.json` — don't hard-code them.
 
 ---
 
@@ -34,7 +34,7 @@ Products (sku → name): `SKU-STL-075` Spring Still, `SKU-SPK-100` Spring Sparkl
 | PET-050 | PET | 0.5 | false |
 | PET-150 | PET | 1.5 | false |
 
-Valid SKU × package combinations: 28 (four waters in both glass packages + PET-100/150; four flavoured/soft drinks in PET-050/100 + GL-025). The complete family rules give 16 + 12 combinations. The generator defines the list explicitly; monthly sales therefore have 22 × 28 × 4 regions × 4 channels = 9,856 canonical rows.
+Valid SKU × package combinations: ~16 (waters in all glass + PET-100/150; soft drinks in PET-050/100 + GL-025). Generator defines the list explicitly.
 
 ### `dim_channel` (4 rows)
 `RETAIL` (food retail), `HORECA` (gastronomy), `WHOLESALE` (beverage wholesale), `ECOM` (online).
@@ -133,9 +133,11 @@ Measures: `[Actual hl]`, `[Forecast hl]`, `[Deviation hl]`, `[Deviation %]`, `[R
 
 | Act | Change | Statement / action | Visible effect |
 |---|---|---|---|
-| 1 | +5,000 hl actual | `UPDATE demo_dev.gold.fact_sales_monthly SET actual_hl = actual_hl + 5000 WHERE sku='SKU-STL-075' AND region_code='NORTH' AND month=DATE'2026-10-01';` (all channels of that combination) | Spike in North, Oct 2026, Spring Still; large positive deviation |
+| 1 | +500 hl actual on ONE row | `UPDATE demo_dev.gold.fact_sales_monthly SET actual_hl = actual_hl + 500, revenue_eur = ROUND(revenue_eur * (actual_hl + 500) / actual_hl, 2), margin_eur = ROUND(margin_eur * (actual_hl + 500) / actual_hl, 2) WHERE sku='SKU-STL-075' AND region_code='NORTH' AND month=DATE'2026-10-01' AND package_code='GL-075-RET' AND channel_code='RETAIL';` (full grain key → exactly 1 row; expect num_affected_rows = 1) | North, Oct 2026, Spring Still 0.75 l glass, Retail: ~786 → ~1,286 hl; revenue and margin rise proportionally; visible positive deviation vs. forecast |
 | 1 | Late forecast | Upload `forecast_2026-12_late.xlsx` to `Forecasts/Dev/standard` | December 2026 forecast appears |
 | 7 | New partner delivery | `INSERT INTO demo_prod.gold.fact_deliveries VALUES (DATE'2026-10-01','P-A','SKU-SPK-100','PET-100','NORTH', 120.00, 97.5,'prod');` then run Prod `PL_Refresh` + `NB_Partner_Extract` | New row visible in tenant B |
+
+Grain rule: every demo UPDATE must filter on the full grain key (month, sku, package_code, region_code, channel_code) so it touches one row. `seed` must guarantee that key is unique (add a uniqueness check to `verify.py`).
 
 Note: Act 1 changes Dev only; Act 7 changes Prod data (needed because partners read Prod). Both are reverted by `reset_databricks.py`.
 
