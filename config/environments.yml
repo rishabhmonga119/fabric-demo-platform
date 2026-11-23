@@ -830,6 +830,8 @@ copilot:
     microsoft_copilot_publication_verification: user-confirmed
     teams_verification: admin-user-screenshot-confirmed
     sales_assistant_verification: admin-user-screenshot-confirmed
-    north_viewer_answer_verification: pending-viewer-retest
+    north_viewer_answer_verification: user-confirmed-fabric-iq
+    north_viewer_report_verification: user-confirmed-workspace-opened-report
+    north_viewer_report_entry: workspace-opened
     viewer_source_access_grant: verified-prod-default-reader
     viewer_source_access_granted_at: '2026-11-23T07:43:04+00:00'

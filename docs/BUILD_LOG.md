@@ -1963,8 +1963,50 @@ Totals (exact, not abbreviated):
 Status: PREREQUISITES VERIFIED; waiting for the required human Agent Store,
 M365/Teams and viewer-session checkpoint. Steps 8 and 9 have not started.
 
+Final Step 7 status: COMPLETE, following the user's viewer-session confirmation.
+The intermediate failure notes below are retained as investigation history,
+not the current status.
+
+- The user reports that the previously supplied report link was wrong for
+  their session. Opening the report from the Prod workspace worked as the
+  configured North viewer, and M365 Copilot using Fabric IQ then returned data.
+  Use the workspace-opened report as the verified viewer entry point. No
+  further connection, credential, policy or permission change was made to
+  obtain this successful result. The precise earlier link/context discrepancy
+  was not independently established; do not claim a repaired credential fault.
+- Microsoft Copilot publication and agent creation/sharing were previously
+  confirmed by the user; admin Teams/M365 answers were evidenced in screenshots.
+  The previously missing viewer report/Fabric IQ check is now user-confirmed.
+- Fabric IQ/Sales Assistant uses Power BI report/semantic-model context.
+  DA_Sales remains a separate ontology-only data agent. Native Fabric IQ
+  success does not imply it queried DA_Sales.
+- No baseline tag is created yet. Continue Step 8 before Step 9 acceptance.
+
 Follow-up from the user's live UI checks:
 
+- The user reports the same authentication error after a fresh Aadik sign-in.
+  A read-only, two-hour, latest-20 Entra sign-in query for the configured viewer
+  showed a successful Microsoft Power BI interactive sign-in at 07:46:21 UTC,
+  status code 0, Conditional Access success and MFA satisfied by token claim.
+  This validates that interactive sign-in only, not the downstream OneLake
+  connection or non-interactive token exchange. No new audit permission,
+  account change or policy exception was requested or granted.
+- Do not repeat browser sign-ins as the fix or broaden permissions. The next
+  human credential diagnostic is the model owner's Gateway and cloud
+  connections / Data source credentials settings. Preserve end-user SSO,
+  ontology-only DA_Sales and existing data roles. Step 7 remains blocked;
+  Steps 8-9 remain unstarted.
+- Expanded viewer error at 2026-11-23 07:49 UTC: HTTP 400,
+  `Premium_ASWL_Error`; Power BI says Entra ID authentication failed for the
+  current user and explicitly requests signing into Power BI again to update
+  credentials. Correlation ID `c10fd017-ecdc-2125-81df-5f2c854d0a45`.
+  This is not evidence of an on-premises source. Existing approved OneLake
+  memberships were independently read back and remained intact.
+- Paused permission/connection changes and automated query retries for the
+  credential error. Required human action is a fresh Power BI sign-in for
+  the configured North viewer in its separate browser session, followed by
+  opening the report before retrying Copilot. Do not change the automation's
+  administrator sign-ins, disable SSO, or substitute administrator credentials.
 - The user explicitly approved adding only the North/South sales groups to
   Prod LH_Curated DefaultReader. Added `tools/grant_baseline_readers.py`,
   ran its dry-run, then `--approved-prod-baseline-read`. The update used a
