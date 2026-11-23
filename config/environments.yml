@@ -816,3 +816,14 @@ cost_guardrails:
   auto_termination_minutes: 15
   fabric_sku: F4
   paid_azure_resources: step_1_only
+copilot:
+  step7:
+    workspace_id: 4cd2247c-ab4c-441a-9637-f3c3d525f4c1
+    data_agent_id: 40265df6-63e2-45a4-9dfa-865a134e3cdc
+    prerequisites_checked_at: '2026-11-23T07:08:56+00:00'
+    fabric_runtime_published: true
+    viewer_groups_and_licence_plans_verified: true
+    agent_store_verification: pending-human
+    teams_verification: pending-human
+    sales_assistant_verification: pending-human
+    north_viewer_answer_verification: pending-human

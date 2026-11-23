@@ -489,6 +489,14 @@ Never unpack over durable source files.
 
 ## Step 7 — Prod-only: Copilot, Teams, Fabric IQ
 
+Run `python tools/check_copilot_publication.py --dry-run`, then without
+`--dry-run`, to verify Prod/F4, existing Fabric publication, viewer-group
+memberships and enabled Power BI/Copilot licence plans. This creates no cloud
+objects or access grants. Fabric runtime/MCP publication is **not** Agent Store
+publication; the remaining M365/Teams actions below are a human checkpoint.
+Use the configured licensed viewer accounts (`aadik` for North, `andrel` for
+South), not the unused initial `demo.north`/`demo.south` placeholders.
+
 1. **Publish `DA_Sales` in Prod** → Publish → **Publish to Agent Store** with a clear description.
 2. M365 Copilot (as you): Agents → find DA_Sales → pin; test in Teams.
 3. **Agent Builder:** New agent "Sales Assistant" → Configure → Work content → turn on **Fabric** (may show as "Power BI") → instructions:
@@ -499,7 +507,12 @@ Never unpack over durable source files.
    Share with `SG-Demo-Sales-North`, `SG-Demo-Sales-South`.
 4. Grant `demo.north`/`demo.south` read on `DA_Sales`, `SM_Sales`, `RPT_Sales` (Viewer role already covers this) — Copilot only returns data they can access.
 
-**Check:** as `demo.north`, `@DA_Sales What was actual volume by region last month?` returns all regions (no roles yet).
+**Check:** in a separate session as the configured North viewer (`aadik`),
+`@DA_Sales What was actual volume by region in October 2026?` returns all
+four baseline regions (before the live North-only role is added). Do not
+change the automation's Azure/Fabric/GitHub administrator sign-ins to perform
+this viewer check. Verify `Sales Assistant` uses the Fabric/Power BI capability;
+it is separate from the ontology-only `DA_Sales` and does not change its source.
 
 ---
 

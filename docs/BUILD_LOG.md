@@ -1956,3 +1956,46 @@ Totals (exact, not abbreviated):
   using all SalesPeriod rows from **2025-01-01** through **2026-10-01** (month is first-of-month).
 
 - 2026-11-22T21:20:19+00:00: Step 6 metadata-only OIDC/SDK preflight for both PASS; no workspace changes; `https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/45071446452`.
+
+- 2026-11-23T07:08:56+00:00: Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime publication, existing sales-group Viewer memberships and enabled Power BI/Copilot plans. No cloud writes, grants, licences or duplicate agent publication. Agent Store/Teams/Agent Builder/viewer-session checks require the human checkpoint. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent; https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments; https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot; https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
+## 2026-11-23 - Step 7: Copilot publication prerequisites
+
+Status: PREREQUISITES VERIFIED; waiting for the required human Agent Store,
+M365/Teams and viewer-session checkpoint. Steps 8 and 9 have not started.
+
+- Resumed from pushed Step 6 checkpoint `6045baf56b6ac22f5e8e37d3560476abd235937e`.
+  Worktree was clean; Azure/Fabric DEMO administrator and GitHub owner contexts
+  passed. No Dev/Test item was changed.
+- Added idempotent `tools/check_copilot_publication.py` with `--dry-run`.
+  Verified the existing Prod workspace/item IDs, Active F4, and DA_Sales
+  Fabric-runtime publication. That publication does not prove Agent Store
+  publication or M365 discoverability.
+- Verified the configured North/South users remain members of their approved
+  sales groups and both groups have Prod Viewer, without granting access.
+  Presenter and both viewer accounts have enabled Power BI Pro and M365
+  Copilot service plans. No licence purchase or assignment is needed.
+- Commands: `python tools/check_context.py --dry-run`;
+  `python tools/check_demo_licenses.py --dry-run`;
+  `python -m py_compile tools/check_copilot_publication.py`;
+  `python tools/check_copilot_publication.py --dry-run`;
+  `python tools/check_copilot_publication.py`.
+  Syntax and minimal live prerequisite checks passed; no routine suite rerun.
+- Stored Step 7 prerequisite results and explicit pending-human verification
+  states in environments.yml. Do not mark the step complete on API prerequisites
+  alone, and do not create the demo-baseline tag before Steps 7-9 acceptance.
+- Required human actions: publish Prod DA_Sales to Agent Store, pin/test it in
+  M365/Teams, create Sales Assistant with the native Fabric/Power BI capability
+  and share it with both sales groups, then verify an October 2026 region query
+  in a separate North-viewer browser session. Keep the CLI admin context intact.
+- Preserve DA_Sales as ontology-only. Sales Assistant's Fabric IQ capability
+  independently uses permitted Power BI artifacts; it is not a source change
+  to DA_Sales.
+- Skills loaded from
+  `C:\Users\rishabhmonga\.copilot\installed-plugins\fabric-collection\fabric-skills\skills\e2e-medallion-architecture\SKILL.md`;
+  Fabric reference: `fabric-skills/common/COMMON-CORE.md`.
+  Official contracts:
+  https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent;
+  https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments;
+  https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot;
+  https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
+
