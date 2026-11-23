@@ -1960,11 +1960,30 @@ Totals (exact, not abbreviated):
 - 2026-11-23T07:08:56+00:00: Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime publication, existing sales-group Viewer memberships and enabled Power BI/Copilot plans. No cloud writes, grants, licences or duplicate agent publication. Agent Store/Teams/Agent Builder/viewer-session checks require the human checkpoint. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent; https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments; https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot; https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
 ## 2026-11-23 - Step 8: Output-only partner producer
 
-Status: PRODUCER AND APPROVED INVITATION VERIFIED; the single-recipient
-rehearsal Share is Active, but recipient acceptance/query/revocation rehearsal
-is still pending. No consumer Share Subscription, B2B guest, workspace-role
-grant or partner reader-role membership was created by this automation.
+Status: CONSUMER BASELINE USER-VERIFIED; the approved rehearsal producer Share
+has now been deleted and its absence verified. A fresh tenant-B denial and
+consumer-side rehearsal subscription cleanup remain pending. No consumer
+Share Subscription, B2B guest, workspace-role grant or partner reader-role
+membership was created by this automation.
 Step 9 remains pending; no baseline tag or recording is claimed.
+
+- Consumer baseline follow-up: the user accepted into tenant B, confirms
+  subscription/shared items Active, and confirms the SQL query returned the
+  expected **1,232 rows and 1,121,803.72 hl**. The producer's recipient API
+  independently reports **Accepted** (not the documentation example's
+  `Active` recipient value). Consumer SQL values are user-confirmed, not an
+  administrator query impersonating the consumer. Approved producer Share
+  cleanup has completed; a fresh consumer denial and consumer-side cleanup
+  still need verification.
+- Cleanup commands: `python tools/manage_partner_share.py delete --dry-run`,
+  then `python tools/manage_partner_share.py delete --approved-rehearsal-cleanup`.
+  The exact asset/recipient/expiry was reread before deleting only Share
+  `8343ea43-7fe0-4b23-9a1b-0c4ce64791ff`; API absence readback passed.
+  No producer lakehouse, table, notebook, existing inbound workspace or
+  consumer item was deleted by the automation. All 13 partner tests passed.
+  Consumer-side deletion of the rehearsal Share Subscription unsubscribes and
+  removes its related Mirrored OneLake items, per
+  <https://learn.microsoft.com/fabric/onelake/iq-share/manage-share-subscription>.
 
 - Tenant B details are now supplied and stored as IDs/domain/inbound workspace
   in configuration. Public OpenID discovery confirms the supplied domain maps
@@ -1981,7 +2000,8 @@ Step 9 remains pending; no baseline tag or recording is claimed.
   Microsoft's published `share.json`/common JSON schemas. GetDefinition
   readback exactly matches one asset (the output-only LH_PartnerA), one named
   tenant-B recipient, MirroredOneLake representation and the approved
-  expiration. Share state is **Active**; recipient acceptance is **Pending**.
+  expiration. At creation, Share state was **Active** and recipient
+  acceptance was **Pending**; see the accepted/query/cleanup follow-ups above.
   The private invitation URL is printed only to the caller, not logged or
   committed. No access to Prod or additional items was shared.
 - Added `tools/manage_partner_share.py` with dry-run, explicit external-grant
@@ -2307,3 +2327,7 @@ Follow-up from the user's live UI checks:
 - 2026-11-23T10:10:42+00:00: Rehearsal Share 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff readback PASS: exact single asset/recipient/expiration, Active invitation. Consumer acceptance/query not yet verified.
 
 - 2026-11-23T10:14:22+00:00: Rehearsal Share 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff readback PASS: exact single asset/recipient/expiration, Active invitation, recipient acceptance Pending. Source readback does not itself verify a consumer query.
+
+- 2026-11-23T10:20:25+00:00: Rehearsal Share 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff readback PASS: exact single asset/recipient/expiration, Active invitation, recipient acceptance Accepted. Source readback does not itself verify a consumer query.
+
+- 2026-11-23T10:30:58+00:00: Approved rehearsal Share 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff deletion/absence verified. No producer data or consumer-tenant item was deleted.

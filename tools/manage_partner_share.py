@@ -271,7 +271,7 @@ def main() -> None:
         configured.update({"id": item["id"], "expires_utc": expires, "state": "Active",
                            "recipient_acceptance_status": acceptance})
         if not partner.get("sharing_verification", "").startswith(("verified", "user-confirmed")):
-            partner["sharing_verification"] = "pending-consumer-query" if acceptance == "Active" else \
+            partner["sharing_verification"] = "pending-consumer-query" if acceptance in ("Active", "Accepted") else \
                 "pending-consumer-acceptance-and-query"
         save_config(config)
         record(f"Rehearsal Share {item['id']} readback PASS: exact single asset/recipient/expiration, "
