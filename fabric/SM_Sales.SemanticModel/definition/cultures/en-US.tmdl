@@ -1173,6 +1173,27 @@ cultureInfo en-US
 			        }
 			      ]
 			    },
+			    "sales_vs_forecast.forecast_accuracy": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Sales vs Forecast",
+			          "ConceptualProperty": "Forecast Accuracy %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "forecast accuracy": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "accuracy": {
+			            "LastModified": "2026-11-23T18:22:12.874Z"
+			          }
+			        }
+			      ]
+			    },
 			    "sales_vs_forecast.actual_hl": {
 			      "Definition": {
 			        "Binding": {

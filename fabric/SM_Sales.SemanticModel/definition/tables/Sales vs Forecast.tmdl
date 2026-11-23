@@ -44,6 +44,11 @@ table 'Sales vs Forecast'
 		displayFolder: Financials
 		lineageTag: 10845ee8-30f5-49a2-b0ce-4e391e754be4
 
+	/// How closely forecast volume matches actual sales: 100% is an exact match; larger errors reduce accuracy and can make it negative. Returns 0% when actual volume is zero; otherwise blank if actual or forecast is missing.
+	measure 'Forecast Accuracy %' = VAR _Actual = [Actual hl] VAR _Forecast = [Forecast hl] RETURN IF(_Actual == 0, 0, IF(ISBLANK(_Actual) || ISBLANK(_Forecast), BLANK(), DIVIDE(_Actual - ABS(_Actual - _Forecast), _Actual)))
+		formatString: 0.0%
+		displayFolder: Forecast
+
 	/// First day of the sales or forecast month.
 	column Month
 		dataType: dateTime
