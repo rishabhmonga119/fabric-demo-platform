@@ -205,6 +205,38 @@ class BaselineReaderTests(unittest.TestCase):
             baseline_roles(self.roles, "workspace", "item", [{"id": "north"}], "tenant")
 
 
+class OntologyReaderTests(unittest.TestCase):
+    def test_only_approved_groups_change_and_verified_grants_are_idempotent(self):
+        from grant_ontology_readers import permission_plan
+        users = [
+            {"identifier": "north", "principalType": "Group", "datasetUserAccessRight": "Read"},
+            {"identifier": "other", "principalType": "Group", "datasetUserAccessRight": "ReadReshare"},
+        ]
+        groups = [{"id": "north", "name": "North"}, {"id": "south", "name": "South"}]
+        plan = permission_plan(users, groups)
+        self.assertEqual(plan, [
+            ("PUT", {"identifier": "north", "principalType": "Group",
+                     "datasetUserAccessRight": "ReadExplore"}),
+            ("POST", {"identifier": "south", "principalType": "Group",
+                      "datasetUserAccessRight": "ReadExplore"}),
+        ])
+        self.assertEqual(users[0]["datasetUserAccessRight"], "Read")
+        self.assertEqual(permission_plan([payload for _, payload in plan] + [users[1]], groups), [])
+
+    def test_unexpected_or_ambiguous_permissions_cannot_be_overwritten(self):
+        from grant_ontology_readers import permission_plan
+        group = {"id": "north", "name": "North"}
+        for right in ("ReadReshare", "ReadWriteExplore", "None"):
+            with self.subTest(right=right), self.assertRaises(http_api.ContextError):
+                permission_plan([{"identifier": "north", "principalType": "Group",
+                                  "datasetUserAccessRight": right}], [group])
+        entry = {"identifier": "north", "principalType": "Group", "datasetUserAccessRight": "Read"}
+        with self.assertRaises(http_api.ContextError):
+            permission_plan([entry, entry], [group])
+        with self.assertRaises(http_api.ContextError):
+            permission_plan([{**entry, "principalType": "User"}], [group])
+
+
 class CapacityReaderGuardTests(unittest.TestCase):
     def setUp(self):
         self.resource = "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Fabric/capacities/demo"

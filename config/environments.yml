@@ -715,6 +715,9 @@ environments:
           '[Rows]': 10304
           '[Calendar days]': 730
           '[Stage]': prod
+        ontology_read_build_group_ids:
+        - ad4dc1e3-8180-4f7f-98fa-1134f37cc239
+        - 199f4419-549f-4f29-9e4a-33a25afc0a36
       ONT_Business:
         id: fc2f5c83-8a1d-4626-b487-971446fe982f
         type: Ontology
@@ -833,5 +836,8 @@ copilot:
     north_viewer_answer_verification: user-confirmed-fabric-iq
     north_viewer_report_verification: user-confirmed-workspace-opened-report
     north_viewer_report_entry: workspace-opened
+    north_viewer_data_agent_verification: pending-ontology-instance-and-agent-retest
     viewer_source_access_grant: verified-prod-default-reader
     viewer_source_access_granted_at: '2026-11-23T07:43:04+00:00'
+    viewer_ontology_build_grant: verified-prod-sm-sales-read-build
+    viewer_ontology_build_granted_at: '2026-11-23T09:00:16+00:00'

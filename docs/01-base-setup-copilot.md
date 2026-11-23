@@ -502,14 +502,26 @@ South), not the unused initial `demo.north`/`demo.south` placeholders.
 
 1. **Publish `DA_Sales` in Prod** → Publish → **Also publish to Microsoft Copilot**
    = **On**, then **Publish**, with a clear description.
-2. M365 Copilot (as you): Agents → find DA_Sales → pin; test in Teams.
+2. M365 Copilot (as you): open DA_Sales → pin; test in Teams. Publication
+   does not automatically install the agent for every viewer. From DA_Sales
+   in Copilot, use **Share → Copy link**. Open that agent link as the configured
+   viewer, select **Add/Open** if offered, and pin it from **Agents**. Searching
+   the viewer's installed **Plugins** alone is not a publication check.
+   Fabric item/data permissions and Copilot agent distribution are separate.
+   If the link requests a new access grant or tenant-policy change, stop for
+   approval rather than changing organization-wide settings.
 3. **Agent Builder:** New agent "Sales Assistant" → Configure → Work content → turn on **Fabric** (may show as "Power BI") → instructions:
    ```
    Use Fabric to answer business questions with Power BI data the user can access.
    State the data source, filters and period. Don't estimate unavailable values.
    ```
    Share with `SG-Demo-Sales-North`, `SG-Demo-Sales-South`.
-4. Grant `demo.north`/`demo.south` read on `DA_Sales`, `SM_Sales`, `RPT_Sales` (Viewer role already covers this) — Copilot only returns data they can access.
+4. Verify the configured North/South sales groups have Read on `DA_Sales`,
+   `ONT_Business`, `SM_Sales` and `RPT_Sales` (workspace Viewer covers this).
+   For this semantic-model-backed ontology, the groups also need **Build on
+   `SM_Sales`** to query through the ontology, including its entity instances.
+   This is distinct from direct Data Agent semantic-model access, for which
+   Read alone suffices. New grants require explicit approval.
 
 **Check:** in a separate session as the configured North viewer (`aadik`),
 `@DA_Sales What was actual volume by region in October 2026?` returns all
@@ -523,8 +535,9 @@ access. Before accepting this check, inspect `LH_Curated` OneLake role
 membership and the source shortcut permissions. Run
 `python tools/check_copilot_publication.py --model-access-only --dry-run`
 for a read-only diagnostic; it does not impersonate the viewer or grant access.
-Any required new data-access grant needs explicit approval. Do not grant Build,
-promote the workspace role, disable SSO, or rebind the model merely because
+Any required new data-access grant needs explicit approval. Do not grant Build
+solely to address a generic Copilot error, promote the workspace role, disable SSO,
+or rebind the model merely because
 Copilot describes the source as on-premises. A successful administrator query
 does not validate the viewer's access.
 
@@ -536,6 +549,19 @@ preserves other members/policies, and protects the update with the collection
 ETag. It never grants workspace Contributor, model Build or write access.
 Before Act 6, remove North's unrestricted membership so it cannot override
 the restricted role. Always verify the real viewer session after a grant.
+
+For the separately approved ontology-bound model permission, run
+`python tools/grant_ontology_readers.py --dry-run`, then
+`python tools/grant_ontology_readers.py --approved-prod-ontology-build`.
+It grants only the two sales groups Read+Build (`ReadExplore`) on Prod
+`SM_Sales`, retains workspace Viewer and refuses unexpected existing grants
+rather than overwriting them. Build also enables authoring reports and Analyze
+in Excel, subject to existing data security; it is not model Write or Reshare.
+See the explicit Read+Build query requirement in
+[Generate ontology from semantic models](https://learn.microsoft.com/fabric/iq/ontology/how-to-generate-from-semantic-models).
+After propagation, verify `ONT_Business` -> `SalesPeriod` -> **Instances** as
+the North viewer, then retry the published `DA_Sales` question. An API permission
+readback or an administrator answer alone does not complete this check.
 
 ---
 

@@ -1960,12 +1960,54 @@ Totals (exact, not abbreviated):
 - 2026-11-23T07:08:56+00:00: Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime publication, existing sales-group Viewer memberships and enabled Power BI/Copilot plans. No cloud writes, grants, licences or duplicate agent publication. Agent Store/Teams/Agent Builder/viewer-session checks require the human checkpoint. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent; https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments; https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot; https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
 ## 2026-11-23 - Step 7: Copilot publication prerequisites
 
-Status: PREREQUISITES VERIFIED; waiting for the required human Agent Store,
-M365/Teams and viewer-session checkpoint. Steps 8 and 9 have not started.
+Status: PARTIALLY VERIFIED. Publication and report/Fabric IQ checks are
+user-confirmed; ontology-backed DA_Sales still needs a successful viewer
+instance/agent retest. Step 8 has read-only preparation only; Step 9 is pending.
 
-Final Step 7 status: COMPLETE, following the user's viewer-session confirmation.
+Step 7 status after further viewer checks: Fabric IQ/report path verified;
+viewer DA_Sales now opens, but ontology instance retrieval and agent execution
+fail. Both sales groups' missing Prod SM_Sales Build permission has now been
+granted and verified by API readback; the actual viewer instance/agent retest
+remains required. The grant alone does not establish that the failure is fixed.
+The earlier complete checkpoint covered the user's reported actions, but the
+subsequent Plugins screenshot establishes that the distinct Data Agent path
+still needs its own check. Do not treat Fabric IQ success as DA_Sales success.
 The intermediate failure notes below are retained as investigation history,
 not the current status.
+
+- The viewer's `SalesPeriod` -> Instances screenshot shows a generic retrieval
+  error, request ID `Ontology;7537e3d6-5c6f-4ec5-9b82-4a84fe3bfe21`.
+  The read-only banner is expected for workspace Viewer, not proof that editing
+  permission is needed. Supporting Eventhouse/KQL access is already
+  Read+ReadData and GraphModel access is already Read for both sales groups.
+  Their supporting item IDs are Eventhouse
+  `1b63266b-53a5-4f8a-9ae2-550887dde490`, KQLDatabase
+  `dee1b8e3-7c14-49f7-a93b-888aebc61230`, GraphModel
+  `a97b801b-4dbc-493f-9343-1de1976f9a18`. No supporting-item grant was made.
+- Read-only deployed ontology definition inspection confirms SalesPeriod
+  binds to Prod SM_Sales `fcd20b15-77e8-4493-970e-0c4555b56cf7`
+  in workspace `4cd2247c-ab4c-441a-9637-f3c3d525f4c1`, not Dev/Test.
+  The specific Microsoft ontology documentation requires **Read and Build
+  to query semantic models using ontology**:
+  <https://learn.microsoft.com/fabric/iq/ontology/how-to-generate-from-semantic-models>.
+  The earlier general Data Agent Read-only guidance was incomplete for this
+  ontology-backed path. Missing Build is a documented prerequisite gap;
+  it is not proof the entire runtime issue is resolved.
+- User explicitly approved Read+Build on **Prod SM_Sales only, for both sales
+  groups**, after disclosure that Build also enables report creation and
+  Analyze in Excel. Implemented an approval-gated, idempotent script with
+  dry-run, identity/capacity/item/Viewer checks and exact group permission
+  readback. No Write/Reshare, workspace promotion, SSO or OneLake change,
+  ontology replacement, or Dev/Test modification is authorized by this grant.
+- Validation: 11 focused ontology-reader/shared API safety tests passed with
+  `python -m unittest discover -s tests -p test_fabric.py -k OntologyReaderTests -k JsonApiGuardTests -v`.
+  `python tools/grant_ontology_readers.py --dry-run` planned exactly two PUTs.
+  `python tools/grant_ontology_readers.py --approved-prod-ontology-build`
+  verified Azure/Fabric/GitHub identities before each PUT and read back
+  **ReadExplore** for North and South. No Write or Reshare was granted.
+  Config now records the group IDs and marks the real viewer check pending.
+  A subsequent live `--dry-run` planned **zero** writes, verifying idempotence.
+  `git diff --check` passed.
 
 - The user reports that the previously supplied report link was wrong for
   their session. Opening the report from the Prod workspace worked as the
@@ -1981,6 +2023,17 @@ not the current status.
   DA_Sales remains a separate ontology-only data agent. Native Fabric IQ
   success does not imply it queried DA_Sales.
 - No baseline tag is created yet. Continue Step 8 before Step 9 acceptance.
+- The viewer could query the model through Fabric IQ but did not find DA_Sales
+  while searching Plugins. Publishing to Microsoft Copilot does not
+  automatically install the agent for every viewer. Next supported action:
+  copy DA_Sales's **Copilot agent** share link from the admin's Copilot and
+  open/add it under the viewer account; use Agents, not only Plugins search.
+  Do not substitute the report URL or assume new Fabric permissions are needed.
+  No M365 access grant or tenant setting was changed.
+- Step 8 read-only preparation verified an empty DEMO-Partner-A workspace on
+  the existing F4 and the real Prod delivery source schema. P-A has 1,232
+  delivery rows, Jan 2025-Oct 2026, 1,121,803.72 hl. No partner item has
+  been created yet; no partner or cross-tenant access has been granted.
 
 Follow-up from the user's live UI checks:
 
@@ -2099,3 +2152,9 @@ Follow-up from the user's live UI checks:
 
 
 - 2026-11-23T07:43:04+00:00: Approved Step 7 Prod LH_Curated DefaultReader membership grant/readback PASS: SG-Demo-Sales-North, SG-Demo-Sales-South. Existing virtual ReadAll membership and unrestricted Read policy preserved; no Build/Contributor, SSO/connection, mirror, tenant or Dev/Test change. Viewer-session retest is still required. Skill: e2e-medallion-architecture/common references; https://learn.microsoft.com/rest/api/fabric/core/onelake-data-access-security/create-or-update-data-access-roles.
+
+- 2026-11-23T09:00:04+00:00: Approved Step 7 ontology reader PUT: Prod SM_Sales (fcd20b15-77e8-4493-970e-0c4555b56cf7), group ad4dc1e3-8180-4f7f-98fa-1134f37cc239, ReadExplore. No Write/Reshare or workspace-role change.
+
+- 2026-11-23T09:00:13+00:00: Approved Step 7 ontology reader PUT: Prod SM_Sales (fcd20b15-77e8-4493-970e-0c4555b56cf7), group 199f4419-549f-4f29-9e4a-33a25afc0a36, ReadExplore. No Write/Reshare or workspace-role change.
+
+- 2026-11-23T09:00:16+00:00: Approved Step 7 Prod SM_Sales Read+Build readback PASS for both sales groups. Ontology-bound semantic-model queries require Read+Build, unlike the general direct Data Agent semantic-model Read prerequisite. Workspace Viewer, SSO, OneLake roles, ontology-only DA_Sales and Dev/Test are unchanged. Real North viewer instance and agent checks remain pending. References: semantic-model-authoring/references/semantic-model-rest-api.md, Permissions; https://learn.microsoft.com/fabric/iq/ontology/how-to-generate-from-semantic-models; https://learn.microsoft.com/rest/api/power-bi/datasets/put-dataset-user-in-group; https://learn.microsoft.com/rest/api/power-bi/datasets/post-dataset-user-in-group.
