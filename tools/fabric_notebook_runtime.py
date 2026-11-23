@@ -15,7 +15,8 @@ OWNER_MARKER = "Managed by fabric-demo-platform demo automation"
 SQL_READ_TARGETS = {}
 
 
-def initialize_runtime(stage, expected_tenant, allowed_actors):
+def initialize_runtime(stage, expected_tenant, allowed_actors, *,
+                       workspace_name=None, lakehouse_names=("LH_Landing", "LH_Curated")):
     if "spark" in globals():
         raise RuntimeError("This notebook requires the pure Python kernel, not Spark.")
     context = notebookutils.runtime.context
@@ -38,7 +39,7 @@ def initialize_runtime(stage, expected_tenant, allowed_actors):
         return response.json()
 
     workspace = read_api("workspaces/" + workspace_id)
-    expected_name = "DEMO-Analytics-" + stage.title()
+    expected_name = workspace_name or "DEMO-Analytics-" + stage.title()
     if workspace["displayName"] != expected_name:
         raise RuntimeError("Notebook stage and workspace binding differ.")
     lakehouses = []
@@ -49,7 +50,7 @@ def initialize_runtime(stage, expected_tenant, allowed_actors):
         page = read_api(f"workspaces/{workspace_id}/lakehouses?continuationToken={quote(page['continuationToken'], safe='')}")
         lakehouses.extend(page["value"])
     resolved = {}
-    for name in ("LH_Landing", "LH_Curated"):
+    for name in lakehouse_names:
         matches = [item for item in lakehouses if item["displayName"] == name]
         if len(matches) != 1:
             raise RuntimeError(f"Missing or ambiguous lakehouse: {name}")

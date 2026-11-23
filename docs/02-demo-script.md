@@ -142,11 +142,11 @@
 1. **P1 → OneLake catalog → Domains:** `Demo Analytics` vs `Demo Partners`. Open `DEMO-Partner-A` → `LH_PartnerA.partner_a_deliveries` (only partner P-A, no money columns) + `Files/context/partner_glossary.md`.
 2. **Option A (today, per your PDF):** "A guest user from the partner gets Viewer + a OneLake role here." Show the role `Partner_A_Read` (pre-built). Don't log in.
 3. **Option B — IQ Sharing (preview), live:**
-   1. `LH_PartnerA` → **Share** (IQ Sharing) → recipient `partner.user@<tenantB>` → expiration date (required) → include `Files/context` → create → copy invitation.
-   2. **P3 (tenant B):** open invitation → accept into `PARTNER-Inbound` → Share Subscription + Mirrored OneLake item appear → query `partner_a_deliveries`.
+   1. `DEMO-Partner-A` → **+ New item → Share (preview)** → select the entire output-only `LH_PartnerA` → intended recipient → expiration date (required) → create → copy invitation. Ordinary lakehouse **Share** is a different feature. The glossary is inside the shared item; do not add unfiltered source shortcuts.
+   2. **P3 (tenant B):** open invitation → accept into `PARTNER-Inbound` → Share Subscription + Mirrored OneLake item appear. For notebook/model consumption, create an inbound lakehouse with shortcuts to the Mirrored OneLake output table, then query `partner_a_deliveries`.
    3. **P1:** run `NB_Partner_Extract` after the Act 1 change (or insert one delivery row) → **P3** re-query → new row visible (zero copy).
    4. **P1:** revoke recipient → **P3** query fails.
-   *Talk:* "No B2B guest, no copy, expiry built in. Important: once shared, the partner's tenant governs access on their side — that's why we only share a partner-specific table, never the full curated data with row filters."
+   *Talk:* "No B2B guest, no copy, expiry built in. IQ Sharing shares the whole item and ignores producer OneLake roles. The partner's tenant governs access on their side — that's why this lakehouse contains only the physically filtered partner-specific output and glossary, never full curated data or source shortcuts."
 4. Mention: Delta Sharing from Databricks remains valid for partners without Fabric.
 
 **If IQ Sharing misbehaves (preview):** fall back to **external data sharing** (GA path) with the same flow, or the recording.

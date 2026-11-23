@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "NB_Partner_Extract",
+    "description": "Managed by fabric-demo-platform demo automation: output-only Partner A extraction."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "07594986-2273-503f-b513-ed2bd1a0f464"
+  }
+}

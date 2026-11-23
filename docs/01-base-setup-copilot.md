@@ -570,19 +570,43 @@ readback or an administrator answer alone does not complete this check.
 **Copilot prompt**
 ```
 Create in /partner (separate fabric-cicd folder, deployed manually) for DEMO-Partner-A:
-- LH_PartnerA with a table shortcut to DEMO-Analytics-Prod LH_Curated.sales_vs_forecast
-  (shortcuts can't filter rows, so the shortcut is only an input).
-- NB_Partner_Extract (Python notebook) that reads that shortcut and writes LH_PartnerA table
+- LH_PartnerA as an output-only lakehouse, with no internal source shortcuts.
+- NB_Partner_Extract (Python notebook) reads the existing internal Gold shortcuts
+  gold.fact_deliveries and gold.dim_product through Prod LH_Curated, then writes LH_PartnerA table
   partner_a_deliveries
   (only partner_id = 'P-A', columns: month, sku, product_name, package_code, region_code,
   delivered_hl, on_time_pct). No margin or revenue columns.
 - Files/context/partner_glossary.md with business definitions (hl, package codes, on-time %).
 ```
 
+The output-only layout is explicitly approved. The earlier prompt's
+`sales_vs_forecast` source has no delivery measures; do not infer deliveries
+from sales or multiply the sales grain through delivery joins. Keep input
+shortcuts in the internal Prod item, which is not modified by the extraction.
+IQ Sharing shares an **entire item** and ignores its OneLake security roles,
+so unfiltered inputs must never be placed in `LH_PartnerA`.
+
+Run `python tools/bootstrap_partner.py --dry-run --run`, then
+`python tools/bootstrap_partner.py --run` locally as the verified DEMO admin.
+The separate `partner/` source folder is not in the metadata CI deployment.
+Initial acceptance requires 1,232 P-A rows and 1,121,803.72 hl, Jan 2025-Oct 2026,
+the exact seven-column schema and exact persisted Delta row/glossary readback.
+Later source updates still require the exact filtered projection but aren't
+forced to retain the original baseline count.
+
 **Manual**
 1. **Option A (B2B guest):** invite `partner.user@<tenantB>` as guest to tenant A → Viewer on `DEMO-Partner-A` → enable OneLake security on `LH_PartnerA`, role `Partner_A_Read` (tables `partner_a_deliveries` only). Test once in a private browser window.
 2. **Option B (IQ Sharing, preview):** keep for live (Act 7). Pre-check only: tenant A can create Shares, tenant B can accept; `PARTNER-Inbound` exists in tenant B.
 3. Do a full dry run of Option B once, then delete Share + Share Subscription (see `03`).
+
+For IQ Sharing, create **+ New item -> Share (preview)** and select the whole
+output-only `LH_PartnerA`. This is not the lakehouse's ordinary **Share** action.
+Tenant B needs its own acceptance and inbound lakehouse shortcuts to the
+Mirrored OneLake item before notebook/semantic-model consumption.
+Tenant settings, invitations and any new access grants require explicit
+approval; do not switch the automation's tenant-A CLI identity to tenant B.
+References: [IQ Sharing overview](https://learn.microsoft.com/fabric/onelake/iq-share/onelake-share-overview)
+and [Create a Share](https://learn.microsoft.com/fabric/onelake/iq-share/create-share).
 
 ---
 

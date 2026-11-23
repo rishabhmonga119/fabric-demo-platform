@@ -1958,11 +1958,84 @@ Totals (exact, not abbreviated):
 - 2026-11-22T21:20:19+00:00: Step 6 metadata-only OIDC/SDK preflight for both PASS; no workspace changes; `https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/45071446452`.
 
 - 2026-11-23T07:08:56+00:00: Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime publication, existing sales-group Viewer memberships and enabled Power BI/Copilot plans. No cloud writes, grants, licences or duplicate agent publication. Agent Store/Teams/Agent Builder/viewer-session checks require the human checkpoint. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent; https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments; https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot; https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
+## 2026-11-23 - Step 8: Output-only partner producer
+
+Status: PRODUCER VERIFIED; cross-tenant acceptance/security/revocation rehearsal
+is pending tenant B and explicit sharing/access approval. No Share, Share
+Subscription, guest, recipient grant or partner reader-role membership was
+created. Step 9 remains pending; no baseline tag or recording is claimed.
+
+- User approved **output-only LH_PartnerA**. Corrected the original delivery
+  source mismatch: sales_vs_forecast has no delivery measures. The notebook
+  reads the existing internal Prod Curated `gold.fact_deliveries` and
+  `gold.dim_product` shortcuts without modifying Prod. It filters P-A before
+  projecting the exact seven-column contract; it never joins deliveries
+  through sales or stores unfiltered inputs in the partner lakehouse.
+- This layout is required for IQ Sharing: the whole item is shared and the
+  producer's OneLake security roles are not honored for consumer access.
+  Corrected the current **+ New item -> Share (preview)** creation path,
+  distinct from ordinary item Share, and the consumer-side lakehouse-shortcut
+  requirement for notebook/model consumption.
+  References:
+  <https://learn.microsoft.com/fabric/onelake/iq-share/onelake-share-overview>,
+  <https://learn.microsoft.com/fabric/onelake/iq-share/create-share>,
+  <https://learn.microsoft.com/fabric/onelake/iq-share/accept-share>.
+- Created owned schema-enabled `LH_PartnerA`
+  `56048088-1c7a-42ab-8120-41da7f3879b3`, SQL endpoint
+  `52a81fe9-2b65-4eb7-868a-29e7849932cb`, and pure-Python
+  `NB_Partner_Extract` `cf84484d-58e7-4693-a622-caada58aaf0c` in the
+  existing `DEMO-Partner-A` workspace on Active F4. No new Azure paid resource,
+  Environment, Spark pool, capacity resize or Dev/Test/Prod mutation.
+- The notebook compares every persisted Delta row to the filtered P-A
+  projection, verifies the exact Arrow schema, and reads back the glossary.
+  Actual completed-job exit metrics: **1,232 rows**, **1,121,803.72 hl**,
+  Jan 2025-Oct 2026, regions EAST/NORTH. Columns exactly:
+  `month, sku, product_name, package_code, region_code, delivered_hl, on_time_pct`.
+  No revenue, margin, forecast or partner-id column is exported. A final live
+  metadata read confirms **zero shortcuts** in the output lakehouse.
+- Separate `partner/` definitions and glossary are source-controlled; local
+  `tools/bootstrap_partner.py` supports dry-run and optional execution, owns
+  its targets, validates source bindings, stores IDs/job IDs, prevents
+  concurrent duplicate jobs and reuses recent unchanged completed runs.
+  The existing pipeline job monitor was extracted into a shared item-job
+  helper; focused tests preserve its Pipeline route and notebook resume
+  behavior. Existing analytics runtime defaults remain unchanged; only the
+  new notebook supplies partner workspace/lakehouse overrides.
+- Commands: `python tools/bootstrap_partner.py --dry-run --run`;
+  `python tools/bootstrap_partner.py --run`;
+  `python -m unittest discover -s tests -p test_partner.py -v`.
+  **8 focused tests passed**, covering projection and source/quality rejection,
+  notebook binding, job routing/resume, exact baseline thresholds, exit-value
+  shape and safe owned-item discovery.
+- Two automation diagnostics were corrected without permission escalation:
+  the live Python job returns `properties.exitValue`, whereas the Learn
+  conceptual example shows top-level `exitValue`; both are validated strictly.
+  The auto-created SQL endpoint shares the lakehouse's display name, so
+  ownership resolution must filter by **type and name**, then verify owner/ID.
+  The actual notebook jobs completed; these failures were in local readback
+  and idempotent discovery, not permission or source-data failures.
+- Read-only tenant-A preflight: `AllowExternalDataSharingSwitch` and
+  `ArtifactIQSharePreview` are already enabled only for the existing Demo
+  Fabric Admin/API groups. `ArtifactConsumerIQSharePreview` is disabled and
+  was left unchanged: tenant A only needs to produce the share. Switzerland
+  North isn't excluded by current IQ Sharing region documentation.
+  Read-only skill reference:
+  `onelake-catalog-cli/references/admin-audit.md`; existing settings API
+  contract is also used by `tools/bootstrap_fabric.py`. Final existing-item
+  `--dry-run --run` and `git diff --check` passed.
+- Human checkpoint: provide tenant B ID/domain, invited recipient and an
+  existing capacity-backed `PARTNER-Inbound` workspace. Tenant B's admin must
+  enable **Enable Share Subscription Item (preview)**, and the accepting
+  recipient needs Admin/Member/Contributor on that workspace. Tenant B's
+  settings/roles and actual acceptance aren't yet verified. Keep tenant-A CLI
+  sign-ins unchanged. Share/guest creation and any new grant require approval;
+  rehearsal revocation/deletion must be scoped to the artifacts we create.
+
 ## 2026-11-23 - Step 7: Copilot publication prerequisites
 
 Status: VERIFIED. Publication, report/Fabric IQ, ontology instances and the
 published ontology-backed DA_Sales viewer answer are user-confirmed.
-Step 8 has read-only preparation only; Step 9 is pending.
+Step 8 producer is built and verified; tenant B sharing is pending. Step 9 is pending.
 
 Step 7 final viewer check: after both sales groups received the approved
 Prod SM_Sales Read+Build grant, Aadi confirmed that SalesPeriod Instances load
@@ -2160,3 +2233,21 @@ Follow-up from the user's live UI checks:
 - 2026-11-23T09:00:13+00:00: Approved Step 7 ontology reader PUT: Prod SM_Sales (fcd20b15-77e8-4493-970e-0c4555b56cf7), group 199f4419-549f-4f29-9e4a-33a25afc0a36, ReadExplore. No Write/Reshare or workspace-role change.
 
 - 2026-11-23T09:00:16+00:00: Approved Step 7 Prod SM_Sales Read+Build readback PASS for both sales groups. Ontology-bound semantic-model queries require Read+Build, unlike the general direct Data Agent semantic-model Read prerequisite. Workspace Viewer, SSO, OneLake roles, ontology-only DA_Sales and Dev/Test are unchanged. Real North viewer instance and agent checks remain pending. References: semantic-model-authoring/references/semantic-model-rest-api.md, Permissions; https://learn.microsoft.com/fabric/iq/ontology/how-to-generate-from-semantic-models; https://learn.microsoft.com/rest/api/power-bi/datasets/put-dataset-user-in-group; https://learn.microsoft.com/rest/api/power-bi/datasets/post-dataset-user-in-group.
+
+- 2026-11-23T09:24:28+00:00: Step 8 output-only producer items ready: LH_PartnerA 56048088-1c7a-42ab-8120-41da7f3879b3, NB_Partner_Extract cf84484d-58e7-4693-a622-caada58aaf0c, Python kernel, existing F4. No shortcuts in output, permissions, external sharing or Prod writes. References: spark-cli/references/authoring.md; spark-cli/references/authoring/resources/notebook-api-operations.md; fabric-skills/common/COMMON-CORE.md; SPARK-AUTHORING-CORE.md; https://learn.microsoft.com/fabric/onelake/iq-share/onelake-share-overview.
+
+- 2026-11-23T09:24:38+00:00: Started/monitoring DEMO-Partner-A NB_Partner_Extract `46ce5bda-669a-4126-b179-f3f0cf659b1d`.
+
+- 2026-11-23T09:25:40+00:00: DEMO-Partner-A NB_Partner_Extract Completed.
+
+- 2026-11-23T09:25:42+00:00: Step 8 partner producer blocked: Completed notebook has no documented verification exit value.
+
+- 2026-11-23T09:30:11+00:00: Step 8 partner producer blocked: Existing LH_PartnerA is unowned or conflicts with configuration.
+
+- 2026-11-23T09:34:12+00:00: Step 8 output-only producer items ready: LH_PartnerA 56048088-1c7a-42ab-8120-41da7f3879b3, NB_Partner_Extract cf84484d-58e7-4693-a622-caada58aaf0c, Python kernel, existing F4. No shortcuts in output, permissions, external sharing or Prod writes. References: spark-cli/references/authoring.md; spark-cli/references/authoring/resources/notebook-api-operations.md; fabric-skills/common/COMMON-CORE.md; SPARK-AUTHORING-CORE.md; https://learn.microsoft.com/fabric/onelake/iq-share/onelake-share-overview.
+
+- 2026-11-23T09:34:21+00:00: Started/monitoring DEMO-Partner-A NB_Partner_Extract `d65c4002-dc26-4e13-9b05-97b2261d9ef8`.
+
+- 2026-11-23T09:35:23+00:00: DEMO-Partner-A NB_Partner_Extract Completed.
+
+- 2026-11-23T09:35:26+00:00: Step 8 producer Check PASS: notebook completed after exact persisted Delta row comparison against P-A filtered delivery/product projection and exact glossary file readback. Actual exit-value metrics: {"check": "PASS", "table": "dbo.partner_a_deliveries", "rows": 1232, "columns": ["month", "sku", "product_name", "package_code", "region_code", "delivered_hl", "on_time_pct"], "delivered_hl": "1121803.72", "min_month": "2025-01-01", "max_month": "2026-10-01", "regions": ["EAST", "NORTH"], "exact_filtered_row_readback": true, "glossary_readback": true}. Tenant B/sharing/security acceptance remains a human checkpoint; no Share, guest or new grants created.

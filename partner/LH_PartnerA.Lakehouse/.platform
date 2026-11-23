@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Lakehouse",
+    "displayName": "LH_PartnerA",
+    "description": "Managed by fabric-demo-platform demo automation: output-only Partner A extraction."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e4ba6366-fa79-5a70-afb2-1801b80f8257"
+  }
+}

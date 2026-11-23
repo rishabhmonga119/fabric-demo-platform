@@ -810,12 +810,47 @@ environments:
 partner:
   workspace_name: DEMO-Partner-A
   workspace_id: f29bb81d-9fae-413e-bff4-0a1c56a78ac3
-  items: {}
+  items:
+    LH_PartnerA:
+      id: 56048088-1c7a-42ab-8120-41da7f3879b3
+      type: Lakehouse
+      sql_endpoint_id: 52a81fe9-2b65-4eb7-868a-29e7849932cb
+    NB_Partner_Extract:
+      id: cf84484d-58e7-4693-a622-caada58aaf0c
+      type: Notebook
+      definition_sha256: 4a22ff51da240a5d9b96e772b906837fb2a8af765d6b4771a4ec879ad82ab377
+      last_run_id: d65c4002-dc26-4e13-9b05-97b2261d9ef8
+      last_run_uri: https://api.fabric.microsoft.com/v1/workspaces/f29bb81d-9fae-413e-bff4-0a1c56a78ac3/items/cf84484d-58e7-4693-a622-caada58aaf0c/jobs/instances/d65c4002-dc26-4e13-9b05-97b2261d9ef8
+      last_run_definition_sha256: 4a22ff51da240a5d9b96e772b906837fb2a8af765d6b4771a4ec879ad82ab377
+      last_run_state: Completed
   tenant_b_id: null
   tenant_b_domain: null
   recipient_upn: null
   inbound_workspace_name: PARTNER-Inbound
   inbound_workspace_id: null
+  producer_metrics:
+    check: PASS
+    table: dbo.partner_a_deliveries
+    rows: 1232
+    columns:
+    - month
+    - sku
+    - product_name
+    - package_code
+    - region_code
+    - delivered_hl
+    - on_time_pct
+    delivered_hl: '1121803.72'
+    min_month: '2025-01-01'
+    max_month: '2026-10-01'
+    regions:
+    - EAST
+    - NORTH
+    exact_filtered_row_readback: true
+    glossary_readback: true
+  producer_verification: passed-notebook-exact-delta-and-glossary-readback
+  producer_layout: output-only-approved
+  sharing_verification: pending-tenant-b-and-approved-sharing
 cost_guardrails:
   databricks_workspace_count: 1
   databricks_sku: premium

@@ -2,6 +2,7 @@
 
 import argparse
 from base64 import b64encode
+from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 import json
 import sys
@@ -18,43 +19,65 @@ from infra.deploy import record, save_config
 
 
 def run_pipeline(api: Api, config: dict, stage: dict, item: dict, dry_run: bool) -> None:
+    run_item_job(api, config, stage, item, dry_run, name="PL_Refresh", job_type="Pipeline")
+
+
+def run_item_job(api: Api, config: dict, stage: dict, item: dict, dry_run: bool, *,
+                 name: str, job_type: str, definition_sha256: str | None = None) -> dict | None:
     jobs_root = f"/v1/workspaces/{stage['workspace_id']}/items/{item['id']}/jobs"
     jobs = api.list(jobs_root + "/instances")
     active = [job for job in jobs if job["status"] not in ("Completed", "Failed", "Cancelled", "Deduped")]
     if len(active) > 1:
-        raise ContextError("Multiple active pipeline runs; no duplicate submission.")
+        raise ContextError(f"Multiple active {name} runs; no duplicate submission.")
     if dry_run:
-        api.request("POST", jobs_root + "/instances?jobType=Pipeline", {}, dry_run=True)
+        api.request("POST", jobs_root + f"/instances?jobType={job_type}", {}, dry_run=True)
         return
+    configured = stage["items"][name]
+    if job_type == "RunNotebook" and not active and definition_sha256 and \
+            configured.get("last_run_definition_sha256") == definition_sha256:
+        cutoff = datetime.now(timezone.utc) - timedelta(minutes=5)
+        recent = []
+        for job in jobs:
+            if job["id"] != configured.get("last_run_id") or job["status"] != "Completed":
+                continue
+            started = datetime.fromisoformat(job["startTimeUtc"].replace("Z", "+00:00"))
+            if started.tzinfo is None:
+                started = started.replace(tzinfo=timezone.utc)
+            if started >= cutoff:
+                recent.append(job)
+        if recent:
+            print(f"{name}: reusing recent Completed run of unchanged content.")
+            return api.request("GET", jobs_root + "/instances/" + recent[0]["id"])
     if active:
         uri = api.base + jobs_root + "/instances/" + active[0]["id"]
         delay = 10
     else:
-        response = api.request("POST", jobs_root + "/instances?jobType=Pipeline", {},
+        response = api.request("POST", jobs_root + f"/instances?jobType={job_type}", {},
                                accept_operation=True, with_response_info=True)
         uri = response["body"]["operation_uri"]
         raw = response["retry_after"]
         delay = int(raw) if isinstance(raw, str) and raw.isdigit() else 10
-    configured = stage["items"]["PL_Refresh"]
     configured["last_run_id"] = urlparse(uri).path.rstrip("/").split("/")[-1]
     configured["last_run_uri"] = uri
+    if definition_sha256:
+        configured["last_run_definition_sha256"] = definition_sha256
     save_config(config)
-    record(f"Started/monitoring {stage['workspace_name']} PL_Refresh `{configured['last_run_id']}`.")
+    record(f"Started/monitoring {stage['workspace_name']} {name} `{configured['last_run_id']}`.")
     deadline = time.monotonic() + 1800
     time.sleep(max(1, delay))
     while time.monotonic() < deadline:
         result = api.request("GET", uri)
-        print(f"PL_Refresh: {result['status']}", flush=True)
+        print(f"{name}: {result['status']}", flush=True)
         if result["status"] == "Completed":
             configured["last_run_state"] = "Completed"
             save_config(config)
-            record(f"{stage['workspace_name']} PL_Refresh Completed; both notebook dependencies honored.")
-            return
+            record(f"{stage['workspace_name']} {name} Completed.")
+            return result
         if result["status"] in ("Failed", "Cancelled", "Deduped"):
-            record(f"PL_Refresh failed: `{json.dumps(result.get('failureReason'))}`.")
-            raise ApiError(f"PL_Refresh: {json.dumps(result.get('failureReason'))}")
+            record(f"{name} failed: `{json.dumps(result.get('failureReason'))}`.")
+            raise ApiError(f"{name}: {json.dumps(result.get('failureReason'))}")
         time.sleep(15)
-    raise TimeoutError("PL_Refresh did not finish within 30 minutes.")
+    raise TimeoutError(f"{name} did not finish within 30 minutes.")
 
 
 def main() -> None:
