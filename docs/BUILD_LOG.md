@@ -1960,11 +1960,24 @@ Totals (exact, not abbreviated):
 - 2026-11-23T07:08:56+00:00: Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime publication, existing sales-group Viewer memberships and enabled Power BI/Copilot plans. No cloud writes, grants, licences or duplicate agent publication. Agent Store/Teams/Agent Builder/viewer-session checks require the human checkpoint. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent; https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments; https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot; https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
 ## 2026-11-23 - Step 9: Technical baseline preparation
 
-Status: SNAPSHOTS CAPTURED; technical verifier/fallback preparation are ready
-for execution after committing this checkpoint. No final baseline tag is
-claimed yet. The user explicitly said **"skip that step!"** in response to
+Status: SNAPSHOTS AND PREPARED FALLBACK VERIFIED; the final gated aggregate
+verification/sealing command is the remaining technical action. No final
+baseline tag is claimed yet. The user explicitly said **"skip that step!"** in response to
 the recordings prerequisite; recordings are skipped, not marked as recorded.
 
+- `python tools/prepare_fallback.py` passed all three real query-scoped
+  validations (computed result, zero actual, missing forecast) without
+  persisting a measure or refreshing a model. Created/pushed
+  `demo/forecast-accuracy-prepared` and `demo-prepared-change`, both verified
+  remotely at **3e4ae643d714c36b757cf0ac85e7d75cbb857427**. Only the local
+  prepared measure and draft agent instruction files changed; main/live
+  models stayed baseline. The owned temporary worktree was removed.
+- Final sealing command, executed after this readiness commit is pushed:
+  `python tools/verify.py --all --seal`. It refuses to create the tag on any
+  failed prerequisite/check, and verifies remote main/tag equality last.
+  The actual tag and final stdout audit are authoritative for the result;
+  appending another tracked log commit after sealing would break the required
+  `main == demo-baseline` invariant.
 - Captured actual OneLake policies/members for 10 items: Landing, Curated and
   Gold mirror in Dev/Test/Prod, plus LH_PartnerA. Snapshot:
   `config/onelake_roles.baseline.json`. Volatile server-generated role IDs are

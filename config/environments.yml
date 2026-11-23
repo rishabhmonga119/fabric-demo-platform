@@ -873,6 +873,8 @@ baseline:
   tag: demo-baseline
   prepared_branch: demo/forecast-accuracy-prepared
   prepared_tag: demo-prepared-change
+  prepared_commit: 3e4ae643d714c36b757cf0ac85e7d75cbb857427
+  prepared_verification: three-query-scoped-cases-and-two-source-files-verified
   recordings_verification: skipped-by-explicit-user-request
 copilot:
   step7:
