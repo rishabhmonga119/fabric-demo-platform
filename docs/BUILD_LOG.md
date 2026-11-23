@@ -1960,9 +1960,10 @@ Totals (exact, not abbreviated):
 - 2026-11-23T07:08:56+00:00: Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime publication, existing sales-group Viewer memberships and enabled Power BI/Copilot plans. No cloud writes, grants, licences or duplicate agent publication. Agent Store/Teams/Agent Builder/viewer-session checks require the human checkpoint. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent; https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments; https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot; https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
 ## 2026-11-23 - Step 8: Output-only partner producer
 
-Status: CONSUMER BASELINE USER-VERIFIED; the approved rehearsal producer Share
-has now been deleted and its absence verified. A fresh tenant-B denial and
-consumer-side rehearsal subscription cleanup remain pending. No consumer
+Status: VERIFIED FOR THE SELECTED IQ SHARING PATH. The consumer baseline,
+fresh post-revocation denial and consumer-side cleanup are user-confirmed.
+The approved rehearsal producer Share was deleted and its absence verified.
+No consumer
 Share Subscription, B2B guest, workspace-role grant or partner reader-role
 membership was created by this automation.
 Step 9 remains pending; no baseline tag or recording is claimed.
@@ -1973,8 +1974,15 @@ Step 9 remains pending; no baseline tag or recording is claimed.
   independently reports **Accepted** (not the documentation example's
   `Active` recipient value). Consumer SQL values are user-confirmed, not an
   administrator query impersonating the consumer. Approved producer Share
-  cleanup has completed; a fresh consumer denial and consumer-side cleanup
-  still need verification.
+  cleanup has completed. The user's fresh consumer query then failed with
+  **Msg 24701: access denied on dbo.partner_a_deliveries** (and diagnostic
+  Msg 15806), proving the shared data read was revoked. Its OneLake error
+  identifies consumer Mirrored OneLake item
+  `e2e0fb49-be9d-45d5-aa79-1a9b6882a630`. The user subsequently confirms the
+  rehearsal subscription and related mirrored item have been removed.
+  Existing tenant-B workspace and unrelated items were left intact.
+  B2B guest/Partner_A_Read fallback is not configured in this selected-path
+  baseline; it requires separately approved invitation and data grants.
 - Cleanup commands: `python tools/manage_partner_share.py delete --dry-run`,
   then `python tools/manage_partner_share.py delete --approved-rehearsal-cleanup`.
   The exact asset/recipient/expiry was reread before deleting only Share

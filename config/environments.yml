@@ -851,8 +851,12 @@ partner:
     glossary_readback: true
   producer_verification: passed-notebook-exact-delta-and-glossary-readback
   producer_layout: output-only-approved
-  sharing_verification: user-confirmed-inbound-sql-baseline-pending-revocation
+  sharing_verification: user-confirmed-inbound-read-revocation-and-cleanup
   consumer_baseline_verification: user-confirmed-expected-row-count-and-volume
+  consumer_revocation_verification: user-confirmed-sql-access-denied-24701
+  consumer_mirrored_item_id: e2e0fb49-be9d-45d5-aa79-1a9b6882a630
+  consumer_cleanup_verification: user-confirmed-subscription-and-related-item-removed
+  sharing_mode: iq-sharing-no-b2b-guest
   rehearsal_share:
     expires_utc: '2026-11-30T23:59:59Z'
     id: 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff

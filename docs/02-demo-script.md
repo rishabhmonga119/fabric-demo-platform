@@ -140,7 +140,7 @@
 **Message:** Your partner works in their tenant; you control access, expiry and revocation.
 
 1. **P1 → OneLake catalog → Domains:** `Demo Analytics` vs `Demo Partners`. Open `DEMO-Partner-A` → `LH_PartnerA.partner_a_deliveries` (only partner P-A, no money columns) + `Files/context/partner_glossary.md`.
-2. **Option A (today, per your PDF):** "A guest user from the partner gets Viewer + a OneLake role here." Show the role `Partner_A_Read` (pre-built). Don't log in.
+2. **Option A (optional B2B fallback, not configured in this baseline):** "A guest user can receive approved read access plus an output-only OneLake role." Do not show `Partner_A_Read` as pre-built until the separate guest invitation and scoped grants have been approved and configured. The rehearsed baseline uses Option B.
 3. **Option B — IQ Sharing (preview), live:**
    1. `DEMO-Partner-A` → **+ New item → Share (preview)** → select the entire output-only `LH_PartnerA` → intended recipient → expiration date (required) → create → copy invitation. Ordinary lakehouse **Share** is a different feature. The glossary is inside the shared item; do not add unfiltered source shortcuts.
    2. **P3 (tenant B):** open invitation → accept into `PARTNER-Inbound` → Share Subscription + Mirrored OneLake item appear. For notebook/model consumption, create an inbound lakehouse with shortcuts to the Mirrored OneLake output table, then query `partner_a_deliveries`.
