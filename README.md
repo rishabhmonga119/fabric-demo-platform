@@ -213,3 +213,35 @@ Do not diagnose the entire agent as unusable from one refused question or apply
 an ontology rebind merely because a generic known-issues page suggests one.
 The report remains on SM_Sales; ontology bindings and the ontology-only agent
 were preserved.
+
+## Technical baseline
+
+The current build explicitly skips fallback recordings at the user's request.
+Capture actual OneLake roles and SharePoint files with
+`tools/export_roles.py` and `tools/build_manifest.py` (`--dry-run` first).
+Their JSON snapshots refuse silent replacement of a different baseline.
+
+After committing/pushing tooling and snapshots:
+
+```powershell
+python tools\prepare_fallback.py --dry-run
+python tools\prepare_fallback.py
+python tools\verify.py --all --dry-run --seal
+python tools\verify.py --all --seal
+```
+
+The prepared branch/tag add the Forecast Accuracy measure and draft agent
+guidance locally; no workspace is deployed or refreshed. Existing opaque model
+AI metadata stays unchanged; model synonyms require the supported user UI.
+The aggregate verifier checks actual Gold fingerprints, SharePoint file sets,
+OneLake roles, all three stages' bindings and live measures, physical SQL
+counts/checksums, publication/viewer evidence and cleaned-up partner sharing.
+It uses the documented SQL Endpoint MCP with the verified DEMO CLI identity,
+not saved credentials or an unrelated desktop sign-in.
+
+Only after all checks pass does `--seal` create/push `demo-baseline`. It refuses
+to overwrite a different tag, then verifies remote main/tag equality. Subsequent
+`python tools\verify.py --all` runs are non-deploying checks. The owned Databricks
+verification warehouse is stopped afterward. The full reset toolkit described
+in [reset instructions](docs/03-reset.md) remains a specification, not a claimed
+working one-command reset.

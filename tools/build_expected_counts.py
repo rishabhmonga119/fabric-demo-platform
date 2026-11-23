@@ -15,23 +15,10 @@ sys.path.insert(0, str(ROOT))
 from infra.deploy import record
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stages", default="dev,test,prod")
-    parser.add_argument("--capture-baseline", action="store_true")
-    parser.add_argument("--dry-run", action="store_true")
-    args = parser.parse_args()
-    stages = args.stages.split(",")
-    if any(stage not in ("dev", "test", "prod") for stage in stages):
-        parser.error("Expected dev,test,prod stages.")
-    verify_context()
-    config = load_config()
+def verify_gold(config: dict, stages: list[str], *, log=record) -> dict:
     client = DatabricksSql(config, config["azure"]["databricks_sql_warehouse_id"])
     owner = f"{config['github']['owner']}/{config['github']['repository']}"
     check_warehouse(client.read("warehouses", "get", client.warehouse_id), owner)
-    if args.dry_run:
-        print("DRY-RUN: compare all actual gold counts/grains/checksums to deterministic generated data; check comments, masks, filters and managed locations.")
-        return
     baseline = {}
     try:
         for stage in stages:
@@ -92,20 +79,42 @@ def main() -> None:
                         raise RuntimeError(f"{table}: actual checksum differs from deterministic seed.")
                     result["checksum"] = str(checksum)
                 baseline[stage][name] = result
-                record(f"Step 3 Check `{table}`: `{json.dumps(result)}`; unique grain, stage, comments and no UC filters/masks PASS.")
+                log(f"Step 3 Check `{table}`: `{json.dumps(result)}`; unique grain, stage, comments and no UC filters/masks PASS.")
                 print(f"PASS {table}: {result}", flush=True)
-        if args.capture_baseline:
-            path = ROOT / "seed" / "expected_counts.json"
-            content = json.dumps(baseline, indent=2) + "\n"
-            if path.exists() and path.read_text(encoding="utf-8") != content:
-                raise ContextError("Existing expected-count baseline differs; review before overwriting.")
-            if not path.exists():
-                path.write_text(content, encoding="utf-8")
-            record("Captured verified actual counts/checksums in seed/expected_counts.json.")
-        print("Step 3 gold verification: PASS for all requested stages.")
+        return baseline
     finally:
         client.stop()
-        record("Owned verification warehouse confirmed STOPPED after Step 3 checks.")
+        log("Owned verification warehouse confirmed STOPPED after gold checks.")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--stages", default="dev,test,prod")
+    parser.add_argument("--capture-baseline", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args()
+    stages = args.stages.split(",")
+    if any(stage not in ("dev", "test", "prod") for stage in stages):
+        parser.error("Expected dev,test,prod stages.")
+    verify_context()
+    config = load_config()
+    if args.dry_run:
+        client = DatabricksSql(config, config["azure"]["databricks_sql_warehouse_id"])
+        check_warehouse(client.read("warehouses", "get", client.warehouse_id),
+                        f"{config['github']['owner']}/{config['github']['repository']}")
+        print("DRY-RUN: compare actual gold counts/grains/checksums to the deterministic seed; "
+              "check comments, masks, filters and managed locations.")
+        return
+    baseline = verify_gold(config, stages)
+    if args.capture_baseline:
+        path = ROOT / "seed" / "expected_counts.json"
+        content = json.dumps(baseline, indent=2) + "\n"
+        if path.exists() and path.read_text(encoding="utf-8") != content:
+            raise ContextError("Existing expected-count baseline differs; review before overwriting.")
+        if not path.exists():
+            path.write_text(content, encoding="utf-8")
+        record("Captured verified actual counts/checksums in seed/expected_counts.json.")
+    print("Gold verification: PASS for all requested stages.")
 
 
 if __name__ == "__main__":

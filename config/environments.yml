@@ -869,6 +869,11 @@ cost_guardrails:
   auto_termination_minutes: 15
   fabric_sku: F4
   paid_azure_resources: step_1_only
+baseline:
+  tag: demo-baseline
+  prepared_branch: demo/forecast-accuracy-prepared
+  prepared_tag: demo-prepared-change
+  recordings_verification: skipped-by-explicit-user-request
 copilot:
   step7:
     workspace_id: 4cd2247c-ab4c-441a-9637-f3c3d525f4c1

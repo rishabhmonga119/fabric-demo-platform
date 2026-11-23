@@ -85,6 +85,13 @@ def refresh_and_check(pbi, root, configured, config, stage_name="dev"):
             time.sleep(10)
         else:
             raise TimeoutError("Model refresh has not completed within ten minutes; run ID persisted.")
+    row = query_and_check(pbi, root, stage_name)
+    configured["baseline_query"] = row
+    save_config(config)
+    record(f"SM_Sales initial refresh and seven-measure live check PASS: `{json.dumps(row)}`.")
+
+
+def query_and_check(pbi, root, stage_name="dev"):
     query = """EVALUATE ROW(
         "Actual hl", [Actual hl], "Forecast hl", [Forecast hl],
         "Deviation hl", [Deviation hl], "Deviation %", [Deviation %],
@@ -109,9 +116,7 @@ def refresh_and_check(pbi, root, configured, config, stage_name="dev"):
                 "Revenue EUR", "Margin EUR", "Margin %")
     if not all(isinstance(row.get(f"[{name}]"), (int, float)) for name in measures):
         raise ApiError("All seven baseline measures must return numeric values for the baseline.")
-    configured["baseline_query"] = row
-    save_config(config)
-    record(f"SM_Sales initial refresh and seven-measure live check PASS: `{json.dumps(row)}`.")
+    return row
 
 
 def main():

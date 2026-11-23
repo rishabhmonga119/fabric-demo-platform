@@ -1,0 +1,411 @@
+{
+  "owner": "Managed by fabric-demo-platform demo automation",
+  "tenant_id": "5c41223c-f1f5-4979-930f-d5f3c72353f9",
+  "version": 1,
+  "workspaces": {
+    "dev": {
+      "items": {
+        "LH_Curated": {
+          "item_id": "a8a49dc0-330e-4a63-8280-dccb057b4cde",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "ReadAll"
+                    ],
+                    "sourcePath": "3fa9b173-f000-4529-a4f7-00d0d6a8d136/a8a49dc0-330e-4a63-8280-dccb057b4cde"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        },
+        "LH_Landing": {
+          "item_id": "fd2d2f87-dff9-4974-b943-1d45cc2fcd90",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "ReadAll"
+                    ],
+                    "sourcePath": "3fa9b173-f000-4529-a4f7-00d0d6a8d136/fd2d2f87-dff9-4974-b943-1d45cc2fcd90"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        },
+        "MIR_UC_Gold": {
+          "item_id": "6e1a3d67-2ba7-4580-ae56-4c811846d217",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "Read"
+                    ],
+                    "sourcePath": "3fa9b173-f000-4529-a4f7-00d0d6a8d136/6e1a3d67-2ba7-4580-ae56-4c811846d217"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        }
+      },
+      "workspace_id": "3fa9b173-f000-4529-a4f7-00d0d6a8d136",
+      "workspace_name": "DEMO-Analytics-Dev"
+    },
+    "partner": {
+      "items": {
+        "LH_PartnerA": {
+          "item_id": "56048088-1c7a-42ab-8120-41da7f3879b3",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "ReadAll"
+                    ],
+                    "sourcePath": "f29bb81d-9fae-413e-bff4-0a1c56a78ac3/56048088-1c7a-42ab-8120-41da7f3879b3"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        }
+      },
+      "workspace_id": "f29bb81d-9fae-413e-bff4-0a1c56a78ac3",
+      "workspace_name": "DEMO-Partner-A"
+    },
+    "prod": {
+      "items": {
+        "LH_Curated": {
+          "item_id": "4e5c9ace-eea9-4796-94b6-48e3c1e55d91",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "ReadAll"
+                    ],
+                    "sourcePath": "4cd2247c-ab4c-441a-9637-f3c3d525f4c1/4e5c9ace-eea9-4796-94b6-48e3c1e55d91"
+                  }
+                ],
+                "microsoftEntraMembers": [
+                  {
+                    "objectId": "199f4419-549f-4f29-9e4a-33a25afc0a36",
+                    "tenantId": "5c41223c-f1f5-4979-930f-d5f3c72353f9"
+                  },
+                  {
+                    "objectId": "ad4dc1e3-8180-4f7f-98fa-1134f37cc239",
+                    "tenantId": "5c41223c-f1f5-4979-930f-d5f3c72353f9"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        },
+        "LH_Landing": {
+          "item_id": "dffa5f8d-1221-4a23-9e5f-a693701b7eb7",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "ReadAll"
+                    ],
+                    "sourcePath": "4cd2247c-ab4c-441a-9637-f3c3d525f4c1/dffa5f8d-1221-4a23-9e5f-a693701b7eb7"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        },
+        "MIR_UC_Gold": {
+          "item_id": "307c660c-fa6b-41cd-85e0-fdd085ed2520",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "Read"
+                    ],
+                    "sourcePath": "4cd2247c-ab4c-441a-9637-f3c3d525f4c1/307c660c-fa6b-41cd-85e0-fdd085ed2520"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        }
+      },
+      "workspace_id": "4cd2247c-ab4c-441a-9637-f3c3d525f4c1",
+      "workspace_name": "DEMO-Analytics-Prod"
+    },
+    "test": {
+      "items": {
+        "LH_Curated": {
+          "item_id": "131b3d5b-5c57-4f24-97de-2ba407db823d",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "ReadAll"
+                    ],
+                    "sourcePath": "0a29b70a-6bc9-4bfc-b196-61825cf9f75a/131b3d5b-5c57-4f24-97de-2ba407db823d"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        },
+        "LH_Landing": {
+          "item_id": "8f144ba3-441b-4d52-b511-c31e6723656f",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "ReadAll"
+                    ],
+                    "sourcePath": "0a29b70a-6bc9-4bfc-b196-61825cf9f75a/8f144ba3-441b-4d52-b511-c31e6723656f"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        },
+        "MIR_UC_Gold": {
+          "item_id": "f9e0ebdb-f691-4b61-9e2d-033b6bdd6d70",
+          "roles": [
+            {
+              "decisionRules": [
+                {
+                  "effect": "Permit",
+                  "permission": [
+                    {
+                      "attributeName": "Action",
+                      "attributeValueIncludedIn": [
+                        "Read"
+                      ]
+                    },
+                    {
+                      "attributeName": "Path",
+                      "attributeValueIncludedIn": [
+                        "*"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "members": {
+                "fabricItemMembers": [
+                  {
+                    "itemAccess": [
+                      "Read"
+                    ],
+                    "sourcePath": "0a29b70a-6bc9-4bfc-b196-61825cf9f75a/f9e0ebdb-f691-4b61-9e2d-033b6bdd6d70"
+                  }
+                ]
+              },
+              "name": "DefaultReader"
+            }
+          ]
+        }
+      },
+      "workspace_id": "0a29b70a-6bc9-4bfc-b196-61825cf9f75a",
+      "workspace_name": "DEMO-Analytics-Test"
+    }
+  }
+}

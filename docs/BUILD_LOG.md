@@ -1958,6 +1958,70 @@ Totals (exact, not abbreviated):
 - 2026-11-22T21:20:19+00:00: Step 6 metadata-only OIDC/SDK preflight for both PASS; no workspace changes; `https://github.com/rishabhmonga119/fabric-demo-platform/actions/runs/45071446452`.
 
 - 2026-11-23T07:08:56+00:00: Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime publication, existing sales-group Viewer memberships and enabled Power BI/Copilot plans. No cloud writes, grants, licences or duplicate agent publication. Agent Store/Teams/Agent Builder/viewer-session checks require the human checkpoint. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent; https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments; https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot; https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
+## 2026-11-23 - Step 9: Technical baseline preparation
+
+Status: SNAPSHOTS CAPTURED; technical verifier/fallback preparation are ready
+for execution after committing this checkpoint. No final baseline tag is
+claimed yet. The user explicitly said **"skip that step!"** in response to
+the recordings prerequisite; recordings are skipped, not marked as recorded.
+
+- Captured actual OneLake policies/members for 10 items: Landing, Curated and
+  Gold mirror in Dev/Test/Prod, plus LH_PartnerA. Snapshot:
+  `config/onelake_roles.baseline.json`. Volatile server-generated role IDs are
+  deliberately excluded from restore payloads/comparison; all decision rules,
+  constraints and members are preserved. Approved Prod Curated sales-group
+  baseline memberships are validated, not re-granted.
+- Captured actual SharePoint metadata for exactly 18 known/verified standard
+  and raw workbooks in `seed/manifest.json`, including IDs, ETags, sizes and
+  independently known seed hashes. Live-only December files are absent.
+  Existing changed versions require exact sheet/cell equality; unchanged
+  uploaded versions are not needlessly downloaded again. No Graph writes,
+  new consent or source file replacement.
+- Added immutable, repository-bounded snapshot writing: dry-run has no file
+  writes and a different existing baseline stops rather than being replaced.
+  A Windows short-temp-path versus canonical-path test fixture was corrected.
+  Roles/file dry-runs and captures passed. Existing independently verified
+  `seed/expected_counts.json` is retained unchanged.
+- Added `tools/verify.py --all` and optional `--seal`, with a non-deploying
+  `tools/verify_baseline.py` implementation. It checks Git/main/prepared refs,
+  actual Gold seed fingerprints/policies, actual SharePoint files and OneLake
+  policies, all 11 items and bindings per stage, current seven-measure model
+  results, report pages, last pipeline state, ontology-only agents, current
+  physical SQL data and the completed scoped partner rehearsal.
+- SQL checks use the documented global SQL Endpoint **MCP** through the
+  installed SDK and the verified tenant-A CLI identity, with the sqldw skill
+  header on every transport request. They do not use an unrelated browser
+  account, saved credentials, sqlcmd, fabricated SQL REST payloads or cached
+  notebook metrics as current table counts. A live probe of current partner
+  output returned **1,232 / 1,121,803.72**. Exact CSV result parsing is tested.
+- Existing model query validation and Gold verification are reused without
+  refresh/deployment; Gold verification can send audit to stdout so final
+  checks don't dirty the sealed Git worktree. Only the already-owned,
+  guarded 2X-Small serverless Databricks verification warehouse is used and
+  stopped afterward; F4 isn't resized.
+- Added `tools/prepare_fallback.py`: only the Forecast Accuracy measure and
+  draft Data Agent guidance are changed in an owned temporary worktree.
+  The formula follows the supplied actual-denominator definition, returns 0
+  for zero actual, and stays blank for missing actual/forecast. Three
+  query-scoped validations don't persist any live measure. Existing opaque
+  Prep data for AI metadata remains untouched. The agent-language alias is
+  not misrepresented as a Power BI AI-schema synonym; that optional synonym
+  requires supported human UI configuration.
+- Validation so far: **6 focused baseline tests passed**, covering immutable
+  snapshots, complete role preservation, durable manifest scope, exact MCP
+  CSV shape/decimal preservation, seven-measure baseline enforcement and
+  isolated feature generation. Aggregate/fallback `--dry-run` passed.
+- Next bounded commands after a clean pushed checkpoint:
+  `python tools/prepare_fallback.py`, then
+  `python tools/verify.py --all --seal`. Sealing happens only after full
+  technical checks pass; remote main/tag equality is checked last. Final
+  audit remains in stdout/Git refs rather than moving main with another log
+  commit after its tag.
+- Full `tools/reset/` orchestration remains an unimplemented specification
+  and is explicitly labelled as such, not falsely claimed delivered by
+  baseline capture. Corrected stale reset workflow inputs and the demo's
+  metadata-only CI/publication description.
+
 ## 2026-11-23 - Step 8: Output-only partner producer
 
 Status: VERIFIED FOR THE SELECTED IQ SHARING PATH. The consumer baseline,
@@ -2339,3 +2403,7 @@ Follow-up from the user's live UI checks:
 - 2026-11-23T10:20:25+00:00: Rehearsal Share 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff readback PASS: exact single asset/recipient/expiration, Active invitation, recipient acceptance Accepted. Source readback does not itself verify a consumer query.
 
 - 2026-11-23T10:30:58+00:00: Approved rehearsal Share 8343ea43-7fe0-4b23-9a1b-0c4ce64791ff deletion/absence verified. No producer data or consumer-tenant item was deleted.
+
+- 2026-11-23T13:17:30+00:00: Step 9 actual SharePoint manifest captured at seed\manifest.json: 18 owned stage workbooks, current IDs/ETags/sizes and independently known seed hashes. Changed versions require exact workbook cell equality. No Graph writes. References: https://learn.microsoft.com/graph/api/driveitem-list-children; https://learn.microsoft.com/graph/api/driveitem-get; tools/upload_sharepoint.py.
+
+- 2026-11-23T13:18:22+00:00: Step 9 actual OneLake role baseline captured at config\onelake_roles.baseline.json: 3 stages and partner; server role IDs omitted, all policy/member content retained, approved Prod sales memberships verified. No access writes. References: e2e-medallion-architecture/SKILL.md; fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/core/onelake-data-access-security/list-data-access-roles.

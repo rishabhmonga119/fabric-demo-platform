@@ -64,10 +64,14 @@
    Using the semantic-model-authoring skill, add a measure [Forecast Accuracy %] to
    SM_Sales (TMDL in /fabric/SM_Sales.SemanticModel):
    1 - ABS([Actual hl] - [Forecast hl]) / [Actual hl], 0 when actual is 0, format 0.0%,
-   display folder "Forecast", description for business users, synonym "accuracy".
+   display folder "Forecast" and description for business users.
    Also add the measure to the DA_Sales instructions as the definition of forecast accuracy.
    Don't change anything else. Show me the diff.
    ```
+   A Power BI AI-schema synonym such as "accuracy" must be reviewed/applied
+   through **Prep data for AI** after the measure exists; don't hand-edit its
+   opaque persisted representation. The prepared branch supplies an
+   agent-language alias, not a model synonym, and preserves existing AI state.
 3. Walk through the **diff** (readable TMDL + instruction text).
    *Talk:* "Your page 'AI as code generator' — semantics provided, AI generates, review in Git, deterministic run. Same four steps, on Fabric."
 4. Commit, push, `gh pr create --fill` → open PR in browser → **pr-check** workflow runs pytest + parameter validation (green).
@@ -77,17 +81,21 @@
 
 ---
 
-## Act 4 — CI/CD Dev → Test → Prod (7 min)
+## Act 4 — CI/CD Git definitions → Test → Prod (7 min)
 
 **Message:** Definitions move, data doesn't. Each stage binds to its own sources.
 
-1. Merge the PR. Open **Actions → deploy**: `update-dev` → `deploy-test` (running).
+1. Merge the PR. Open **Actions → Fabric metadata deployment**:
+   `preflight` → `deploy-test`. This workflow doesn't update Dev or run Spark.
 2. While it runs, open `/fabric/parameter.yml` and `config/environments.yml`.
-   *Talk:* "Dev binds to `demo_dev` and `Forecasts/Dev`; Test to `demo_test`; Prod to `demo_prod`. fabric-cicd re-points the items; the post-deploy step rebinds shortcuts and the mirror. No data is copied between stages."
+   *Talk:* "Dev binds to `demo_dev` and `Forecasts/Dev`; Test to `demo_test`; Prod to `demo_prod`. Existing ingestion bindings are prepared separately; fabric-cicd publishes stage-bound metadata. Data refresh is a separate DEMO-user step, not a service-principal Spark run. No data is copied between stages."
    *Honest note:* "Compared to DABs, this is more pieces — Git integration, fabric-cicd, parameter file, variable library. DABs are more declarative today; Terraform coverage on Fabric is lower. That's the trade-off."
 3. `deploy-prod` waits for **approval** → approve in GitHub.
 4. Open **DEMO-Analytics-Prod → SM_Sales** → measure `[Forecast Accuracy %]` exists; report uses Prod data (`env_marker = 'prod'`).
    *Talk:* "Prod never saw our Dev update of Databricks — different catalog."
+5. Draft Data Agent instruction changes need an explicit supported republish
+   before treating the published M365 agent as updated. Open a new conversation
+   and verify its answer; don't equate metadata CI success with agent publication.
 
 **Timing tip:** if the run is slow, show a completed run from the rehearsal (`Actions → previous run`) and come back later.
 

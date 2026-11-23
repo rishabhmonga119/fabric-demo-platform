@@ -1,0 +1,131 @@
+{
+  "drive_id": "b!fl7D45miBEi-DN8YNgdCVLYZkNTPBsZKkNc3zApyYUs2ryRWykplRKoRpOUJJg1w",
+  "owner": "Managed by fabric-demo-platform demo automation",
+  "site_id": "caldova30465160.sharepoint.com,e3c35e7e-a299-4804-be0c-df1836074254,d49019b6-06cf-4ac6-90d7-37cc0a72614b",
+  "stages": {
+    "dev": {
+      "files": {
+        "raw/Planung_West_Handel.xlsx": {
+          "etag": "\"{E57350F8-08ED-497F-A294-D6838911824E},1\"",
+          "item_id": "01ZWHYQXXYKBZ6L3IIP5E2FFGWQOERDASO",
+          "seed_sha256": "1b0e4600225e8c173fb6d8e21fd5daac18d1a4eeb15d0ff2649545fe635a08c5",
+          "size": 33550
+        },
+        "raw/West-GFGH.xlsx": {
+          "etag": "\"{8F0B54E7-2683-4CFE-BD74-A11ED7826A36},1\"",
+          "item_id": "01ZWHYQXXHKQFY7AZG7ZGL25FBD3LYE2RW",
+          "seed_sha256": "b2f814d8d92d154e35433faac348a4b247b68e16c2f3924d21f4123c479f73e2",
+          "size": 25928
+        },
+        "raw/west_gastro_forecast_v3_FINAL.xlsx": {
+          "etag": "\"{E2901CCD-AED9-4643-A7D8-0F723351265A},1\"",
+          "item_id": "01ZWHYQXWNDSIOFWNOINDKPWAPOIZVCJS2",
+          "seed_sha256": "624ef661c46d2c62b6e527af2d6a8b93070647289fb5a1e5df821020403625e0",
+          "size": 26171
+        },
+        "standard/forecast_EAST_2026.xlsx": {
+          "etag": "\"{7096D213-C9DC-45D3-9447-58038F403D62},1\"",
+          "item_id": "01ZWHYQXQT2KLHBXGJ2NCZIR2YAOHUAPLC",
+          "seed_sha256": "12b987a1c1f4be15543f4c61427f96d6073096664b1f52a65da37ee588e7ebc3",
+          "size": 52409
+        },
+        "standard/forecast_NORTH_2026.xlsx": {
+          "etag": "\"{4E6C2E97-CE39-4975-8313-67DD1210FD7D},1\"",
+          "item_id": "01ZWHYQXUXFZWE4OOOOVEYGE3H3UJBB7L5",
+          "seed_sha256": "2a1f274d2cc0a7ff329d0c1f21ffbfa32143e2a395d6ac6a7a57eff6c0149825",
+          "size": 52748
+        },
+        "standard/forecast_SOUTH_2026.xlsx": {
+          "etag": "\"{D86648CA-D409-4D4D-AB89-2E4CE2B9E83B},1\"",
+          "item_id": "01ZWHYQXWKJBTNQCOUJVG2XCJOJTRLT2B3",
+          "seed_sha256": "e08d86e2673f20a1535c0879f73487aab20a31bb1628e966642d0c150017cf68",
+          "size": 52892
+        }
+      },
+      "folder": "Forecasts/Dev"
+    },
+    "prod": {
+      "files": {
+        "raw/Planung_West_Handel.xlsx": {
+          "etag": "\"{4C4EB9F7-44CF-4AA8-A914-192ED144DDF9},1\"",
+          "item_id": "01ZWHYQXXXXFHEZT2EVBFKSFAZF3IUJXPZ",
+          "seed_sha256": "5bd9e63c7a173cc361c52dcd8dcb2c50f2d03b1a4a104a21dc4f159648d827ff",
+          "size": 33540
+        },
+        "raw/West-GFGH.xlsx": {
+          "etag": "\"{C06081E5-D59A-4E05-A2BF-6A3C79A43A5B},1\"",
+          "item_id": "01ZWHYQXXFQFQMBGWVAVHKFP3KHR42IOS3",
+          "seed_sha256": "9c40c44538d66d7c9a1ab954510ec1507c33d6edd75214b404ae4efb0a02ae61",
+          "size": 26155
+        },
+        "raw/west_gastro_forecast_v3_FINAL.xlsx": {
+          "etag": "\"{D2DCE8B6-C3B5-4C74-88FA-B3565750F245},1\"",
+          "item_id": "01ZWHYQXVW5DONFNODORGIR6VTKZLVB4SF",
+          "seed_sha256": "45dcd68a21d026869c00db7611b44ddeb9f3c924f5912c40832eee2c9c1afb19",
+          "size": 25329
+        },
+        "standard/forecast_EAST_2026.xlsx": {
+          "etag": "\"{B87FB799-5D04-4559-B5F3-A5BDDE1D62D0},1\"",
+          "item_id": "01ZWHYQXUZW573QBC5LFC3L45FXXPB2YWQ",
+          "seed_sha256": "12b987a1c1f4be15543f4c61427f96d6073096664b1f52a65da37ee588e7ebc3",
+          "size": 52668
+        },
+        "standard/forecast_NORTH_2026.xlsx": {
+          "etag": "\"{E87D721E-6C69-46DF-93E8-6EDF6C9C4A79},1\"",
+          "item_id": "01ZWHYQXQ6OJ66Q2LM35DJH2DO35WJYSTZ",
+          "seed_sha256": "2a1f274d2cc0a7ff329d0c1f21ffbfa32143e2a395d6ac6a7a57eff6c0149825",
+          "size": 52748
+        },
+        "standard/forecast_SOUTH_2026.xlsx": {
+          "etag": "\"{3FB92158-459D-4D2A-899D-F9414BB65C61},1\"",
+          "item_id": "01ZWHYQXSYEG4T7HKFFJGYTHPZIFF3MXDB",
+          "seed_sha256": "e08d86e2673f20a1535c0879f73487aab20a31bb1628e966642d0c150017cf68",
+          "size": 52895
+        }
+      },
+      "folder": "Forecasts/Prod"
+    },
+    "test": {
+      "files": {
+        "raw/Planung_West_Handel.xlsx": {
+          "etag": "\"{4E41C467-6283-4BF8-A73D-DE5A65ED3849},1\"",
+          "item_id": "01ZWHYQXTHYRAU5A3C7BF2OPO6LJS62OCJ",
+          "seed_sha256": "5bd9e63c7a173cc361c52dcd8dcb2c50f2d03b1a4a104a21dc4f159648d827ff",
+          "size": 33541
+        },
+        "raw/West-GFGH.xlsx": {
+          "etag": "\"{AB2AC371-2E33-4A1A-AA73-2DCDBC7B55EC},1\"",
+          "item_id": "01ZWHYQXTRYMVKWMZODJFKU4ZNZW6HWVPM",
+          "seed_sha256": "9c40c44538d66d7c9a1ab954510ec1507c33d6edd75214b404ae4efb0a02ae61",
+          "size": 26158
+        },
+        "raw/west_gastro_forecast_v3_FINAL.xlsx": {
+          "etag": "\"{79CE395A-949B-4C2E-9ACB-5B4CC178AF7F},1\"",
+          "item_id": "01ZWHYQXS2HHHHTG4UFZGJVS23JTAXRL37",
+          "seed_sha256": "a974612ab2c9ae78dd2bcab2014f70151a2e9711312509f971d9c5a8f46abac5",
+          "size": 26168
+        },
+        "standard/forecast_EAST_2026.xlsx": {
+          "etag": "\"{52157B44-735A-4558-BAD5-383A1E39A9E0},1\"",
+          "item_id": "01ZWHYQXSEPMKVEWTTLBC3VVJYHIPDTKPA",
+          "seed_sha256": "12b987a1c1f4be15543f4c61427f96d6073096664b1f52a65da37ee588e7ebc3",
+          "size": 52669
+        },
+        "standard/forecast_NORTH_2026.xlsx": {
+          "etag": "\"{1C6938AB-A973-42FE-844E-4943C3BA8BEE},1\"",
+          "item_id": "01ZWHYQXVLHBURY45J7ZBIITSJIPB3VC7O",
+          "seed_sha256": "2a1f274d2cc0a7ff329d0c1f21ffbfa32143e2a395d6ac6a7a57eff6c0149825",
+          "size": 52747
+        },
+        "standard/forecast_SOUTH_2026.xlsx": {
+          "etag": "\"{FE5AD5DE-5627-4145-85A4-39D8D919BBA3},1\"",
+          "item_id": "01ZWHYQXW62VNP4J2WIVAYLJBZ3DMRTO5D",
+          "seed_sha256": "e08d86e2673f20a1535c0879f73487aab20a31bb1628e966642d0c150017cf68",
+          "size": 52893
+        }
+      },
+      "folder": "Forecasts/Test"
+    }
+  },
+  "version": 1
+}

@@ -640,8 +640,34 @@ and the [public Share definition schema](https://developer.microsoft.com/json-sc
 
 ## Step 9 — Baseline and recordings
 
-1. `git tag demo-baseline && git push origin demo-baseline`.
-2. Export `config/onelake_roles.baseline.json` per stage (`tools/export_roles.py`).
-3. Snapshot list of SharePoint files (`seed/manifest.json`).
-4. Record each act (screen recording) as fallback — especially Acts 3, 5 and 7.
-5. Run `tools/verify.py --all` → all green.
+1. Capture the actual baselines, with `--dry-run` first:
+   `python tools/export_roles.py` writes `config/onelake_roles.baseline.json`
+   for all stage Landing/Curated/mirror items plus the partner lakehouse;
+   `python tools/build_manifest.py` writes the actual 18-file `seed/manifest.json`.
+   Existing different baselines are never silently overwritten.
+2. Keep the independently generated and verified `seed/expected_counts.json`.
+   Commit/push the tooling, snapshots and readiness log before Git sealing.
+3. Run `python tools/prepare_fallback.py --dry-run`, then without `--dry-run`.
+   This validates the Forecast Accuracy formula with three nonpersistent DAX
+   cases, creates/pushes `demo/forecast-accuracy-prepared` and
+   `demo-prepared-change`, and changes only the local prepared model measure
+   and draft Data Agent instructions. It does not deploy to any workspace.
+   The optional model AI-schema synonym is a user Prep data for AI action,
+   not a fabricated serialized synonym.
+4. Record each act as fallback, especially Acts 3, 5 and 7. **For this build,
+   the user explicitly skipped recordings.** Do not claim that videos exist.
+5. Run `python tools/verify.py --all --dry-run --seal`, then
+   `python tools/verify.py --all --seal`. Full live checks happen **before**
+   creating/pushing `demo-baseline`; no existing different tag is overwritten.
+   The verifier never deploys, refreshes Fabric data or changes access. It
+   reads actual Gold fingerprints, files, roles, bindings, model measures,
+   physical SQL counts/checksums and partner state. Its owned Databricks
+   verification warehouse is stopped afterward.
+6. Later use `python tools/verify.py --all` for the same read-only pre-session
+   checks, including `main == demo-baseline`, no open PRs and prepared refs.
+   The final verifier prints its audit to stdout rather than changing the
+   worktree after sealing.
+
+The one-command reset toolkit in `03-reset.md` remains a separate specification,
+not an implemented or rehearsed command. Baseline capture, prepared fallback,
+aggregate verification and scoped IQ Share cleanup are implemented.

@@ -19,7 +19,9 @@ from infra.deploy import record, save_config
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", choices=("test", "prod"), required=True)
+    parser.add_argument("--stage", choices=("test", "prod"))
+    parser.add_argument("--all", action="store_true", help="Run the full live baseline verifier, without deploying or refreshing.")
+    parser.add_argument("--seal", action="store_true", help="With --all, create/push demo-baseline only after all checks pass.")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--approved-prod", action="store_true")
     parser.add_argument("--report-only", action="store_true",
@@ -29,6 +31,14 @@ def main() -> None:
     parser.add_argument("--metadata-only", action="store_true",
                         help="Check bindings without refreshing the model or querying business data.")
     args = parser.parse_args()
+    if args.all:
+        if args.stage or args.metadata_only or args.report_only or args.report_preview_dir:
+            parser.error("--all cannot be combined with a stage/report-only verification mode.")
+        from verify_baseline import verify_all
+        verify_all(dry_run=args.dry_run, seal=args.seal)
+        return
+    if not args.stage or args.seal:
+        parser.error("Choose --stage test/prod, or --all (optionally --seal).")
     if is_metadata_ci() and not args.metadata_only:
         raise ContextError("OIDC verification requires --metadata-only; data checks require the DEMO user.")
     verify_context()
@@ -138,7 +148,8 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except (ContextError, ApiError, TimeoutError, OSError, ValueError) as error:
-        record(f"Stage verification blocked: {error}")
-        print(f"STOP: {error}", file=sys.stderr)
+    except (ContextError, ApiError, TimeoutError, OSError, ValueError, ExceptionGroup) as error:
+        message = repr(error) if isinstance(error, ExceptionGroup) else str(error)
+        record(f"Stage verification blocked: {message}")
+        print(f"STOP: {message}", file=sys.stderr)
         raise SystemExit(1) from error

@@ -27,6 +27,19 @@ def load_config() -> dict:
     return config
 
 
+def write_snapshot(path: Path, payload: dict, *, dry_run: bool = False) -> None:
+    target = (ROOT / path).resolve()
+    if not target.is_relative_to(ROOT) or target == ROOT:
+        raise ContextError("Baseline snapshots must remain inside the repository.")
+    content = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    if target.exists() and target.read_text(encoding="utf-8") != content:
+        raise ContextError(f"Existing baseline differs: {path}; review before overwriting.")
+    if not dry_run and not target.exists():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    print(f"{'DRY-RUN: ' if dry_run else ''}Verified snapshot: {path}")
+
+
 def cli(name: str) -> str:
     candidates = [ROOT / ".venv" / "Scripts" / f"{name}.exe"]
     if name == "gh":
