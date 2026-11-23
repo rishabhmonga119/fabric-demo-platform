@@ -42,7 +42,8 @@ class Api:
 
     def request(self, method: str, endpoint: str, payload: dict | bytes | None = None,
                 *, dry_run: bool = False, content_type: str = "application/json",
-                accept_operation: bool = False, with_response_info: bool = False) -> dict | None:
+                accept_operation: bool = False, with_response_info: bool = False,
+                if_match: str | None = None) -> dict | None:
         url = endpoint if endpoint.startswith("https://") else self.base + endpoint
         parsed = urlparse(url)
         if parsed.scheme != "https" or parsed.netloc != urlparse(self.base).netloc:
@@ -62,6 +63,8 @@ class Api:
             # Skills for Fabric: fabric-skills/common/COMMON-CORE.md, auth/REST/rate limits.
             if self.skill:
                 headers["x-ms-fabric-skill"] = self.skill
+            if if_match is not None:
+                headers["If-Match"] = if_match
             body = payload if isinstance(payload, bytes) else \
                 None if payload is None else json.dumps(payload).encode("utf-8")
             try:
@@ -69,8 +72,12 @@ class Api:
                                       timeout=120) as response:
                     def result_with_info(data):
                         if with_response_info:
-                            return {"status_code": response.status, "retry_after": response.headers.get("Retry-After"),
-                                    "body": data}
+                            result = {"status_code": response.status,
+                                      "retry_after": response.headers.get("Retry-After"), "body": data}
+                            etag = response.headers.get("ETag")
+                            if etag is not None:
+                                result["etag"] = etag
+                            return result
                         return data
 
                     content = response.read()

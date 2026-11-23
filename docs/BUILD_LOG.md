@@ -1963,6 +1963,62 @@ Totals (exact, not abbreviated):
 Status: PREREQUISITES VERIFIED; waiting for the required human Agent Store,
 M365/Teams and viewer-session checkpoint. Steps 8 and 9 have not started.
 
+Follow-up from the user's live UI checks:
+
+- The user explicitly approved adding only the North/South sales groups to
+  Prod LH_Curated DefaultReader. Added `tools/grant_baseline_readers.py`,
+  ran its dry-run, then `--approved-prod-baseline-read`. The update used a
+  fresh quoted role-collection ETag in If-Match and exact readback passed.
+  Existing virtual members, other explicit members and unrestricted Read
+  policy were preserved. No other role, mirror, connection, SSO, tenant,
+  workspace role or Dev/Test item was changed. North viewer retest is pending.
+- Extended the shared API helper to preserve ETags and accept If-Match.
+  Focused API/concurrency and membership-addition/idempotency/restricted-policy
+  guard tests passed (11). Updated Act 6 to remove North's unrestricted
+  membership before applying its restricted role, because grants are additive.
+- Commands: `python -m py_compile tools/grant_baseline_readers.py tools/http_api.py`;
+  `python tools/grant_baseline_readers.py --dry-run`;
+  `python tools/grant_baseline_readers.py --approved-prod-baseline-read`.
+  Official role-update/member contract:
+  https://learn.microsoft.com/rest/api/fabric/core/onelake-data-access-security/create-or-update-data-access-roles.
+- Further M365 Copilot screenshot shows Sales Assistant returning the same
+  correct regional figures and total under the administrator, with RPT_Sales
+  Prod cited. Teams and M365 administrator paths are confirmed by the user's
+  screenshots; the North-viewer source-data gap remains. Prerequisite reruns
+  now preserve human/UI verification statuses instead of resetting them.
+- The user initially confirmed the four M365 actions, then supplied a failed
+  Fabric IQ response under the North viewer. Keep Step 7 open: prerequisite
+  checks did not verify effective OneLake access for that viewer.
+- The current Data Agent publish dialog says **Also publish to Microsoft
+  Copilot**, not **Publish to Agent Store**. Updated the setup guidance and
+  script output to match the supplied screenshot. Runtime publication and
+  Microsoft Copilot availability remain distinct checks.
+- User's administrator Teams screenshot and an independent Fabric IQ query
+  both returned October 2026 actual hl by region: North 52,840.60, South
+  49,069.04, West 45,708.11, East 41,653.64; total 189,271.39 hl.
+  This verifies the administrator path, not Aadik's viewer-session path.
+- Live model metadata shows `isOnPremGatewayRequired=false` and an Automatic
+  AzureDataLakeStorage connection to Prod OneLake. Copilot's earlier
+  "on-premises source" description is not supported by this configuration.
+- Read-only item-access/OneLake role diagnostics found both sales groups
+  have only Read/ViewOutput on LH_Curated, not ReadAll. Its only role,
+  DefaultReader, includes virtual ReadAll members, with no explicit sales
+  group members. MIR_UC_Gold's DefaultReader instead includes virtual Read
+  members. Direct Lake on OneLake uses each viewer's identity and requires
+  source data-plane access. No Build escalation is justified by Fabric IQ's
+  documentation, which explicitly does not require Build.
+- No permissions, connections, sources, tenant settings or Dev/Test items
+  were changed by this diagnosis. A new OneLake membership grant requires
+  explicit approval. If an unrestricted baseline role is granted, Act 6 must
+  remove the North group from that role before adding its restricted role:
+  grant roles are additive, not overriding restrictions.
+- References:
+  `onelake-catalog-cli/references/admin-audit.md`;
+  `semantic-model-authoring/references/connection-binding.md`;
+  https://learn.microsoft.com/rest/api/fabric/admin/items/list-item-access-details;
+  https://learn.microsoft.com/fabric/fundamentals/direct-lake-security-integration;
+  https://learn.microsoft.com/fabric/iq/connectors/fabric-iq-mcp.
+
 - Resumed from pushed Step 6 checkpoint `6045baf56b6ac22f5e8e37d3560476abd235937e`.
   Worktree was clean; Azure/Fabric DEMO administrator and GitHub owner contexts
   passed. No Dev/Test item was changed.
@@ -1999,3 +2055,5 @@ M365/Teams and viewer-session checkpoint. Steps 8 and 9 have not started.
   https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot;
   https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
 
+
+- 2026-11-23T07:43:04+00:00: Approved Step 7 Prod LH_Curated DefaultReader membership grant/readback PASS: SG-Demo-Sales-North, SG-Demo-Sales-South. Existing virtual ReadAll membership and unrestricted Read policy preserved; no Build/Contributor, SSO/connection, mirror, tenant or Dev/Test change. Viewer-session retest is still required. Skill: e2e-medallion-architecture/common references; https://learn.microsoft.com/rest/api/fabric/core/onelake-data-access-security/create-or-update-data-access-roles.

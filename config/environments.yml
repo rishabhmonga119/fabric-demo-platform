@@ -670,6 +670,10 @@ environments:
                 workspaceId: 4cd2247c-ab4c-441a-9637-f3c3d525f4c1
                 itemId: dffa5f8d-1221-4a23-9e5f-a693701b7eb7
                 path: Tables/forecast/forecast_clean
+        onelake_security:
+          baseline_sales_group_ids:
+          - ad4dc1e3-8180-4f7f-98fa-1134f37cc239
+          - 199f4419-549f-4f29-9e4a-33a25afc0a36
       VL_Config:
         id: c091eed3-5438-4557-83ac-eeacb710374d
         type: VariableLibrary
@@ -823,7 +827,9 @@ copilot:
     prerequisites_checked_at: '2026-11-23T07:08:56+00:00'
     fabric_runtime_published: true
     viewer_groups_and_licence_plans_verified: true
-    agent_store_verification: pending-human
-    teams_verification: pending-human
-    sales_assistant_verification: pending-human
-    north_viewer_answer_verification: pending-human
+    microsoft_copilot_publication_verification: user-confirmed
+    teams_verification: admin-user-screenshot-confirmed
+    sales_assistant_verification: admin-user-screenshot-confirmed
+    north_viewer_answer_verification: pending-viewer-retest
+    viewer_source_access_grant: verified-prod-default-reader
+    viewer_source_access_granted_at: '2026-11-23T07:43:04+00:00'

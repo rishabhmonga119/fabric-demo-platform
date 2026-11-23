@@ -117,6 +117,9 @@
 **Message:** Define once, enforced in report, SQL and Copilot.
 
 1. **P1 → Prod → `LH_Curated` → Manage OneLake security → New role `Sales_North`:**
+   - First remove `SG-Demo-Sales-North` from the unrestricted `DefaultReader`
+     baseline membership; leave the South group in its baseline role.
+     Adding a restricted role alone cannot override another role's broader grant.
    - Tables: `sales_vs_forecast` + gold dims.
    - Row filter on `sales_vs_forecast`: `region_code = 'NORTH'`.
    - Column security: hide `margin_eur`, `revenue_eur`.

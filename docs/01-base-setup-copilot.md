@@ -494,10 +494,14 @@ Run `python tools/check_copilot_publication.py --dry-run`, then without
 memberships and enabled Power BI/Copilot licence plans. This creates no cloud
 objects or access grants. Fabric runtime/MCP publication is **not** Agent Store
 publication; the remaining M365/Teams actions below are a human checkpoint.
+The current publish dialog calls this **Also publish to Microsoft Copilot**;
+older documentation calls it **Publish to Agent Store**. Turn the current toggle
+on and select **Publish**; do not look for a separate Agent Store button.
 Use the configured licensed viewer accounts (`aadik` for North, `andrel` for
 South), not the unused initial `demo.north`/`demo.south` placeholders.
 
-1. **Publish `DA_Sales` in Prod** → Publish → **Publish to Agent Store** with a clear description.
+1. **Publish `DA_Sales` in Prod** → Publish → **Also publish to Microsoft Copilot**
+   = **On**, then **Publish**, with a clear description.
 2. M365 Copilot (as you): Agents → find DA_Sales → pin; test in Teams.
 3. **Agent Builder:** New agent "Sales Assistant" → Configure → Work content → turn on **Fabric** (may show as "Power BI") → instructions:
    ```
@@ -513,6 +517,25 @@ four baseline regions (before the live North-only role is added). Do not
 change the automation's Azure/Fabric/GitHub administrator sign-ins to perform
 this viewer check. Verify `Sales Assistant` uses the Fabric/Power BI capability;
 it is separate from the ontology-only `DA_Sales` and does not change its source.
+
+Workspace Viewer/model Read alone does not grant Direct Lake SSO source-data
+access. Before accepting this check, inspect `LH_Curated` OneLake role
+membership and the source shortcut permissions. Run
+`python tools/check_copilot_publication.py --model-access-only --dry-run`
+for a read-only diagnostic; it does not impersonate the viewer or grant access.
+Any required new data-access grant needs explicit approval. Do not grant Build,
+promote the workspace role, disable SSO, or rebind the model merely because
+Copilot describes the source as on-premises. A successful administrator query
+does not validate the viewer's access.
+
+The approved initial baseline membership grant is implemented by
+`python tools/grant_baseline_readers.py --dry-run`, then
+`python tools/grant_baseline_readers.py --approved-prod-baseline-read`.
+It adds only the North/South sales groups to Prod Curated DefaultReader,
+preserves other members/policies, and protects the update with the collection
+ETag. It never grants workspace Contributor, model Build or write access.
+Before Act 6, remove North's unrestricted membership so it cannot override
+the restricted role. Always verify the real viewer session after a grant.
 
 ---
 

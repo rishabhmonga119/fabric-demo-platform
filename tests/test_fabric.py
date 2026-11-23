@@ -150,7 +150,7 @@ class JsonApiGuardTests(unittest.TestCase):
         response = MagicMock()
         response.status = 200
         response.read.return_value = b'{"status":"Running"}'
-        response.headers.get.return_value = "30"
+        response.headers.get.side_effect = lambda name: "30" if name == "Retry-After" else None
         with patch.object(http_api, "AzureCliCredential"), \
              patch.object(http_api, "build_opener") as opener:
             opener.return_value.open.return_value.__enter__.return_value = response
@@ -158,6 +158,51 @@ class JsonApiGuardTests(unittest.TestCase):
             self.assertEqual(api.request("GET", "/v1/operations/op"), {"status": "Running"})
             self.assertEqual(api.request("GET", "/v1/operations/op", with_response_info=True),
                              {"status_code": 200, "retry_after": "30", "body": {"status": "Running"}})
+
+    def test_role_update_uses_exact_collection_etag(self):
+        response = MagicMock()
+        response.status = 200
+        response.read.return_value = b'{"value":[]}'
+        response.headers.get.side_effect = lambda name: '"role-version"' if name == "ETag" else None
+        with patch.object(http_api, "AzureCliCredential"), \
+                patch.object(http_api, "build_opener") as opener, \
+                patch.object(http_api, "verify_context"):
+            opener.return_value.open.return_value.__enter__.return_value = response
+            api = http_api.Api("https://api.fabric.microsoft.com", "demo", skill="e2e-medallion-architecture")
+            value = api.request("GET", "/roles", with_response_info=True)
+            self.assertEqual(value["etag"], '"role-version"')
+            api.request("PUT", "/roles", {"value": []}, if_match=value["etag"])
+            request = opener.return_value.open.call_args.args[0]
+            self.assertEqual(request.get_header("If-match"), '"role-version"')
+
+
+class BaselineReaderTests(unittest.TestCase):
+    def setUp(self):
+        self.roles = [{
+            "name": "DefaultReader",
+            "decisionRules": [{"effect": "Permit", "permission": [
+                {"attributeName": "Action", "attributeValueIncludedIn": ["Read"]},
+                {"attributeName": "Path", "attributeValueIncludedIn": ["*"]}]}],
+            "members": {"fabricItemMembers": [{"sourcePath": "workspace/item",
+                                              "itemAccess": ["ReadAll"]}],
+                        "microsoftEntraMembers": [{"tenantId": "tenant", "objectId": "existing"}]},
+        }]
+
+    def test_baseline_grant_is_additive_preserves_existing_members_and_is_idempotent(self):
+        from grant_baseline_readers import baseline_roles
+        groups = [{"id": "north"}, {"id": "south"}]
+        result = baseline_roles(self.roles, "workspace", "item", groups, "tenant")
+        self.assertEqual(result[0]["decisionRules"], self.roles[0]["decisionRules"])
+        self.assertEqual([m["objectId"] for m in result[0]["members"]["microsoftEntraMembers"]],
+                         ["existing", "north", "south"])
+        self.assertEqual(len(self.roles[0]["members"]["microsoftEntraMembers"]), 1)
+        self.assertEqual(baseline_roles(result, "workspace", "item", groups, "tenant"), result)
+
+    def test_a_restricted_policy_cannot_be_replaced_by_the_baseline_grant(self):
+        from grant_baseline_readers import baseline_roles
+        self.roles[0]["decisionRules"][0]["constraints"] = {"rows": [{"value": "NORTH"}]}
+        with self.assertRaises(http_api.ContextError):
+            baseline_roles(self.roles, "workspace", "item", [{"id": "north"}], "tenant")
 
 
 class CapacityReaderGuardTests(unittest.TestCase):

@@ -2,6 +2,7 @@
 
 import argparse
 from datetime import datetime, timezone
+import json
 import sys
 
 from bootstrap_entra import has_membership
@@ -22,10 +23,40 @@ REFERENCES = (
 )
 
 
+def inspect_model_access(config: dict, stage: dict, api: Api) -> None:
+    workspace = stage["workspace_id"]
+    model_id = stage["items"]["SM_Sales"]["id"]
+    pbi = Api("https://api.powerbi.com", config["tenant"]["id"],
+              skill="semantic-model-authoring")
+    model = pbi.request("GET", f"/v1.0/myorg/groups/{workspace}/datasets/{model_id}")
+    connections = api.list(f"/v1/workspaces/{workspace}/items/{model_id}/connections")
+    print(json.dumps({"model": "SM_Sales",
+                      "isOnPremGatewayRequired": model.get("isOnPremGatewayRequired"),
+                      "connections": connections}))
+    relevant = {config["entra"]["groups"][key]["id"] for key in ("sales_north", "sales_south")}
+    relevant.update(user["id"] for user in config["entra"]["users"].values())
+    admin = Api("https://api.fabric.microsoft.com", config["tenant"]["id"],
+                skill="onelake-catalog-cli")
+    for name in ("LH_Curated", "MIR_UC_Gold"):
+        item = stage["items"][name]
+        roles = api.list(f"/v1/workspaces/{workspace}/items/{item['id']}/dataAccessRoles")
+        access = admin.list(f"/v1/admin/workspaces/{workspace}/items/{item['id']}/users",
+                            field="accessDetails")
+        selected = [{"principal_id": entry["principal"]["id"],
+                     "access": entry["itemAccessDetails"]} for entry in access
+                    if entry["principal"]["id"] in relevant]
+        print(json.dumps({"item": name, "roles": roles, "configured_sales_principal_access": selected}))
+    print("DIAGNOSTIC ONLY: administrator metadata is not a successful viewer-session query. "
+          "Direct Lake SSO requires source OneLake access as well as model/report Read. "
+          "No access grants or connection changes were made.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true",
                         help="Check live prerequisites without saving local checkpoint results.")
+    parser.add_argument("--model-access-only", action="store_true",
+                        help="Inspect model source and existing OneLake grants without querying as the viewer.")
     args = parser.parse_args()
     if is_metadata_ci():
         raise ContextError("Copilot publication prerequisites require the DEMO administrator.")
@@ -36,6 +67,17 @@ def main() -> None:
               skill="e2e-medallion-architecture")
     root = f"/v1/workspaces/{stage['workspace_id']}"
     verify_stage_capacity(api, config, api.request("GET", root), stage)
+    if args.model_access_only:
+        inspect_model_access(config, stage, api)
+        if not args.dry_run:
+            record("Step 7 read-only model-access diagnostic completed: checked the cloud "
+                   "source/gateway flag, OneLake roles and configured sales-principal item "
+                   "grants. This is not a viewer-session success or permission change. "
+                   "References: semantic-model-authoring/references/connection-binding.md; "
+                   "onelake-catalog-cli/references/admin-audit.md; "
+                   "https://learn.microsoft.com/rest/api/fabric/admin/items/list-item-access-details; "
+                   "https://learn.microsoft.com/fabric/fundamentals/direct-lake-security-integration.")
+        return
     items = api.list(root + "/items")
     for name in ("DA_Sales", "ONT_Business", "SM_Sales", "RPT_Sales"):
         expected = stage["items"][name]
@@ -69,25 +111,25 @@ def main() -> None:
             raise ContextError("A configured presenter/viewer lacks enabled Power BI/Copilot plans; "
                                "licence assignment requires a human.")
     print("PASS: existing presenter/viewer Power BI and Copilot licence plans.")
-    print("HUMAN CHECKPOINT: Agent Store publication, M365/Teams pinning, Sales Assistant "
+    print("HUMAN CHECKPOINT: Publish to Microsoft Copilot, M365/Teams pinning, Sales Assistant "
           "creation/sharing and a real viewer-session answer are not verified by these APIs.")
     if not args.dry_run:
-        config.setdefault("copilot", {})["step7"] = {
+        checkpoint = config.setdefault("copilot", {}).setdefault("step7", {})
+        checkpoint.update({
             "workspace_id": stage["workspace_id"],
             "data_agent_id": agent["id"],
             "prerequisites_checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "fabric_runtime_published": True,
             "viewer_groups_and_licence_plans_verified": True,
-            "agent_store_verification": "pending-human",
-            "teams_verification": "pending-human",
-            "sales_assistant_verification": "pending-human",
-            "north_viewer_answer_verification": "pending-human",
-        }
+        })
+        for key in ("microsoft_copilot_publication_verification", "teams_verification",
+                    "sales_assistant_verification", "north_viewer_answer_verification"):
+            checkpoint.setdefault(key, "pending-human")
         save_config(config)
         record("Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime "
                "publication, existing sales-group Viewer memberships and enabled "
                "Power BI/Copilot plans. No cloud writes, grants, licences or duplicate "
-               "agent publication. Agent Store/Teams/Agent Builder/viewer-session checks "
+               "agent publication. Microsoft Copilot/Teams/Agent Builder/viewer-session checks "
                f"require the human checkpoint. References: {REFERENCES}.")
 
 
