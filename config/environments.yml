@@ -836,7 +836,8 @@ copilot:
     north_viewer_answer_verification: user-confirmed-fabric-iq
     north_viewer_report_verification: user-confirmed-workspace-opened-report
     north_viewer_report_entry: workspace-opened
-    north_viewer_data_agent_verification: pending-ontology-instance-and-agent-retest
+    north_viewer_data_agent_verification: user-confirmed-copilot-answer
+    north_viewer_ontology_instances_verification: user-confirmed
     viewer_source_access_grant: verified-prod-default-reader
     viewer_source_access_granted_at: '2026-11-23T07:43:04+00:00'
     viewer_ontology_build_grant: verified-prod-sm-sales-read-build

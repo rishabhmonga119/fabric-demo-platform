@@ -1960,18 +1960,20 @@ Totals (exact, not abbreviated):
 - 2026-11-23T07:08:56+00:00: Step 7 prerequisite Check PASS: Prod identities/Active F4, Fabric-runtime publication, existing sales-group Viewer memberships and enabled Power BI/Copilot plans. No cloud writes, grants, licences or duplicate agent publication. Agent Store/Teams/Agent Builder/viewer-session checks require the human checkpoint. References: fabric-skills/common/COMMON-CORE.md; https://learn.microsoft.com/rest/api/fabric/dataagent/items/get-data-agent; https://learn.microsoft.com/rest/api/fabric/core/workspaces/list-workspace-role-assignments; https://learn.microsoft.com/fabric/data-science/data-agent-microsoft-365-copilot; https://learn.microsoft.com/fabric/iq/connectors/agent-builder-overview.
 ## 2026-11-23 - Step 7: Copilot publication prerequisites
 
-Status: PARTIALLY VERIFIED. Publication and report/Fabric IQ checks are
-user-confirmed; ontology-backed DA_Sales still needs a successful viewer
-instance/agent retest. Step 8 has read-only preparation only; Step 9 is pending.
+Status: VERIFIED. Publication, report/Fabric IQ, ontology instances and the
+published ontology-backed DA_Sales viewer answer are user-confirmed.
+Step 8 has read-only preparation only; Step 9 is pending.
 
-Step 7 status after further viewer checks: Fabric IQ/report path verified;
-viewer DA_Sales now opens, but ontology instance retrieval and agent execution
-fail. Both sales groups' missing Prod SM_Sales Build permission has now been
-granted and verified by API readback; the actual viewer instance/agent retest
-remains required. The grant alone does not establish that the failure is fixed.
+Step 7 final viewer check: after both sales groups received the approved
+Prod SM_Sales Read+Build grant, Aadi confirmed that SalesPeriod Instances load
+successfully. A new published DA_Sales Copilot conversation then returned:
+North **52,840.60 hl**, South **49,069.04 hl**, West **45,708.11 hl**,
+East **41,653.64 hl**, total **189,271.39 hl** for October 2026.
+All four regions and the total exactly match the verified baseline. This is
+the actual ontology-backed Data Agent check, distinct from native Fabric IQ.
 The earlier complete checkpoint covered the user's reported actions, but the
 subsequent Plugins screenshot establishes that the distinct Data Agent path
-still needs its own check. Do not treat Fabric IQ success as DA_Sales success.
+still needed its own check. Do not treat Fabric IQ success as DA_Sales success.
 The intermediate failure notes below are retained as investigation history,
 not the current status.
 
