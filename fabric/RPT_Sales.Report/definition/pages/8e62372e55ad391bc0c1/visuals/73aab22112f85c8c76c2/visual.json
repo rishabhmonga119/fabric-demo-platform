@@ -1,16 +1,171 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.15.0/schema.json",
   "name": "73aab22112f85c8c76c2",
   "position": {
     "x": 32,
     "y": 552,
-    "width": 1832,
-    "height": 384,
     "z": 5000,
+    "height": 384,
+    "width": 1832,
     "tabOrder": 5000
   },
   "visual": {
     "visualType": "pivotTable",
+    "query": {
+      "queryState": {
+        "Columns": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Package"
+                    }
+                  },
+                  "Property": "Package Code"
+                }
+              },
+              "queryRef": "Package.Package Code",
+              "nativeQueryRef": "Package Code",
+              "active": true
+            }
+          ]
+        },
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Product"
+                    }
+                  },
+                  "Property": "Product Name"
+                }
+              },
+              "queryRef": "Product.Product Name",
+              "nativeQueryRef": "Product Name",
+              "active": true
+            }
+          ]
+        },
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Sales vs Forecast"
+                    }
+                  },
+                  "Property": "Actual hl"
+                }
+              },
+              "queryRef": "Sales vs Forecast.Actual hl",
+              "nativeQueryRef": "Actual hl"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Sales vs Forecast"
+                    }
+                  },
+                  "Property": "Forecast hl"
+                }
+              },
+              "queryRef": "Sales vs Forecast.Forecast hl",
+              "nativeQueryRef": "Forecast hl"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Sales vs Forecast"
+                    }
+                  },
+                  "Property": "Deviation hl"
+                }
+              },
+              "queryRef": "Sales vs Forecast.Deviation hl",
+              "nativeQueryRef": "Deviation hl"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Product"
+                  }
+                },
+                "Property": "Product Name"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "columnHeaders": [
+        {
+          "properties": {
+            "columnAdjustment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'growToFit'"
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "wordWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "visualContainerObjects": {
       "title": [
         {
@@ -129,159 +284,80 @@
           }
         }
       ]
-    },
-    "query": {
-      "queryState": {
-        "Rows": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Product"
-                    }
-                  },
-                  "Property": "Product Name"
-                }
-              },
-              "queryRef": "Product.Product Name",
-              "nativeQueryRef": "Product Name"
-            }
-          ]
-        },
-        "Columns": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Package"
-                    }
-                  },
-                  "Property": "Package Code"
-                }
-              },
-              "queryRef": "Package.Package Code",
-              "nativeQueryRef": "Package Code"
-            }
-          ]
-        },
-        "Values": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Sales vs Forecast"
-                    }
-                  },
-                  "Property": "Actual hl"
-                }
-              },
-              "queryRef": "Sales vs Forecast.Actual hl",
-              "nativeQueryRef": "Actual hl"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Sales vs Forecast"
-                    }
-                  },
-                  "Property": "Forecast hl"
-                }
-              },
-              "queryRef": "Sales vs Forecast.Forecast hl",
-              "nativeQueryRef": "Forecast hl"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "Sales vs Forecast"
-                    }
-                  },
-                  "Property": "Deviation hl"
-                }
-              },
-              "queryRef": "Sales vs Forecast.Deviation hl",
-              "nativeQueryRef": "Deviation hl"
-            }
-          ]
-        }
-      },
-      "sortDefinition": {
-        "sort": [
-          {
-            "field": {
-              "Column": {
-                "Expression": {
-                  "SourceRef": {
-                    "Entity": "Product"
-                  }
-                },
-                "Property": "Product Name"
-              }
-            },
-            "direction": "Ascending"
-          }
-        ],
-        "isDefaultSort": true
-      }
-    },
-    "objects": {
-      "columnHeaders": [
-        {
-          "properties": {
-            "columnAdjustment": {
-              "expr": {
-                "Literal": {
-                  "Value": "'growToFit'"
-                }
-              }
-            },
-            "autoSizeColumnWidth": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "12D"
-                }
-              }
-            },
-            "wordWrap": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "values": [
-        {
-          "properties": {
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "12D"
-                }
-              }
-            }
-          }
-        }
-      ]
     }
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "6b3204211786f71bca5a",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Product"
+              }
+            },
+            "Property": "Product Name"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "c0642a18e8386f0d31e5",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Package"
+              }
+            },
+            "Property": "Package Code"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "b189df9bc358a6c99312",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Sales vs Forecast"
+              }
+            },
+            "Property": "Actual hl"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "d059169bfbcd5fbe3ee1",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Sales vs Forecast"
+              }
+            },
+            "Property": "Forecast hl"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "d2f96177583b6b0dc3e5",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Sales vs Forecast"
+              }
+            },
+            "Property": "Deviation hl"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }
