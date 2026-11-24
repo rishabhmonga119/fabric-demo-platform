@@ -26,6 +26,15 @@ table 'Sales vs Forecast'
 		displayFolder: Forecast comparison
 		lineageTag: 5fb508f3-76f6-4a37-afca-ef7b3c293064
 
+	/// Forecast accuracy: 100% is an exact match; larger errors reduce accuracy and can make it negative. Returns 0% for zero actual volume; otherwise blank if actual or forecast is missing.
+	measure 'Forecast Accuracy %' = ```
+			VAR _Actual = [Actual hl]
+			VAR _Forecast = [Forecast hl]
+			RETURN IF(_Actual == 0, 0, IF(ISBLANK(_Actual) || ISBLANK(_Forecast), BLANK(), DIVIDE(_Actual - ABS(_Actual - _Forecast), _Actual)))
+			```
+		formatString: 0.0%
+		displayFolder: Forecast
+
 	/// Net sales revenue in EUR for the selected actual-sales period and filters.
 	measure 'Revenue EUR' = SUM('Sales vs Forecast'[Revenue])
 		formatString: #,##0.00 "EUR"
